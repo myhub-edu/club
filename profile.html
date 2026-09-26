@@ -361,6 +361,11 @@
 
             ClubAuth.syncNavbarUI();
             showToast('Profile updated successfully! \u2713', 'success');
+
+            // Ask for notifications if not yet granted once details are entered
+            if (window.ClubWebPush && ClubWebPush.promptOnce) {
+              ClubWebPush.promptOnce(true, 800);
+            }
           } catch (err) {
             console.error('Failed to update profile:', err);
             showToast('Error updating profile: ' + err.message, 'error');
