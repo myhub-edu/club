@@ -287,14 +287,18 @@ window.ClubWebPush = {
   },
 
   /** Renders an interactive, user-gesture permission prompt banner */
-  showPromptBanner() {
+  showPromptBanner(force = false) {
     if (typeof Notification === 'undefined') return;
     if (Notification.permission !== 'default') return;
     if (document.getElementById('clubPushBanner')) return;
 
-    // Check if dismissed recently (24-hour snooze)
-    const dismissedUntil = localStorage.getItem('club_push_prompt_dismissed');
-    if (dismissedUntil && Date.now() < Number(dismissedUntil)) return;
+    // Check if dismissed recently (24-hour snooze) — bypassed when forced (after login, details entered, admins)
+    if (!force) {
+      const dismissedUntil = localStorage.getItem('club_push_prompt_dismissed');
+      if (dismissedUntil && dismissedUntil !== 'granted' && Date.now() < Number(dismissedUntil)) return;
+    } else {
+      localStorage.removeItem('club_push_prompt_dismissed');
+    }
 
     const banner = document.createElement('div');
     banner.id = 'clubPushBanner';
@@ -345,7 +349,7 @@ window.ClubWebPush = {
           }
           window.ClubWebPush.show('Notifications Enabled 🎉', 'You will now receive alerts for new club projects and events!');
         } else {
-          closeBanner(3);
+          closeBanner(1);
           if (typeof showToast === 'function') {
             showToast('Notifications blocked or denied. You can re-enable anytime in browser settings.', 'info');
           }
@@ -354,14 +358,14 @@ window.ClubWebPush = {
     }
   },
 
-  /** Called after login or page load to offer notification enablement */
-  promptOnce() {
+  /** Called after login, page load, onboarding, or admin access to offer notification enablement */
+  promptOnce(force = false, delayMs = 1500) {
     if (typeof Notification === 'undefined') return;
     if (Notification.permission !== 'default') return;
     // Delay slightly so the page content and layout are visible first
     setTimeout(() => {
-      this.showPromptBanner();
-    }, 1500);
+      this.showPromptBanner(force);
+    }, delayMs);
   }
 };
 
