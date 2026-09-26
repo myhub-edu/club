@@ -1,0 +1,16 @@
+/event  /event.html  200
+/project  /project.html  200
+/events  /events.html  200
+/projects  /projects.html  200
+/moments  /moments.html  200
+/voices  /voices.html  200
+/resources  /resources.html  200
+/profile  /profile.html  200
+/about  /about.html  200
+/login  /login.html  200
+/register  /register.html  200
+/notifications  /notifications.html  200
+/submit-idea  /submit-idea.html  200
+/submit-feedback  /submit-feedback.html  200
+/contact-admin  /contact-admin.html  200
+/*  /404.html  404

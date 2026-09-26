@@ -20,6 +20,18 @@
   
   <script src="js/firebase-config.js"></script>
   <script src="js/auth.js"></script>
+  <script>
+    (function() {
+      function _guardAuth() {
+        if (window.ClubAuth && ClubAuth.userRole === 'guest' && !ClubAuth.currentUser) {
+          const page = window.location.pathname.split('/').pop() + window.location.search;
+          window.location.replace('login.html?redirect=' + encodeURIComponent(page));
+        }
+      }
+      document.addEventListener('club-auth-changed', _guardAuth);
+      setTimeout(_guardAuth, 2000);
+    })();
+  </script>
   <script src="js/notifications.js"></script>
   <script src="js/main.js" defer></script>
 </head>
@@ -76,8 +88,10 @@
         <div>
           <span class="badge badge-cyan">Member Inbox</span>
           <h1 style="margin-top: 0.4rem; font-size: 1.8rem;">Announcements & Notifications</h1>
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+          <button id="enablePushBtn" class="btn btn-outline btn-sm" onclick="enablePushAlerts(this)">🔔 Enable Push Alerts</button>
+          <button class="btn btn-secondary btn-sm" onclick="ClubNotifications.markAllAsRead()">Mark all as read ✓</button>
         </div>
-        <button class="btn btn-secondary btn-sm" onclick="ClubNotifications.markAllAsRead()">Mark all as read ✓</button>
       </div>
 
       <div id="fullNotificationList">
@@ -102,5 +116,46 @@
       <p>© 2026 Liverpool International Secondary College – Science & IT Club</p>
     </div>
   </footer>
+
+  <script>
+    function syncPushBtn() {
+      const btn = document.getElementById('enablePushBtn');
+      if (!btn || typeof Notification === 'undefined') return;
+      if (Notification.permission === 'granted') {
+        btn.textContent = '🔔 Alerts Active ✓';
+        btn.style.borderColor = 'var(--accent-emerald)';
+        btn.style.color = 'var(--accent-emerald)';
+      } else if (Notification.permission === 'denied') {
+        btn.textContent = '🔕 Alerts Blocked';
+        btn.style.borderColor = 'var(--accent-rose)';
+        btn.style.color = 'var(--accent-rose)';
+      } else {
+        btn.textContent = '🔔 Enable Push Alerts';
+      }
+    }
+
+    window.enablePushAlerts = async function(btn) {
+      if (!window.ClubWebPush) {
+        if (typeof showToast === 'function') showToast('Browser push notifications not supported.', 'info');
+        return;
+      }
+      if (typeof Notification !== 'undefined' && Notification.permission === 'denied') {
+        if (typeof showToast === 'function') {
+          showToast('Notifications are blocked in your browser settings. Please allow notifications in site settings.', 'info');
+        }
+        return;
+      }
+      const granted = await ClubWebPush.requestPermission();
+      syncPushBtn();
+      if (granted) {
+        if (typeof showToast === 'function') showToast('🔔 Notifications enabled! You will now receive club updates.', 'success');
+        ClubWebPush.show('Alerts Active 🎉', 'You are connected to live updates for club projects and events!');
+      } else {
+        if (typeof showToast === 'function') showToast('Notification permission was not granted.', 'info');
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', syncPushBtn);
+  </script>
 </body>
 </html>

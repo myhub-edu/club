@@ -23,6 +23,20 @@
   <script src="js/firebase-config.js"></script>
   <script src="js/notifications.js"></script>
   <script src="js/auth.js"></script>
+  <script>
+    // ── Member-only page guard ──────────────────────────────────────────
+    (function() {
+      function _guardAuth() {
+        if (window.ClubAuth && ClubAuth.userRole === 'guest' && !ClubAuth.currentUser) {
+          const page = window.location.pathname.split('/').pop() + window.location.search;
+          window.location.replace('login.html?redirect=' + encodeURIComponent(page));
+        }
+      }
+      document.addEventListener('club-auth-changed', _guardAuth);
+      // Fallback: if auth already settled (e.g. session restored from cache)
+      setTimeout(_guardAuth, 2000);
+    })();
+  </script>
   <script src="js/main.js" defer></script>
 </head>
 
@@ -78,68 +92,78 @@
     </nav>
   </aside>
 
-  <main style="padding: 3rem 0 5rem;">
+  <main class="profile-main">
     <div class="container" style="max-width: 840px;">
-      <div id="profileLoading" class="card" style="text-align: center; padding: 3rem;">
+      <div id="profileLoading" class="card profile-loading-card">
         <p>Checking authentication status...</p>
       </div>
 
       <div id="profileContent" style="display: none;">
         <!-- Top Profile Card -->
-        <div class="card" style="margin-bottom: 2rem; border-top: 4px solid var(--accent-cyan);">
-          <div style="display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap;">
-            <div style="position: relative; display: inline-block;">
-              <img id="profileAvatar" src="assets/logo/club_logo.png" alt="Avatar"
-                style="width: 88px; height: 88px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-cyan); display: block;" />
-              <label for="avatarFileInput" title="Change Profile Picture"
-                style="position: absolute; bottom: 0; right: 0; background: var(--accent-cyan); color: #0b0f19; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.85rem; border: 2px solid var(--bg-surface); box-shadow: 0 2px 6px rgba(0,0,0,0.4);">
+        <div class="card profile-hero-card">
+          <div class="profile-hero-inner">
+            <div class="profile-avatar-wrap">
+              <img id="profileAvatar" src="assets/logo/club_logo.png" alt="Avatar" class="profile-avatar-img" />
+              <label for="avatarFileInput" title="Change Profile Picture" class="profile-avatar-badge">
                 📷
               </label>
               <input type="file" id="avatarFileInput" accept="image/*" style="display: none;" />
             </div>
-            <div style="flex: 1;">
-              <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.35rem; flex-wrap: wrap;">
-                <h2 id="profileName" style="font-size: 1.5rem;"></h2>
+            <div class="profile-info-wrap">
+              <div class="profile-title-row">
+                <h2 id="profileName" class="profile-name"></h2>
                 <span id="profileRoleBadge" class="badge badge-cyan"></span>
               </div>
-              <p id="profileEmail" style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.35rem;"></p>
-              <div id="profileSection" style="font-size: 0.88rem; color: var(--text-secondary); font-weight: 500;"></div>
-              <p id="profileBioDisplay" style="font-size: 0.88rem; color: var(--text-muted); margin-top: 0.35rem; font-style: italic;"></p>
+              <p id="profileEmail" class="profile-email"></p>
+              <div id="profileSection" class="profile-section"></div>
+              <p id="profileBioDisplay" class="profile-bio"></p>
+              <p id="profilePhoneDisplay" class="profile-phone"></p>
             </div>
-            <div>
+            <div class="profile-actions-wrap">
               <button id="logoutButton" class="btn btn-sm btn-danger">Log Out</button>
             </div>
           </div>
         </div>
 
         <!-- Edit Profile Form -->
-        <div class="card" style="margin-bottom: 2rem;">
-          <h3 style="margin-bottom: 1.25rem;">Update Profile Information</h3>
-          <form id="editProfileForm">
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+        <div class="card profile-edit-card">
+          <h3 class="profile-card-title">Update Profile Information</h3>
+          <form id="editProfileForm" class="edit-profile-form">
+            <div class="edit-profile-grid">
               <div class="form-group">
-                <label class="form-label" for="editName">Full Name</label>
+                <label class="form-label" for="editName">Full Name <span style="color:var(--accent-rose);">*</span></label>
                 <input type="text" id="editName" class="form-input" required />
               </div>
               <div class="form-group">
-                <label class="form-label" for="editSection">Class Section <small style="color:var(--text-muted);">(Grade 11 &ndash; all members)</small></label>
+                <label class="form-label" for="editGrade">Grade <span style="color:var(--accent-rose);">*</span></label>
+                <select id="editGrade" class="form-select" required style="cursor: pointer; width: 100%; background: var(--bg-surface-elevated); color: var(--text-primary);">
+                  <option value="11" style="background:#131b2e; color:#fff;">Grade 11</option>
+                  <option value="12" style="background:#131b2e; color:#fff;">Grade 12</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="editSection">Class Section <span style="color:var(--accent-rose);">*</span></label>
                 <input type="text" id="editSection" class="form-input" required
                   placeholder="e.g. S8, S9, L4, L5..."
                   autocomplete="off"
                   style="letter-spacing: 0.05em; text-transform: uppercase;" />
               </div>
             </div>
-            <div class="form-group" style="margin-bottom: 1rem;">
+            <div class="form-group">
               <label class="form-label" for="editBio">About Me <small style="color:var(--text-muted);">(optional &mdash; tell the club a little about yourself)</small></label>
               <textarea id="editBio" class="form-input" rows="3" placeholder="e.g. Passionate about robotics and Python. Love 3D printing and competitive coding..."
-                style="resize: vertical; min-height: 80px; font-family: inherit;"></textarea>
+                style="resize: vertical; min-height: 75px; font-family: inherit;"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="editPhone">📱 WhatsApp / Phone <small style="color:var(--text-muted);">(optional &mdash; only visible to admins)</small></label>
+              <input type="tel" id="editPhone" class="form-input" placeholder="e.g. +977 98XXXXXXXX" autocomplete="tel" />
             </div>
             <button type="submit" class="btn btn-primary btn-sm">Save Changes &#10003;</button>
           </form>
         </div>
 
         <!-- Activity History & Trackers -->
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+        <div class="profile-activity-grid">
           <!-- My Submitted Ideas -->
           <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
@@ -225,7 +249,8 @@
 
       const sectionEl = document.getElementById('profileSection');
       if (sectionEl) {
-        sectionEl.textContent = user.section ? 'Grade 11 \u2013 ' + user.section : (user.grade || 'Grade 11');
+        const gradeText = user.grade ? ('Grade ' + user.grade) : 'Grade 11';
+        sectionEl.textContent = user.section ? (gradeText + ' \u2013 ' + user.section) : gradeText;
       }
 
       const bioDisplayEl = document.getElementById('profileBioDisplay');
@@ -245,11 +270,22 @@
       const editNameEl = document.getElementById('editName');
       if (editNameEl) editNameEl.value = user.displayName || '';
 
+      const editGradeEl = document.getElementById('editGrade');
+      if (editGradeEl) editGradeEl.value = user.grade || '11';
+
       const editSectionEl = document.getElementById('editSection');
-      if (editSectionEl) editSectionEl.value = user.section || user.grade || '';
+      if (editSectionEl) editSectionEl.value = user.section || '';
 
       const editBioEl = document.getElementById('editBio');
       if (editBioEl) editBioEl.value = user.bio || '';
+
+      const editPhoneEl = document.getElementById('editPhone');
+      if (editPhoneEl) editPhoneEl.value = user.phone || '';
+
+      const phoneDisplayEl = document.getElementById('profilePhoneDisplay');
+      if (phoneDisplayEl) {
+        phoneDisplayEl.textContent = user.phone ? '\ud83d\udcf1 ' + user.phone : '';
+      }
 
       const logoutBtn = document.getElementById('logoutButton');
       if (logoutBtn) {
@@ -286,8 +322,15 @@
           e.preventDefault();
           const saveBtn = editForm.querySelector('button[type=submit]');
           const newName = (document.getElementById('editName')?.value || '').trim();
+          const newGrade = (document.getElementById('editGrade')?.value || '11').trim();
           const newSection = (document.getElementById('editSection')?.value || '').trim().toUpperCase();
           const newBio = (document.getElementById('editBio')?.value || '').trim();
+          const newPhone = (document.getElementById('editPhone')?.value || '').trim();
+
+          if (!newName) {
+            showToast('Please enter your full name.', 'error');
+            return;
+          }
 
           if (!newSection) {
             showToast('Please enter your class section (e.g. S8, L4).', 'error');
@@ -300,16 +343,21 @@
             if (typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser) {
               await firebase.auth().currentUser.updateProfile({ displayName: newName }).catch(() => {});
             }
-            await ClubDB.update(`users/${user.uid}`, { displayName: newName, section: newSection, bio: newBio });
+            await ClubDB.update(`users/${user.uid}`, { displayName: newName, grade: newGrade, section: newSection, bio: newBio, phone: newPhone });
             user.displayName = newName;
+            user.grade = newGrade;
             user.section = newSection;
             user.bio = newBio;
+            user.phone = newPhone;
             localStorage.setItem('CLUB_CURRENT_USER_SESSION', JSON.stringify(user));
             ClubAuth.currentUser = user;
 
             if (nameEl) nameEl.textContent = newName;
-            if (sectionEl) sectionEl.textContent = 'Grade 11 \u2013 ' + newSection;
+            const displayGrade = 'Grade ' + newGrade;
+            if (sectionEl) sectionEl.textContent = displayGrade + ' \u2013 ' + newSection;
             if (bioDisplayEl) bioDisplayEl.textContent = newBio ? '\u201c' + newBio + '\u201d' : '';
+            const phoneDisplayEl2 = document.getElementById('profilePhoneDisplay');
+            if (phoneDisplayEl2) phoneDisplayEl2.textContent = newPhone ? '\ud83d\udcf1 ' + newPhone : '';
 
             ClubAuth.syncNavbarUI();
             showToast('Profile updated successfully! \u2713', 'success');
@@ -317,7 +365,7 @@
             console.error('Failed to update profile:', err);
             showToast('Error updating profile: ' + err.message, 'error');
           } finally {
-            if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Save Profile Changes \u2713'; }
+            if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Save Changes \u2713'; }
           }
         };
       }

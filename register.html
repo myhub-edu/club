@@ -68,6 +68,23 @@
         Join Liverpool International Secondary College – Science &amp; IT Club
       </p>
 
+      <!-- Already Logged In Banner -->
+      <div id="alreadyLoggedInBox" style="display: none; background: rgba(0,242,254,0.08); border: 1px solid var(--border-glow); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.25rem; text-align: left;">
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+          <img id="activeUserAvatar" src="assets/logo/club_logo.png" style="width: 42px; height: 42px; border-radius: 50%; object-fit: cover;" alt="Avatar" />
+          <div style="flex: 1; overflow: hidden;">
+            <div style="font-weight: 700; font-size: 0.95rem;" id="activeUserName">Active User</div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);" id="activeUserEmail"></div>
+          </div>
+          <span id="activeUserRoleBadge" class="badge badge-cyan">MEMBER</span>
+        </div>
+        <div style="font-size:0.82rem; color:var(--text-secondary); margin-bottom:0.75rem;">You're already signed in. No need to register again.</div>
+        <div style="display: flex; gap: 0.5rem;">
+          <button id="activeContinueBtn" class="btn btn-primary btn-sm" style="flex: 1;">Continue to Dashboard →</button>
+          <button id="activeLogoutBtn" class="btn btn-danger btn-sm" style="padding: 4px 12px;">Sign Out</button>
+        </div>
+      </div>
+
       <!-- Google Sign-Up (Recommended) -->
       <button id="googleRegBtn" class="btn btn-secondary" style="width: 100%; display: flex; gap: 0.75rem; align-items: center; justify-content: center; padding: 0.9rem; font-size: 0.95rem; border-color: rgba(255,255,255,0.2); margin-bottom: 1rem;">
         <svg width="20" height="20" viewBox="0 0 24 24">
@@ -97,10 +114,22 @@
           <label class="form-label" style="font-size: 0.8rem;">Email Address <span style="color:var(--accent-rose);">*</span></label>
           <input type="email" id="regEmail" class="form-input" placeholder="your.name@school.edu" autocomplete="email" required />
         </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.75rem;">
+          <div>
+            <label class="form-label" style="font-size: 0.8rem;">Grade <span style="color:var(--accent-rose);">*</span></label>
+            <select id="regGrade" class="form-select" required style="cursor: pointer; background: var(--bg-surface-elevated); color: var(--text-primary); font-size: 0.88rem; padding: 0.65rem 0.75rem;">
+              <option value="11" selected style="background:#131b2e; color:#fff;">Grade 11</option>
+              <option value="12" style="background:#131b2e; color:#fff;">Grade 12</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label" style="font-size: 0.8rem;">Section <span style="color:var(--accent-rose);">*</span></label>
+            <input type="text" id="regSection" class="form-input" placeholder="e.g. S8, L4…" required maxlength="10" style="text-transform: uppercase;" />
+          </div>
+        </div>
         <div>
-          <label class="form-label" style="font-size: 0.8rem;">Section <span style="color:var(--accent-rose);">*</span></label>
-          <input type="text" id="regSection" class="form-input" placeholder="e.g. S8, S9, L4, T2…" required maxlength="10" />
-          <small style="font-size:0.73rem;color:var(--text-muted);margin-top:3px;display:block;">Your class section code (ask your teacher if unsure)</small>
+          <label class="form-label" style="font-size: 0.8rem;">📱 WhatsApp / Phone <small style="color:var(--text-muted);">(optional &mdash; only visible to admins)</small></label>
+          <input type="tel" id="regPhone" class="form-input" placeholder="e.g. +977 98XXXXXXXX" autocomplete="tel" />
         </div>
         <div>
           <label class="form-label" style="font-size: 0.8rem;">Password <span style="color:var(--accent-rose);">*</span></label>
@@ -137,6 +166,35 @@
     document.addEventListener('DOMContentLoaded', () => {
       const errorBox = document.getElementById('regError');
       const successBox = document.getElementById('regSuccess');
+
+      // Show already-logged-in banner and auto-redirect if applicable
+      const tryRenderBanner = () => {
+        if (ClubAuth.currentUser) {
+          const banner = document.getElementById('alreadyLoggedInBox');
+          if (banner) {
+            banner.style.display = 'block';
+            document.getElementById('activeUserName').textContent = ClubAuth.currentUser.displayName || 'Active User';
+            document.getElementById('activeUserEmail').textContent = ClubAuth.currentUser.email || '';
+            document.getElementById('activeUserAvatar').src = ClubAuth.currentUser.photoURL || 'assets/logo/club_logo.png';
+            const badge = document.getElementById('activeUserRoleBadge');
+            badge.textContent = (ClubAuth.userRole || 'member').toUpperCase();
+            badge.className = ClubAuth.userRole === 'headAdmin' ? 'badge badge-rose' : ClubAuth.userRole === 'admin' ? 'badge badge-purple' : 'badge badge-cyan';
+            document.getElementById('activeContinueBtn').onclick = () => ClubAuth.handlePostLoginRedirect();
+            document.getElementById('activeLogoutBtn').onclick = () => {
+              ClubAuth.logout();
+              banner.style.display = 'none';
+            };
+            // Auto-redirect if profile is complete
+            const u = ClubAuth.currentUser;
+            if (u.section && u.grade && u.displayName && !u.displayName.includes('@')) {
+              if (typeof showToast === 'function') showToast(`Already signed in as ${u.displayName}. Redirecting...`, 'info');
+              setTimeout(() => ClubAuth.handlePostLoginRedirect(), 1500);
+            }
+          }
+        }
+      };
+      tryRenderBanner();
+      document.addEventListener('club-auth-changed', tryRenderBanner);
 
       function showError(msg) {
         errorBox.textContent = '⚠️ ' + msg;
@@ -191,7 +249,9 @@
 
         const name = document.getElementById('regName').value.trim();
         const email = document.getElementById('regEmail').value.trim().toLowerCase();
+        const grade = (document.getElementById('regGrade')?.value || '11').trim();
         const section = document.getElementById('regSection').value.trim().toUpperCase();
+        const phone = (document.getElementById('regPhone')?.value || '').trim();
         const pw = document.getElementById('regPassword').value;
         const pwConfirm = document.getElementById('regPasswordConfirm').value;
 
@@ -207,8 +267,13 @@
 
         try {
           if (typeof firebase !== 'undefined' && firebase.auth) {
-            // Dismiss onboarding modal upfront since we are collecting name and section here
+            // Dismiss onboarding modal upfront since we are collecting name, grade and section here
             sessionStorage.setItem('onboarding_dismissed', 'true');
+
+            // Ensure LOCAL persistence so user stays logged in
+            try {
+              await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+            } catch (_) {}
 
             // Create Firebase Auth account
             const result = await firebase.auth().createUserWithEmailAndPassword(email, pw);
@@ -223,7 +288,9 @@
               displayName: name,
               email: fbUser.email,
               photoURL: fbUser.photoURL || '',
+              grade: grade,
               section: section,
+              phone: phone,
               bio: '',
               role: 'member',
               createdAt: Date.now(),
@@ -247,7 +314,7 @@
             if (window.ClubNotifs && ClubNotifs.notifyAllAdmins) {
               ClubNotifs.notifyAllAdmins(
                 `New Member Registered: ${name}`,
-                `${name} (${section}) has created an account. Email: ${email}`,
+                `${name} (Grade ${grade} – ${section}) has created an account. Email: ${email}`,
                 'members.html',
                 'normal',
                 fbUser.uid
@@ -279,8 +346,11 @@
           }
         } catch (err) {
           let msg = 'Registration failed. ';
-          if (err.code === 'auth/email-already-in-use') msg += 'This email is already registered. Try signing in instead.';
-          else if (err.code === 'auth/invalid-email') msg += 'Invalid email address format.';
+          if (err.code === 'auth/email-already-in-use') {
+            showSuccess('✅ <strong>Account already exists!</strong> This email is already registered — you\'re being redirected to Sign In.<br><small>Or <a href="login.html" style="color:var(--accent-cyan);font-weight:700;">click here to Sign In →</a></small>');
+            setTimeout(() => { window.location.href = 'login.html'; }, 2500);
+            return;
+          } else if (err.code === 'auth/invalid-email') msg += 'Invalid email address format.';
           else if (err.code === 'auth/weak-password') msg += 'Password is too weak. Choose at least 6 characters.';
           else if (err.code === 'auth/operation-not-allowed') msg += 'Email registration is not enabled. Please use Google Sign-Up.';
           else msg += (err.message || 'Please try again.');

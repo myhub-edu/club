@@ -127,58 +127,47 @@
           <pre style="background: rgba(0,0,0,0.4); padding: 1rem; border-radius: var(--radius-sm); font-size: 0.74rem; color: var(--accent-cyan); overflow-x: auto; max-height: 240px; user-select: all;">
 {
   "rules": {
-    "admins": {
-      ".read": "auth != null",
-      ".write": "auth != null && (root.child('headAdmin').child(auth.uid).exists() || auth.uid === 'Hmv08XzSqDSvVmYQuijqaEYg0MX2' || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')"
-    },
-    "headAdmin": {
-      ".read": "auth != null",
-      ".write": "auth != null && (root.child('headAdmin').child(auth.uid).exists() || auth.uid === 'Hmv08XzSqDSvVmYQuijqaEYg0MX2' || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')"
-    },
+    ".read":  false,
+    ".write": false,
+
+    "projects":   { ".read": true, ".write": "auth !== null" },
+    "events":     { ".read": true, ".write": "auth !== null" },
+    "moments":    { ".read": true, ".write": "auth !== null" },
+    "resources":  { ".read": true, ".write": "auth !== null" },
+    "leadership": { ".read": true, ".write": "auth !== null" },
+    "settings":   { ".read": true, ".write": "auth !== null" },
+    "voices":     { ".read": true, ".write": "auth !== null" },
+
     "users": {
-      ".read": "auth != null",
+      ".read": "auth !== null",
       "$uid": {
-        ".read": "auth != null",
-        ".write": "auth != null && ($uid === auth.uid || root.child('admins').child(auth.uid).exists() || root.child('headAdmin').child(auth.uid).exists() || auth.uid === 'Hmv08XzSqDSvVmYQuijqaEYg0MX2' || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')"
+        ".write": "auth !== null && (auth.uid === $uid || auth.uid === 'Hmv08XzSqDSvVmYQuijqaEYg0MX2' || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com' || root.child('headAdmin').child(auth.uid).val() === true || root.child('admins').child(auth.uid).val() === true)"
       }
     },
-    "ideas": {
-      ".read": "auth != null",
-      "$iid": {
-        ".read": "auth != null",
-        ".write": "auth != null && (auth.uid === newData.child('uid').val() || auth.uid === data.child('uid').val() || root.child('admins').child(auth.uid).exists() || root.child('headAdmin').child(auth.uid).exists() || auth.uid === 'Hmv08XzSqDSvVmYQuijqaEYg0MX2' || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')"
+
+    "admins": {
+      ".read":  "auth !== null",
+      ".write": "auth !== null && (auth.uid === 'Hmv08XzSqDSvVmYQuijqaEYg0MX2' || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com' || root.child('headAdmin').child(auth.uid).val() === true || root.child('admins').child(auth.uid).val() === true)"
+    },
+
+    "headAdmin": {
+      ".read":  "auth !== null",
+      ".write": "auth !== null && (auth.uid === 'Hmv08XzSqDSvVmYQuijqaEYg0MX2' || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com' || root.child('headAdmin').child(auth.uid).val() === true)"
+    },
+
+    "ideas":              { ".read": "auth !== null", ".write": "auth !== null" },
+    "feedback":           { ".read": "auth !== null", ".write": "auth !== null" },
+    "messages":           { ".read": "auth !== null", ".write": "auth !== null" },
+
+    "notifications": {
+      ".read": "auth !== null",
+      ".write": "auth !== null",
+      "global": {
+        ".read": true,
+        ".write": "auth !== null"
       }
     },
-    "feedback": {
-      ".read": "auth != null",
-      "$fid": {
-        ".read": "auth != null",
-        ".write": "auth != null && (auth.uid === newData.child('uid').val() || auth.uid === data.child('uid').val() || root.child('admins').child(auth.uid).exists() || root.child('headAdmin').child(auth.uid).exists() || auth.uid === 'Hmv08XzSqDSvVmYQuijqaEYg0MX2' || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')"
-      }
-    },
-    "messages": {
-      ".read": "auth != null && (root.child('headAdmin').child(auth.uid).exists() || root.child('admins').child(auth.uid).exists() || auth.uid === 'Hmv08XzSqDSvVmYQuijqaEYg0MX2' || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')",
-      "$mid": {
-        ".read": "auth != null && (auth.uid === data.child('fromUid').val() || root.child('headAdmin').child(auth.uid).exists() || root.child('admins').child(auth.uid).exists() || auth.uid === 'Hmv08XzSqDSvVmYQuijqaEYg0MX2' || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')",
-        ".write": "auth != null && (auth.uid === newData.child('fromUid').val() || root.child('headAdmin').child(auth.uid).exists() || root.child('admins').child(auth.uid).exists() || auth.uid === 'Hmv08XzSqDSvVmYQuijqaEYg0MX2' || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')"
-      }
-    },
-    "projects": { ".read": true, ".write": "auth != null && (root.child('admins').child(auth.uid).exists() || root.child('headAdmin').child(auth.uid).exists() || auth.uid === 'Hmv08XzSqDSvVmYQuijqaEYg0MX2' || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')" },
-    "events": { ".read": true, ".write": "auth != null && (root.child('admins').child(auth.uid).exists() || root.child('headAdmin').child(auth.uid).exists() || auth.uid === 'Hmv08XzSqDSvVmYQuijqaEYg0MX2' || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')" },
-    "resources": { ".read": true, ".write": "auth != null && (root.child('admins').child(auth.uid).exists() || root.child('headAdmin').child(auth.uid).exists() || auth.uid === 'Hmv08XzSqDSvVmYQuijqaEYg0MX2' || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')" },
-    "voices": { ".read": true, ".write": "auth != null && (root.child('admins').child(auth.uid).exists() || root.child('headAdmin').child(auth.uid).exists() || auth.uid === 'Hmv08XzSqDSvVmYQuijqaEYg0MX2' || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com' || (auth.uid === newData.child('uid').val()))" },
-    "moments": { ".read": true, ".write": "auth != null && (root.child('admins').child(auth.uid).exists() || root.child('headAdmin').child(auth.uid).exists() || auth.uid === 'Hmv08XzSqDSvVmYQuijqaEYg0MX2' || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')" },
-    "leadership": { ".read": true, ".write": "auth != null && (root.child('admins').child(auth.uid).exists() || root.child('headAdmin').child(auth.uid).exists() || auth.uid === 'Hmv08XzSqDSvVmYQuijqaEYg0MX2' || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')" },
-    "settings": { ".read": true, ".write": "auth != null && (root.child('admins').child(auth.uid).exists() || root.child('headAdmin').child(auth.uid).exists() || auth.uid === 'Hmv08XzSqDSvVmYQuijqaEYg0MX2' || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')" },
-    "notifications": { ".read": "auth != null", ".write": "auth != null && (root.child('admins').child(auth.uid).exists() || root.child('headAdmin').child(auth.uid).exists() || auth.uid === 'Hmv08XzSqDSvVmYQuijqaEYg0MX2' || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')" },
-    "notificationReads": {
-      "$uid": {
-        ".read": "auth != null && ($uid === auth.uid || root.child('admins').child(auth.uid).exists() || root.child('headAdmin').child(auth.uid).exists() || auth.uid === 'Hmv08XzSqDSvVmYQuijqaEYg0MX2' || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')",
-        "$nid": {
-          ".write": "auth != null && ($uid === auth.uid || root.child('admins').child(auth.uid).exists() || root.child('headAdmin').child(auth.uid).exists() || auth.uid === 'Hmv08XzSqDSvVmYQuijqaEYg0MX2' || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')"
-        }
-      }
-    }
+    "notificationReads":  { ".read": "auth !== null", ".write": "auth !== null" }
   }
 }
           </pre>
@@ -493,13 +482,59 @@
       setTimeout(() => window.location.reload(), 600);
     };
 
-    // Settings page: load immediately
-    loadSettingsAndLeadership();
-    // Also reload after admin auth resolves to get any server-side override
-    document.addEventListener('club-auth-changed', () => {
+    let _settingsLoaded = false;
+    function _startSettingsLoader() {
+      if (_settingsLoaded) return;
+      _settingsLoaded = true;
       loadSettingsAndLeadership();
+    }
+    document.addEventListener('club-auth-changed', () => {
+      _settingsLoaded = false;
+      if (ClubAuth.userRole === 'admin' || ClubAuth.userRole === 'headAdmin') _startSettingsLoader();
     });
-    window.addEventListener('club-db-updated', () => loadSettingsAndLeadership());
+    window.addEventListener('club-db-updated', () => { if (_settingsLoaded) loadSettingsAndLeadership(); });
+    if (window.ClubAuth && ClubAuth.currentUser &&
+        (ClubAuth.userRole === 'admin' || ClubAuth.userRole === 'headAdmin')) _startSettingsLoader();
   </script>
+
+
+  <!-- Mobile Admin Bottom Nav (visible on phones/tablets only) -->
+  <nav class="admin-mobile-nav" id="adminMobileNav">
+    <a href="index.html" class="admin-mobile-nav-item" id="mbnDash">
+      <span class="nav-icon">&#128202;</span><span>Dashboard</span>
+    </a>
+    <a href="members.html" class="admin-mobile-nav-item" id="mbnMembers">
+      <span class="nav-icon">&#128101;</span><span>Members</span>
+    </a>
+    <a href="ideas.html" class="admin-mobile-nav-item" id="mbnIdeas">
+      <span class="nav-icon">&#128161;</span><span>Ideas</span>
+      <span class="nav-badge" id="mbnIdeasBadge" style="display:none;"></span>
+    </a>
+    <a href="messages.html" class="admin-mobile-nav-item" id="mbnMessages">
+      <span class="nav-icon">&#9993;&#65039;</span><span>Messages</span>
+      <span class="nav-badge" id="mbnMsgsBadge" style="display:none;"></span>
+    </a>
+    <a href="settings.html" class="admin-mobile-nav-item" id="mbnSettings">
+      <span class="nav-icon">&#9881;&#65039;</span><span>More</span>
+    </a>
+  </nav>
+  <script>
+    (function() {
+      var p = window.location.pathname.split('/').pop() || 'index.html';
+      var map = {
+        'index.html': 'mbnDash',
+        'members.html': 'mbnMembers',
+        'ideas.html': 'mbnIdeas',
+        'messages.html': 'mbnMessages',
+        'settings.html': 'mbnSettings'
+      };
+      var activeId = map[p];
+      if (activeId) {
+        var el = document.getElementById(activeId);
+        if (el) el.classList.add('active');
+      }
+    })();
+  </script>
+
 </body>
 </html>

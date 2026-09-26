@@ -79,23 +79,22 @@
             <input type="text" id="adminMemberSearch" class="form-input" style="max-width: 240px; padding: 0.4rem 0.75rem; font-size: 0.85rem;" placeholder="Search by name or email..." />
           </div>
         </div>
-        <div id="membersPermissionWarning" style="display:none; margin-bottom: 1rem; padding: 0.85rem 1.1rem; background: rgba(245, 158, 11, 0.12); border: 1px solid #f59e0b; border-radius: var(--radius-sm); color: #fef3c7; font-size: 0.84rem; line-height: 1.5;">
-          ⚠️ <strong>Firebase Database Rules Notice:</strong> Firebase rejected read access to <code>/users</code> with <em>Permission Denied</em>. Showing locally cached session only. Please update your Firebase Realtime Database rules (see <code>firebase_keys.txt</code> or Settings) to allow admin reads on <code>users</code> so all registered members appear.
-        </div>
+
         <div class="table-responsive">
           <table class="admin-table">
             <thead>
               <tr>
                 <th>Member</th>
                 <th>Email</th>
-                <th>Section</th>
+                <th>WhatsApp / Phone</th>
+                <th>Grade / Sec</th>
                 <th>Role</th>
                 <th>Joined</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody id="membersTableBody">
-              <tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">Loading members...</td></tr>
+              <tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">Loading members...</td></tr>
             </tbody>
           </table>
         </div>
@@ -119,8 +118,9 @@
       <div style="padding: 1.25rem 1.5rem;">
         <table style="width:100%; font-size:0.88rem; border-collapse:collapse;">
           <tr><td style="color:var(--text-muted); padding:0.4rem 0; width:90px;">Email</td><td id="modalEmail" style="font-weight:500;word-break:break-all;"></td></tr>
+          <tr><td style="color:var(--text-muted); padding:0.4rem 0;">WhatsApp</td><td id="modalPhone" style="font-weight:500;"></td></tr>
           <tr><td style="color:var(--text-muted); padding:0.4rem 0;">Section</td><td id="modalSection" style="font-weight:500;"></td></tr>
-          <tr><td style="color:var(--text-muted); padding:0.4rem 0;">Grade</td><td style="color:var(--accent-cyan); font-size:0.82rem;">Grade 11 (LISC)</td></tr>
+          <tr><td style="color:var(--text-muted); padding:0.4rem 0;">Grade</td><td id="modalGrade" style="color:var(--accent-cyan); font-size:0.82rem;">Grade 11</td></tr>
           <tr><td style="color:var(--text-muted); padding:0.4rem 0;">Joined</td><td id="modalJoined"></td></tr>
           <tr><td style="color:var(--text-muted); padding:0.4rem 0;">Last Login</td><td id="modalLastLogin"></td></tr>
         </table>
@@ -156,7 +156,7 @@
       } catch (err) {
         console.error('loadMembers error:', err);
         document.getElementById('membersTableBody').innerHTML =
-          `<tr><td colspan="6" style="text-align:center;color:var(--accent-rose);padding:2rem;">Error loading members. Please refresh.</td></tr>`;
+          `<tr><td colspan="7" style="text-align:center;color:var(--accent-rose);padding:2rem;">Error loading members. Please refresh.</td></tr>`;
       }
     }
 
@@ -189,7 +189,9 @@
         list = list.filter(u =>
           (u.displayName && u.displayName.toLowerCase().includes(search)) ||
           (u.email && u.email.toLowerCase().includes(search)) ||
-          (u.section && u.section.toLowerCase().includes(search))
+          (u.section && u.section.toLowerCase().includes(search)) ||
+          (u.phone && u.phone.toLowerCase().includes(search)) ||
+          (u.grade && ('grade ' + u.grade).includes(search))
         );
       }
 
@@ -199,7 +201,7 @@
       }
 
       if (list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 2rem; color:var(--text-muted);">No members match your search.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 2rem; color:var(--text-muted);">No members match your search.</td></tr>`;
         return;
       }
 
@@ -210,6 +212,7 @@
       tbody.innerHTML = list.map(u => {
         const role = getUserRole(u);
         const section = u.section || '—';
+        const gradeBadge = u.grade ? `Gr ${u.grade} – ${section}` : (u.section ? `Gr 11 – ${section}` : '—');
         const badgeClass = role === 'headAdmin' ? 'badge-rose' : role === 'admin' ? 'badge-purple' : 'badge-cyan';
         const roleLabel = role === 'headAdmin' ? '⭐ Head Admin' : role === 'admin' ? '🔑 Admin' : '👤 Member';
 
@@ -254,7 +257,8 @@
               </div>
             </td>
             <td style="font-size:0.82rem;word-break:break-all;">${u.email || '—'}</td>
-            <td><span class="badge badge-cyan" style="font-size:0.72rem;">${section}</span></td>
+            <td style="font-size:0.82rem;">${u.phone ? `<a href="https://wa.me/${u.phone.replace(/[^0-9]/g,'')}" target="_blank" style="color:var(--accent-cyan);text-decoration:none;" title="Open WhatsApp">📱 ${u.phone}</a>` : '<span style="color:var(--text-muted);">—</span>'}</td>
+            <td><span class="badge badge-cyan" style="font-size:0.72rem;">${gradeBadge}</span></td>
             <td><span class="badge ${badgeClass}" style="font-size:0.72rem;">${roleLabel}</span></td>
             <td style="font-size:0.78rem;color:var(--text-muted);">${u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-GB', {day:'2-digit',month:'short',year:'numeric'}) : '—'}</td>
             <td>
@@ -285,7 +289,19 @@
       roleEl.textContent = role === 'headAdmin' ? 'HEAD ADMIN' : role === 'admin' ? 'ADMIN' : 'MEMBER';
       roleEl.className = `badge ${role === 'headAdmin' ? 'badge-rose' : role === 'admin' ? 'badge-purple' : 'badge-cyan'}`;
       document.getElementById('modalEmail').textContent = u.email || '—';
+      const modalPhoneEl = document.getElementById('modalPhone');
+      if (modalPhoneEl) {
+        if (u.phone) {
+          const cleanPhone = u.phone.replace(/[^0-9]/g, '');
+          modalPhoneEl.innerHTML = `<a href="https://wa.me/${cleanPhone}" target="_blank" style="color:var(--accent-cyan);text-decoration:none;" title="Open WhatsApp">📱 ${u.phone} ↗</a>`;
+          modalPhoneEl.style.color = '';
+        } else {
+          modalPhoneEl.textContent = 'Not provided';
+          modalPhoneEl.style.color = 'var(--text-muted)';
+        }
+      }
       document.getElementById('modalSection').textContent = u.section || 'Not set';
+      document.getElementById('modalGrade').textContent = u.grade ? ('Grade ' + u.grade) : (u.section ? 'Grade 11' : '—');
       document.getElementById('modalJoined').textContent = u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'}) : '—';
       document.getElementById('modalLastLogin').textContent = u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'}) : '—';
       document.getElementById('modalBio').textContent = u.bio || 'This member hasn\'t written a bio yet.';
@@ -402,22 +418,92 @@
       if (e.target === this) this.classList.remove('active');
     });
 
-    loadMembers();
+    // ── Auth-gated boot ────────────────────────────────────────────────────
+    // Never fire loadMembers() immediately — always wait until ClubAuth has
+    // confirmed the user's role. This prevents the race-condition that makes
+    // Firebase reject the /users read while still unauthenticated.
+    let _membersLoaded = false;
+    let _onValueUnsub = null;
 
-    // club-auth-changed: reload when admin authenticates
-    document.addEventListener('club-auth-changed', () => loadMembers());
+    function bootMembersWhenReady() {
+      // If ClubAuth is already resolved and user is admin, load right away
+      if (window.ClubAuth && ClubAuth.currentUser &&
+          (ClubAuth.userRole === 'admin' || ClubAuth.userRole === 'headAdmin')) {
+        _startMembersLoader();
+      }
+      // Otherwise wait for club-auth-changed (fired by auth.js after resolveRole())
+    }
 
-    window.addEventListener('club-permission-denied', (e) => {
-      if (e.detail && e.detail.path && e.detail.path.startsWith('users')) {
-        const warn = document.getElementById('membersPermissionWarning');
-        if (warn) warn.style.display = 'block';
+    function _startMembersLoader() {
+      if (_membersLoaded) return;
+      _membersLoaded = true;
+
+      // Hide permission warning (clear any stale state from a prior session)
+      const warn = document.getElementById('membersPermissionWarning');
+      if (warn) warn.style.display = 'none';
+
+      loadMembers();
+
+      // Set up real-time listener AFTER auth is confirmed (avoids pre-auth permission denied)
+      if (window.ClubDB && ClubDB.onValue && !_onValueUnsub) {
+        _onValueUnsub = ClubDB.onValue('users', () => {
+          if (_membersLoaded) loadMembers();
+        });
+      }
+    }
+
+    // club-auth-changed fires after resolveRole() completes
+    document.addEventListener('club-auth-changed', () => {
+      _membersLoaded = false; // allow re-init on role change
+      if (ClubAuth.userRole === 'admin' || ClubAuth.userRole === 'headAdmin') {
+        _startMembersLoader();
       }
     });
 
-    // ClubDB.onValue: single real-time listener — no club-db-updated needed (avoids triple fetch)
-    if (window.ClubDB && ClubDB.onValue) {
-      ClubDB.onValue('users', () => loadMembers());
-    }
+
+
+    // Try immediately in case auth.js already ran before this script
+    bootMembersWhenReady();
   </script>
+
+
+  <!-- Mobile Admin Bottom Nav (visible on phones/tablets only) -->
+  <nav class="admin-mobile-nav" id="adminMobileNav">
+    <a href="index.html" class="admin-mobile-nav-item" id="mbnDash">
+      <span class="nav-icon">&#128202;</span><span>Dashboard</span>
+    </a>
+    <a href="members.html" class="admin-mobile-nav-item" id="mbnMembers">
+      <span class="nav-icon">&#128101;</span><span>Members</span>
+    </a>
+    <a href="ideas.html" class="admin-mobile-nav-item" id="mbnIdeas">
+      <span class="nav-icon">&#128161;</span><span>Ideas</span>
+      <span class="nav-badge" id="mbnIdeasBadge" style="display:none;"></span>
+    </a>
+    <a href="messages.html" class="admin-mobile-nav-item" id="mbnMessages">
+      <span class="nav-icon">&#9993;&#65039;</span><span>Messages</span>
+      <span class="nav-badge" id="mbnMsgsBadge" style="display:none;"></span>
+    </a>
+    <a href="settings.html" class="admin-mobile-nav-item" id="mbnSettings">
+      <span class="nav-icon">&#9881;&#65039;</span><span>More</span>
+    </a>
+  </nav>
+  <script>
+    (function() {
+      var p = window.location.pathname.split('/').pop() || 'index.html';
+      var map = {
+        'index.html': 'mbnDash',
+        'members.html': 'mbnMembers',
+        'ideas.html': 'mbnIdeas',
+        'messages.html': 'mbnMessages',
+        'settings.html': 'mbnSettings'
+      };
+      var activeId = map[p];
+      if (activeId) {
+        var el = document.getElementById(activeId);
+        if (el) el.classList.add('active');
+      }
+    })();
+  </script>
+
 </body>
 </html>

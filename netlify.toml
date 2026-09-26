@@ -1,0 +1,84 @@
+[build]
+  publish = "."
+
+[[redirects]]
+  from = "/event"
+  to = "/event.html"
+  status = 200
+
+[[redirects]]
+  from = "/project"
+  to = "/project.html"
+  status = 200
+
+[[redirects]]
+  from = "/events"
+  to = "/events.html"
+  status = 200
+
+[[redirects]]
+  from = "/projects"
+  to = "/projects.html"
+  status = 200
+
+[[redirects]]
+  from = "/moments"
+  to = "/moments.html"
+  status = 200
+
+[[redirects]]
+  from = "/voices"
+  to = "/voices.html"
+  status = 200
+
+[[redirects]]
+  from = "/resources"
+  to = "/resources.html"
+  status = 200
+
+[[redirects]]
+  from = "/profile"
+  to = "/profile.html"
+  status = 200
+
+[[redirects]]
+  from = "/about"
+  to = "/about.html"
+  status = 200
+
+[[redirects]]
+  from = "/login"
+  to = "/login.html"
+  status = 200
+
+[[redirects]]
+  from = "/register"
+  to = "/register.html"
+  status = 200
+
+[[redirects]]
+  from = "/notifications"
+  to = "/notifications.html"
+  status = 200
+
+[[redirects]]
+  from = "/submit-idea"
+  to = "/submit-idea.html"
+  status = 200
+
+[[redirects]]
+  from = "/submit-feedback"
+  to = "/submit-feedback.html"
+  status = 200
+
+[[redirects]]
+  from = "/contact-admin"
+  to = "/contact-admin.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"

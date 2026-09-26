@@ -144,7 +144,7 @@ async function initHomePageDynamicSections() {
                 <span>⏰ ${next.time || 'TBD'}</span>
               </div>
               <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-                <a href="event?id=${next.id}" class="btn btn-primary btn-sm">Event Details & RSVP</a>
+                <a href="event.html?id=${next.id}" class="btn btn-primary btn-sm">Event Details & RSVP</a>
                 <a href="events.html" class="btn btn-outline btn-sm">All Events</a>
               </div>
             </div>
@@ -184,7 +184,7 @@ async function initHomePageDynamicSections() {
           <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1.25rem;">
             <strong>Tech:</strong> ${p.technology || 'Engineering'}
           </div>
-          <a href="project?id=${p.id}" class="btn btn-secondary btn-sm" style="width: 100%;">View Project Blueprint</a>
+          <a href="project.html?id=${p.id}" class="btn btn-secondary btn-sm" style="width: 100%;">View Project Blueprint</a>
         </div>
       `).join('');
     } else {
@@ -242,7 +242,7 @@ async function initHomePageDynamicSections() {
             </div>
             <div style="border-top: 1px solid var(--border-subtle); padding-top: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
               <strong style="font-size: 0.9rem;">${v.displayName || 'Member'}</strong>
-              <span style="font-size: 0.78rem; color: var(--text-muted);">${v.section ? 'Grade 11 \u2013 ' + v.section : (v.grade || 'Member')}</span>
+              <span style="font-size: 0.78rem; color: var(--text-muted);">${v.section ? ((v.grade ? (v.grade.toString().toLowerCase().includes('grade') ? v.grade : 'Grade ' + v.grade) : 'Grade 11') + ' \u2013 ' + v.section) : (v.grade || 'Member')}</span>
             </div>
           </div>
         `;

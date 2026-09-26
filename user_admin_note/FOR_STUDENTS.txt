@@ -6,7 +6,7 @@ Hey everyone! 👋
 
 Our official Science & IT Club website is now live!
 
-🌐 [YOUR WEBSITE LINK HERE]
+🌐 https://liverpool-club.netlify.app
 
 👤 Create your free member account with your school email
    to unlock everything below 👇

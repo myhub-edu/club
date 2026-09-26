@@ -2,13 +2,13 @@
   SCIENCE & IT CLUB — ADMIN REFERENCE NOTES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-ADMIN PORTAL:  [YOUR SITE LINK]/admin/
+ADMIN PORTAL:  https://liverpool-club.netlify.app/admin/
 
 HOW TO GET ADMIN ACCESS:
   1. Register on the website with your own email (Google Sign-In)
   2. Contact the developer — he will promote your account to Admin
      or Head Admin from the Members panel
-  3. Once promoted, go to [YOUR SITE LINK]/admin/ and you're in
+  3. Once promoted, go to https://liverpool-club.netlify.app/admin/ and you're in
 
   ℹ️  You do NOT get a separate admin password.
       You log in with the same account you registered with.

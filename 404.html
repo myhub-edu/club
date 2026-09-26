@@ -6,6 +6,20 @@
   <title>Page Not Found | Science &amp; IT Club</title>
   <link rel="icon" type="image/png" href="assets/logo/club_logo.png" />
   <link rel="stylesheet" href="css/global.css" />
+  <script>
+    // Smart 404 auto-recovery: redirect clean URLs (e.g. /event?id=123 -> event.html?id=123)
+    (function() {
+      const path = window.location.pathname;
+      const cleanPages = ['event', 'project', 'events', 'projects', 'moments', 'voices', 'resources', 'about', 'login', 'register', 'notifications', 'submit-idea', 'submit-feedback', 'contact-admin', 'profile'];
+      for (const p of cleanPages) {
+        if (path.endsWith('/' + p) || path.endsWith('/' + p + '/')) {
+          const prefix = path.includes('/admin/') ? '../' : '';
+          window.location.replace(prefix + p + '.html' + window.location.search);
+          return;
+        }
+      }
+    })();
+  </script>
 </head>
 <body style="min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 2rem 1rem;">
   <div class="ambient-glow"></div>

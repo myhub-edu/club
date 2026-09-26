@@ -4,14 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Dashboard | Science & IT Club</title>
-  
-    <link rel="icon" type="image/png" href="../assets/logo/club_logo.png" />
+  <link rel="icon" type="image/png" href="../assets/logo/club_logo.png" />
   <link rel="apple-touch-icon" href="../assets/logo/club_logo.png" />
-  <link rel="shortcut icon" href="../assets/logo/club_logo.png" />
   <link rel="stylesheet" href="../css/global.css" />
-    <link rel="icon" type="image/png" href="../assets/logo/club_logo.png" />
-  <link rel="apple-touch-icon" href="../assets/logo/club_logo.png" />
-  <link rel="shortcut icon" href="../assets/logo/club_logo.png" />
   <link rel="stylesheet" href="../css/admin.css" />
   
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -195,7 +190,7 @@
       </div>
 
       <!-- Recent Submissions Overview -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 1.5rem;">
+      <div class="admin-dashboard-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px,1fr)); gap: 1.5rem;">
         <!-- Ideas Queue Preview -->
         <div class="card">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
@@ -300,10 +295,65 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-      refreshDashboardStats();
-      window.addEventListener('club-db-updated', () => refreshDashboardStats());
-      document.addEventListener('club-auth-changed', () => refreshDashboardStats());
+      // ── Auth-gated boot ────────────────────────────────────────────────────
+      // Wait for confirmed admin role before reading restricted Firebase paths
+      let _dashLoaded = false;
+      function _startDashLoader() {
+        if (_dashLoaded) return;
+        _dashLoaded = true;
+        refreshDashboardStats();
+        window.addEventListener('club-db-updated', () => { if (_dashLoaded) refreshDashboardStats(); });
+      }
+      document.addEventListener('club-auth-changed', () => {
+        _dashLoaded = false;
+        if (ClubAuth.userRole === 'admin' || ClubAuth.userRole === 'headAdmin') _startDashLoader();
+      });
+      // Fallback: if auth already resolved before this ran
+      if (window.ClubAuth && ClubAuth.currentUser &&
+          (ClubAuth.userRole === 'admin' || ClubAuth.userRole === 'headAdmin')) {
+        _startDashLoader();
+      }
     });
   </script>
+
+
+  <!-- Mobile Admin Bottom Nav (visible on phones/tablets only) -->
+  <nav class="admin-mobile-nav" id="adminMobileNav">
+    <a href="index.html" class="admin-mobile-nav-item" id="mbnDash">
+      <span class="nav-icon">&#128202;</span><span>Dashboard</span>
+    </a>
+    <a href="members.html" class="admin-mobile-nav-item" id="mbnMembers">
+      <span class="nav-icon">&#128101;</span><span>Members</span>
+    </a>
+    <a href="ideas.html" class="admin-mobile-nav-item" id="mbnIdeas">
+      <span class="nav-icon">&#128161;</span><span>Ideas</span>
+      <span class="nav-badge" id="mbnIdeasBadge" style="display:none;"></span>
+    </a>
+    <a href="messages.html" class="admin-mobile-nav-item" id="mbnMessages">
+      <span class="nav-icon">&#9993;&#65039;</span><span>Messages</span>
+      <span class="nav-badge" id="mbnMsgsBadge" style="display:none;"></span>
+    </a>
+    <a href="settings.html" class="admin-mobile-nav-item" id="mbnSettings">
+      <span class="nav-icon">&#9881;&#65039;</span><span>More</span>
+    </a>
+  </nav>
+  <script>
+    (function() {
+      var p = window.location.pathname.split('/').pop() || 'index.html';
+      var map = {
+        'index.html': 'mbnDash',
+        'members.html': 'mbnMembers',
+        'ideas.html': 'mbnIdeas',
+        'messages.html': 'mbnMessages',
+        'settings.html': 'mbnSettings'
+      };
+      var activeId = map[p];
+      if (activeId) {
+        var el = document.getElementById(activeId);
+        if (el) el.classList.add('active');
+      }
+    })();
+  </script>
+
 </body>
 </html>

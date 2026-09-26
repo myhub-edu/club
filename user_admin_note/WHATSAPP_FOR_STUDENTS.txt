@@ -4,7 +4,7 @@ Hey everyone! 👋
 
 Our official club website is now live 🎉
 
-🌐 *[YOUR WEBSITE LINK HERE]*
+🌐 https://liverpool-club.netlify.app/
 
 👤 Sign up with your Google account and get access to:
 

@@ -194,6 +194,26 @@ window.AdminApp = {
       document.body.style.overflow = '';
     }
 
+    // Inject close (✕) button into sidebar brand if not already in HTML
+    const brand = sidebar ? sidebar.querySelector('.admin-sidebar-brand') : null;
+    if (brand && !brand.querySelector('.admin-sidebar-close-btn')) {
+      const closeBtn = document.createElement('button');
+      closeBtn.className = 'admin-sidebar-close-btn';
+      closeBtn.id = 'adminSidebarCloseBtn';
+      closeBtn.title = 'Close menu';
+      closeBtn.innerHTML = '&#10005;';
+      closeBtn.style.marginLeft = 'auto';
+      closeBtn.addEventListener('click', closeSidebar);
+      brand.appendChild(closeBtn);
+    }
+
+    // Wire existing close button (if it was in HTML)
+    const existingClose = document.getElementById('adminSidebarCloseBtn');
+    if (existingClose && !existingClose._bound) {
+      existingClose.addEventListener('click', closeSidebar);
+      existingClose._bound = true;
+    }
+
     if (toggleBtn) toggleBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       sidebar && sidebar.classList.contains('active') ? closeSidebar() : openSidebar();
@@ -208,6 +228,16 @@ window.AdminApp = {
           if (window.innerWidth <= 991) closeSidebar();
         });
       });
+    }
+
+    // Swipe-left gesture to close sidebar on touch devices
+    if (sidebar) {
+      let touchStartX = 0;
+      sidebar.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; }, { passive: true });
+      sidebar.addEventListener('touchend', (e) => {
+        const dx = touchStartX - e.changedTouches[0].clientX;
+        if (dx > 60) closeSidebar(); // swipe left 60px+ = close
+      }, { passive: true });
     }
   },
 

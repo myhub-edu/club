@@ -2,10 +2,11 @@
 
 Hey! You've been added as an *Admin* on the club website.
 
-🌐 Admin Panel: *[YOUR SITE LINK]/admin/*
+🌐 Admin Panel: https://liverpool-club.netlify.app/admin/
 
 📌 How to log in:
-Register on the website using your Google account (same email you use normally). The developer has already given your account admin access — just sign in and go to /admin/
+Register on the website using your Google account (same email you use normally). 
+The developer gives you admin access — just sign in and go to https://liverpool-club.netlify.app/admin/
 
 *What you can do as Admin:*
 
@@ -20,5 +21,3 @@ Register on the website using your Google account (same email you use normally).
 *Head Admin also gets:*
 ⚙️ Update club Settings
 👑 Promote Admins to Head Admin
-
-Any issues? Contact the developer.

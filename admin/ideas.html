@@ -295,13 +295,83 @@
     };
 
     document.getElementById('adminIdeaSearch').addEventListener('input', renderTable);
-    loadAdminIdeas();
-    // club-auth-changed: reload when admin authenticates
-    document.addEventListener('club-auth-changed', () => loadAdminIdeas());
-    // ClubDB.onValue: single real-time listener — no club-db-updated needed (avoids double fetch)
-    if (window.ClubDB && ClubDB.onValue) {
-      ClubDB.onValue('ideas', () => loadAdminIdeas());
+
+    // ── Auth-gated boot ────────────────────────────────────────────────────
+    let _ideasLoaded = false;
+    let _ideasUnsub = null;
+
+    function _startIdeasLoader() {
+      if (_ideasLoaded) return;
+      _ideasLoaded = true;
+      const warn = document.getElementById('ideasPermissionWarning');
+      if (warn) warn.style.display = 'none';
+      loadAdminIdeas();
+      if (window.ClubDB && ClubDB.onValue && !_ideasUnsub) {
+        _ideasUnsub = ClubDB.onValue('ideas', () => {
+          if (_ideasLoaded) loadAdminIdeas();
+        });
+      }
+    }
+
+    document.addEventListener('club-auth-changed', () => {
+      _ideasLoaded = false;
+      if (ClubAuth.userRole === 'admin' || ClubAuth.userRole === 'headAdmin') {
+        _startIdeasLoader();
+      }
+    });
+
+    window.addEventListener('club-permission-denied', (e) => {
+      if (e.detail && e.detail.path && e.detail.path.startsWith('ideas') && _ideasLoaded) {
+        const warn = document.getElementById('ideasPermissionWarning');
+        if (warn) warn.style.display = 'block';
+      }
+    });
+
+    // Try immediately in case auth.js already ran before this script
+    if (window.ClubAuth && ClubAuth.currentUser &&
+        (ClubAuth.userRole === 'admin' || ClubAuth.userRole === 'headAdmin')) {
+      _startIdeasLoader();
     }
   </script>
+
+
+  <!-- Mobile Admin Bottom Nav (visible on phones/tablets only) -->
+  <nav class="admin-mobile-nav" id="adminMobileNav">
+    <a href="index.html" class="admin-mobile-nav-item" id="mbnDash">
+      <span class="nav-icon">&#128202;</span><span>Dashboard</span>
+    </a>
+    <a href="members.html" class="admin-mobile-nav-item" id="mbnMembers">
+      <span class="nav-icon">&#128101;</span><span>Members</span>
+    </a>
+    <a href="ideas.html" class="admin-mobile-nav-item" id="mbnIdeas">
+      <span class="nav-icon">&#128161;</span><span>Ideas</span>
+      <span class="nav-badge" id="mbnIdeasBadge" style="display:none;"></span>
+    </a>
+    <a href="messages.html" class="admin-mobile-nav-item" id="mbnMessages">
+      <span class="nav-icon">&#9993;&#65039;</span><span>Messages</span>
+      <span class="nav-badge" id="mbnMsgsBadge" style="display:none;"></span>
+    </a>
+    <a href="settings.html" class="admin-mobile-nav-item" id="mbnSettings">
+      <span class="nav-icon">&#9881;&#65039;</span><span>More</span>
+    </a>
+  </nav>
+  <script>
+    (function() {
+      var p = window.location.pathname.split('/').pop() || 'index.html';
+      var map = {
+        'index.html': 'mbnDash',
+        'members.html': 'mbnMembers',
+        'ideas.html': 'mbnIdeas',
+        'messages.html': 'mbnMessages',
+        'settings.html': 'mbnSettings'
+      };
+      var activeId = map[p];
+      if (activeId) {
+        var el = document.getElementById(activeId);
+        if (el) el.classList.add('active');
+      }
+    })();
+  </script>
+
 </body>
 </html>

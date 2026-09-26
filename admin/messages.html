@@ -285,15 +285,62 @@
     };
 
     document.getElementById('adminMsgSearch').addEventListener('input', renderTable);
-    loadMessages();
-
-    // Real-time listener: auto-refresh inbox when new messages arrive
-    if (window.ClubDB && ClubDB.onValue) {
-      ClubDB.onValue('messages', () => loadMessages());
+    let _msgsLoaded = false;
+    function _startMsgsLoader() {
+      if (_msgsLoaded) return;
+      _msgsLoaded = true;
+      loadMessages();
+      if (window.ClubDB && ClubDB.onValue) {
+        ClubDB.onValue('messages', () => { if (_msgsLoaded) loadMessages(); });
+      }
     }
-
-    // club-db-updated: reload from DB (not just re-render stale cache)
-    window.addEventListener('club-db-updated', () => loadMessages());
+    document.addEventListener('club-auth-changed', () => {
+      _msgsLoaded = false;
+      if (ClubAuth.userRole === 'admin' || ClubAuth.userRole === 'headAdmin') _startMsgsLoader();
+    });
+    window.addEventListener('club-db-updated', () => { if (_msgsLoaded) loadMessages(); });
+    if (window.ClubAuth && ClubAuth.currentUser &&
+        (ClubAuth.userRole === 'admin' || ClubAuth.userRole === 'headAdmin')) _startMsgsLoader();
   </script>
+
+
+  <!-- Mobile Admin Bottom Nav (visible on phones/tablets only) -->
+  <nav class="admin-mobile-nav" id="adminMobileNav">
+    <a href="index.html" class="admin-mobile-nav-item" id="mbnDash">
+      <span class="nav-icon">&#128202;</span><span>Dashboard</span>
+    </a>
+    <a href="members.html" class="admin-mobile-nav-item" id="mbnMembers">
+      <span class="nav-icon">&#128101;</span><span>Members</span>
+    </a>
+    <a href="ideas.html" class="admin-mobile-nav-item" id="mbnIdeas">
+      <span class="nav-icon">&#128161;</span><span>Ideas</span>
+      <span class="nav-badge" id="mbnIdeasBadge" style="display:none;"></span>
+    </a>
+    <a href="messages.html" class="admin-mobile-nav-item" id="mbnMessages">
+      <span class="nav-icon">&#9993;&#65039;</span><span>Messages</span>
+      <span class="nav-badge" id="mbnMsgsBadge" style="display:none;"></span>
+    </a>
+    <a href="settings.html" class="admin-mobile-nav-item" id="mbnSettings">
+      <span class="nav-icon">&#9881;&#65039;</span><span>More</span>
+    </a>
+  </nav>
+  <script>
+    (function() {
+      var p = window.location.pathname.split('/').pop() || 'index.html';
+      var map = {
+        'index.html': 'mbnDash',
+        'members.html': 'mbnMembers',
+        'ideas.html': 'mbnIdeas',
+        'messages.html': 'mbnMessages',
+        'settings.html': 'mbnSettings'
+      };
+      var activeId = map[p];
+      if (activeId) {
+        var el = document.getElementById(activeId);
+        if (el) el.classList.add('active');
+      }
+    })();
+  </script>
+
 </body>
 </html>

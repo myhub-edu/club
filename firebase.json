@@ -1,0 +1,24 @@
+{
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**",
+      "*.md",
+      "test-firebase.mjs"
+    ],
+    "cleanUrls": true,
+    "trailingSlash": false,
+    "rewrites": [
+      {
+        "source": "/event",
+        "destination": "/event.html"
+      },
+      {
+        "source": "/project",
+        "destination": "/project.html"
+      }
+    ]
+  }
+}

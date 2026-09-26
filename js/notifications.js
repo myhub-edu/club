@@ -184,26 +184,40 @@ window.ClubNotifications = {
     });
 
     // Re-fetch and re-listen whenever auth resolves or changes
-    document.addEventListener('club-auth-changed', () => {
-      this.fetchAndRender();
-      this._startRealtimeListeners();
+    // Only act when there is a confirmed logged-in user (not guest or pre-auth cache)
+    document.addEventListener('club-auth-changed', (e) => {
+      const role = e.detail && e.detail.role;
+      const user = e.detail && e.detail.user;
+      if (user && role && role !== 'guest') {
+        this.fetchAndRender();
+        this._startRealtimeListeners();
+      } else if (!user) {
+        // User logged out — tear down listeners and clear badge
+        if (this._unsubscribeGlobal) { try { this._unsubscribeGlobal(); } catch (_) {} this._unsubscribeGlobal = null; }
+        if (this._unsubscribePersonal) { try { this._unsubscribePersonal(); } catch (_) {} this._unsubscribePersonal = null; }
+        const badge = document.getElementById('unreadNotifCount');
+        if (badge) { badge.textContent = '0'; badge.style.display = 'none'; }
+      }
     });
   },
 
   _startRealtimeListeners: function() {
     const user = window.ClubAuth && ClubAuth.currentUser;
 
-    // Tear down old listeners
-    if (this._unsubscribeGlobal) { try { this._unsubscribeGlobal(); } catch (_) {} }
-    if (this._unsubscribePersonal) { try { this._unsubscribePersonal(); } catch (_) {} }
+    // Don't set up listeners for guests — Firebase requires auth !== null
+    if (!user || !user.uid) return;
 
-    // Always listen to global announcements in real time
+    // Tear down old listeners before creating new ones
+    if (this._unsubscribeGlobal) { try { this._unsubscribeGlobal(); } catch (_) {} this._unsubscribeGlobal = null; }
+    if (this._unsubscribePersonal) { try { this._unsubscribePersonal(); } catch (_) {} this._unsubscribePersonal = null; }
+
     if (window.ClubDB && ClubDB.isLive()) {
-      this._unsubscribeGlobal = ClubDB.onValue('notifications/global', () => {
-        this.fetchAndRender();
-      });
+      // Wait a tick to ensure Firebase auth token has propagated to the SDK
+      setTimeout(() => {
+        this._unsubscribeGlobal = ClubDB.onValue('notifications/global', () => {
+          this.fetchAndRender();
+        });
 
-      if (user && user.uid) {
         this._unsubscribePersonal = ClubDB.onValue(`notifications/users/${user.uid}`, (val) => {
           this.fetchAndRender();
           // Show OS notification for brand-new personal notifs
@@ -223,7 +237,7 @@ window.ClubNotifications = {
             }
           }
         });
-      }
+      }, 500); // 500ms grace period for Firebase auth token to propagate
     }
   },
 
@@ -262,11 +276,21 @@ window.ClubNotifications = {
     const user = window.ClubAuth && ClubAuth.currentUser;
     const uid = user ? user.uid : null;
 
+    // Don't read from Firebase unless user is logged in — Firebase requires auth !== null
+    if (!user || !uid) {
+      this.notifications = [];
+      this.unreadCount = 0;
+      this.renderDropdown();
+      this.renderFullPageList();
+      return;
+    }
+
     const [globalNotifs, userNotifs, readReceipts] = await Promise.all([
       ClubDB.get('notifications/global').catch(() => ({})),
-      uid ? ClubDB.get(`notifications/users/${uid}`).catch(() => ({})) : Promise.resolve({}),
-      uid ? ClubDB.get(`notificationReads/${uid}`).catch(() => ({})) : Promise.resolve({})
+      ClubDB.get(`notifications/users/${uid}`).catch(() => ({})),
+      ClubDB.get(`notificationReads/${uid}`).catch(() => ({}))
     ]);
+
 
     const g = globalNotifs || {};
     const u = userNotifs || {};
@@ -326,8 +350,22 @@ window.ClubNotifications = {
 
     // Explicit URL provided on notification object
     if (n.url) {
-      const rawUrl = String(n.url).trim().replace(/^\/+/, '');
+      let rawUrl = String(n.url).trim().replace(/^\/+/, '');
       if (rawUrl && rawUrl !== 'notifications.html') {
+        // Defensive normalization for any existing notifications stored in Firebase without .html
+        if (rawUrl.startsWith('event?')) {
+          rawUrl = 'event.html' + rawUrl.slice(5);
+        } else if (rawUrl === 'event') {
+          rawUrl = 'event.html';
+        } else if (rawUrl.startsWith('project?')) {
+          rawUrl = 'project.html' + rawUrl.slice(7);
+        } else if (rawUrl === 'project') {
+          rawUrl = 'project.html';
+        } else if (rawUrl.startsWith('events?')) {
+          rawUrl = 'events.html' + rawUrl.slice(6);
+        } else if (rawUrl.startsWith('projects?')) {
+          rawUrl = 'projects.html' + rawUrl.slice(8);
+        }
         return rootPrefix + rawUrl;
       }
     }
@@ -423,6 +461,18 @@ window.ClubNotifications = {
   renderFullPageList: function() {
     const container = document.getElementById('fullNotificationList');
     if (!container) return;
+
+    const user = window.ClubAuth && ClubAuth.currentUser;
+    if (!user) {
+      container.innerHTML = `
+        <div class="card" style="text-align:center; padding:3.5rem 1.5rem;">
+          <div style="font-size:2.8rem; margin-bottom:0.75rem;">🔒</div>
+          <h3 style="margin-bottom:0.5rem;">Sign In to View Notifications</h3>
+          <p style="color:var(--text-muted); margin-bottom:1.5rem; font-size:0.92rem;">Please sign in with your student account to view announcements and club updates.</p>
+          <a href="login.html?redirect=notifications.html" class="btn btn-primary btn-sm">Member Login →</a>
+        </div>`;
+      return;
+    }
 
     if (this.notifications.length === 0) {
       container.innerHTML = `

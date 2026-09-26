@@ -29,6 +29,13 @@ window.ClubAuth = {
 
     // 2. Listen to Firebase Auth if SDK is loaded
     if (typeof firebase !== 'undefined' && firebase.auth) {
+      // Ensure session stays permanently in browser storage until the user explicitly signs out
+      try {
+        await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+      } catch (e) {
+        console.warn("[ClubAuth] setPersistence note:", e);
+      }
+
       // Check for Google redirect result (in case popup was blocked or used redirect mode)
       try {
         const redirectResult = await firebase.auth().getRedirectResult();
@@ -46,13 +53,48 @@ window.ClubAuth = {
 
       firebase.auth().onAuthStateChanged(async (user) => {
         if (user) {
+          // Verify with Firebase server that this user account still exists
+          // (Handles when an admin deletes the user in Firebase Console)
+          try {
+            await user.reload();
+          } catch (reloadErr) {
+            if (reloadErr && (
+              reloadErr.code === 'auth/user-not-found' ||
+              reloadErr.code === 'auth/user-disabled' ||
+              reloadErr.code === 'auth/invalid-user-token'
+            )) {
+              console.warn("[ClubAuth] User account no longer exists in Firebase Auth. Logging out.");
+              await firebase.auth().signOut().catch(() => {});
+              this.currentUser = null;
+              this.userRole = "guest";
+              localStorage.removeItem(AUTH_STORAGE_KEY);
+              this.syncNavbarUI();
+              document.dispatchEvent(new CustomEvent('club-auth-changed', {
+                detail: { role: 'guest', user: null }
+              }));
+              if (window.location.pathname.includes('/admin/')) {
+                window.location.href = '../login.html';
+              }
+              return;
+            }
+          }
+
+          // User is confirmed valid by Firebase
           await this.handleFirebaseUser(user);
         } else {
-          // If no local session exists, mark as guest
-          if (!localStorage.getItem(AUTH_STORAGE_KEY)) {
+          // Firebase confirmed: NO user is logged in (signed out, or auth accounts deleted in Firebase)
+          if (this.currentUser || localStorage.getItem(AUTH_STORAGE_KEY)) {
+            console.log("[ClubAuth] Firebase Auth is logged out. Clearing local session.");
             this.currentUser = null;
             this.userRole = "guest";
+            localStorage.removeItem(AUTH_STORAGE_KEY);
             this.syncNavbarUI();
+            document.dispatchEvent(new CustomEvent('club-auth-changed', {
+              detail: { role: 'guest', user: null }
+            }));
+            if (window.location.pathname.includes('/admin/')) {
+              window.location.href = '../login.html';
+            }
           }
         }
       });
@@ -62,7 +104,11 @@ window.ClubAuth = {
     this.injectOnboardingModal();
 
     // If active user is missing class section, trigger onboarding modal
-    if (this.currentUser && (!this.currentUser.section || !this.currentUser.displayName || this.currentUser.displayName.includes('@')) && this.userRole !== 'headAdmin') {
+    // Only show if profile is genuinely incomplete (never show to users who already filled everything in)
+    const _u = this.currentUser;
+    const _profileIncomplete = _u && this.userRole !== 'headAdmin' &&
+      (!_u.section || !_u.grade || !_u.displayName || _u.displayName.includes('@'));
+    if (_profileIncomplete) {
       setTimeout(() => this.showOnboardingModal(), 350);
     }
   },
@@ -94,6 +140,7 @@ window.ClubAuth = {
         displayName: fallbackName,
         email: user.email || '',
         photoURL: user.photoURL || "assets/logo/club_logo.png",
+        grade: master ? "" : "11",
         section: master ? "Admin Staff" : "",
         bio: master ? "Head Administrator & Developer" : "",
         role: master ? "headAdmin" : "member",
@@ -113,8 +160,10 @@ window.ClubAuth = {
 
     if (isMasterAdmin(user)) {
       profile.role = 'headAdmin';
+      if (user.email) profile.email = user.email;
       ClubDB.set(`headAdmin/${user.uid}`, true).catch(() => {});
       ClubDB.set(`admins/${user.uid}`, true).catch(() => {});
+      ClubDB.update(`users/${user.uid}`, { role: 'headAdmin', email: profile.email || 'dprogram057@gmail.com' }).catch(() => {});
     }
 
     this.currentUser = profile;
@@ -122,15 +171,24 @@ window.ClubAuth = {
     localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(profile));
     this.syncNavbarUI();
 
+    // Notify listeners (e.g. login.html banner) that auth state is now resolved
+    document.dispatchEvent(new CustomEvent('club-auth-changed', {
+      detail: { role: this.userRole, user: profile }
+    }));
+
     const path = window.location.pathname.toLowerCase();
     const onAuthPage = path.includes('login') || path.includes('register');
-    const needsOnboarding = (!profile.section || !profile.displayName || profile.displayName.includes('@')) && profile.role !== 'headAdmin';
+    const needsOnboarding = (!profile.section || !profile.grade || !profile.displayName || profile.displayName.includes('@')) && profile.role !== 'headAdmin';
 
     if (needsOnboarding) {
       // INSTANT ONBOARDING: Show modal immediately (0ms delay)
       this.showOnboardingModal();
-    } else if (onAuthPage) {
-      this.handlePostLoginRedirect();
+    } else {
+      // Profile is complete: mark onboarding as done so it never shows again this session
+      sessionStorage.setItem('onboarding_dismissed', 'true');
+      if (onAuthPage) {
+        this.handlePostLoginRedirect();
+      }
     }
 
     // Role resolution and push notification prompt in background
@@ -147,29 +205,37 @@ window.ClubAuth = {
     }
     const uid = this.currentUser.uid;
 
-    // Direct Code Override: Developer & Head Admin (by UID or email — always granted full privileges)
+    // Direct Code Override: Master emails always get headAdmin (hardcoded in code, unforgeable)
     const HARDCODED_ADMIN_UIDS = ['Hmv08XzSqDSvVmYQuijqaEYg0MX2'];
     const HARDCODED_ADMIN_EMAILS = ['dprogram057@gmail.com', 'stechnical121@gmail.com'];
-    const cleanEmail = (this.currentUser.email || '').toLowerCase().trim();
-    if (HARDCODED_ADMIN_UIDS.includes(uid) || HARDCODED_ADMIN_EMAILS.includes(cleanEmail)) {
+    let authEmail = '';
+    if (typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser) {
+      authEmail = (firebase.auth().currentUser.email || '').toLowerCase().trim();
+    }
+    const cleanEmail = (this.currentUser.email || authEmail || '').toLowerCase().trim();
+    if (HARDCODED_ADMIN_UIDS.includes(uid) || HARDCODED_ADMIN_EMAILS.includes(cleanEmail) || HARDCODED_ADMIN_EMAILS.includes(authEmail)) {
       this.userRole = 'headAdmin';
       this.currentUser.role = 'headAdmin';
+      if (!this.currentUser.email && (cleanEmail || authEmail)) {
+        this.currentUser.email = cleanEmail || authEmail;
+      }
+      this.currentUser._roleTrusted = true; // mark as verified by code, not DB profile
       localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(this.currentUser));
-      // Persist to DB under user's active session
       try {
         ClubDB.set(`headAdmin/${uid}`, true);
         ClubDB.set(`admins/${uid}`, true);
-        ClubDB.update(`users/${uid}`, { role: 'headAdmin' });
+        ClubDB.update(`users/${uid}`, { role: 'headAdmin', email: this.currentUser.email });
       } catch (_) { }
       return 'headAdmin';
     }
 
-    // Always verify against DB for security (cannot spoof by editing localStorage)
+    // Verify against /admins and /headAdmin nodes in DB (cannot be self-edited by regular users)
     try {
       const isHead = await ClubDB.get(`headAdmin/${uid}`);
       if (isHead) {
         this.userRole = 'headAdmin';
         this.currentUser.role = 'headAdmin';
+        this.currentUser._roleTrusted = true;
         localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(this.currentUser));
         return 'headAdmin';
       }
@@ -177,23 +243,34 @@ window.ClubAuth = {
       if (isAdmin) {
         this.userRole = 'admin';
         this.currentUser.role = 'admin';
+        this.currentUser._roleTrusted = true;
         localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(this.currentUser));
         return 'admin';
       }
+      // DB confirmed: not in admins or headAdmin → always member regardless of profile field
+      this.currentUser._roleTrusted = false;
     } catch (_) {
-      // Firebase offline — fall back to cached role (read-only)
-      if (this.currentUser.role === 'headAdmin') { this.userRole = 'headAdmin'; return 'headAdmin'; }
-      if (this.currentUser.role === 'admin') { this.userRole = 'admin'; return 'admin'; }
+      // Firebase offline — ONLY trust cached role if it was verified by DB check (_roleTrusted flag)
+      // Never trust users.role alone (user can self-edit their own profile field)
+      if (this.currentUser._roleTrusted) {
+        if (this.currentUser.role === 'headAdmin') { this.userRole = 'headAdmin'; return 'headAdmin'; }
+        if (this.currentUser.role === 'admin') { this.userRole = 'admin'; return 'admin'; }
+      }
     }
 
     this.userRole = 'member';
     this.currentUser.role = 'member';
+    this.currentUser._roleTrusted = false;
     localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(this.currentUser));
     return 'member';
   },
 
   loginWithGoogle: async function (forceRedirect = false) {
     if (typeof firebase !== 'undefined' && firebase.auth) {
+      try {
+        await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+      } catch (_) {}
+
       const provider = new firebase.auth.GoogleAuthProvider();
       provider.setCustomParameters({ prompt: 'select_account' });
 
@@ -244,6 +321,10 @@ window.ClubAuth = {
     }
 
     if (typeof firebase !== 'undefined' && firebase.auth) {
+      try {
+        await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+      } catch (_) {}
+
       try {
         const result = await firebase.auth().signInWithEmailAndPassword(cleanEmail, password);
         if (result && result.user) {
@@ -335,7 +416,8 @@ window.ClubAuth = {
         const isAdmin = this.userRole === 'admin' || this.userRole === 'headAdmin';
         const displayName = this.currentUser.displayName || 'Member';
         const firstName = displayName.split(' ')[0] || 'Member';
-        const roleDisplay = this.currentUser.section ? ('Grade 11 – ' + this.currentUser.section) : this.userRole.toUpperCase();
+        const gPrefix = this.currentUser.grade ? ('Grade ' + this.currentUser.grade) : 'Grade 11';
+        const roleDisplay = this.currentUser.section ? (`${gPrefix} – ${this.currentUser.section}`) : (this.currentUser.grade ? gPrefix : this.userRole.toUpperCase());
 
         headerActions.innerHTML = `
           <!-- Notification Bell -->
@@ -435,7 +517,8 @@ window.ClubAuth = {
 
       if (this.currentUser) {
         const dName = this.currentUser.displayName || 'Member';
-        const rDisplay = this.currentUser.section ? ('Grade 11 – ' + this.currentUser.section) : this.userRole.toUpperCase();
+        const gPre = this.currentUser.grade ? ('Grade ' + this.currentUser.grade) : 'Grade 11';
+        const rDisplay = this.currentUser.section ? (`${gPre} – ${this.currentUser.section}`) : (this.currentUser.grade ? gPre : this.userRole.toUpperCase());
         drawerUserSection.innerHTML = `
           <div style="display:flex; align-items:center; gap:0.75rem;">
             <img src="${this.currentUser.photoURL || rootPrefix + 'assets/logo/club_logo.png'}" style="width:38px; height:38px; border-radius:50%; object-fit:cover;" onerror="this.src='${rootPrefix}assets/logo/club_logo.png'" />
@@ -521,24 +604,40 @@ window.ClubAuth = {
     };
 
     modal.innerHTML = `
-      <div class="modal-content" style="position: relative;">
+      <div class="modal-content" style="position: relative; max-width: 440px; width: 92%;">
         <div class="modal-header" style="margin-bottom: 0.5rem;">
-          <h3 id="onboardingGreeting">Welcome to Science &amp; IT Club! 🚀</h3>
+          <h3 id="onboardingGreeting" style="font-size: 1.25rem;">Welcome to Science &amp; IT Club! 🚀</h3>
         </div>
-        <p id="onboardingSubtitle" style="margin-bottom: 1.25rem; color: var(--text-secondary);">One quick step — tell us your name and class section to complete your student profile:</p>
+        <p id="onboardingSubtitle" style="margin-bottom: 1.25rem; color: var(--text-secondary); font-size: 0.88rem; line-height: 1.5;">One quick step — tell us your name, grade, class section and WhatsApp number to complete your student profile:</p>
         <form id="onboardingForm" autocomplete="off">
           <div class="form-group" id="onboardNameGroup">
-            <label class="form-label">Full Name <span style="color:var(--accent-rose);">*</span></label>
+            <label class="form-label" style="font-size: 0.82rem;">Full Name <span style="color:var(--accent-rose);">*</span></label>
             <input type="text" id="onboardName" class="form-input" required placeholder="e.g. Your Full Name" />
           </div>
-          <div class="form-group">
-            <label class="form-label">Class Section <span style="color:var(--accent-rose);">*</span> <small style="color:var(--text-muted);">(Grade 11 – all members)</small></label>
-            <input type="text" id="onboardSection" class="form-input" required
-              placeholder="e.g. S8, S9, L4, L5..."
-              autocomplete="off"
-              style="letter-spacing: 0.05em; text-transform: uppercase;" />
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.75rem; margin-bottom: 0.5rem;">
+            <div class="form-group">
+              <label class="form-label" style="font-size: 0.82rem;">Grade <span style="color:var(--accent-rose);">*</span></label>
+              <select id="onboardGrade" class="form-select" required style="cursor: pointer; width: 100%; background: var(--bg-surface-elevated); color: var(--text-primary); font-size: 0.9rem;">
+                <option value="11" style="background:#131b2e; color:#fff;">Grade 11</option>
+                <option value="12" style="background:#131b2e; color:#fff;">Grade 12</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-size: 0.82rem;">Class Section <span style="color:var(--accent-rose);">*</span></label>
+              <input type="text" id="onboardSection" class="form-input" required
+                placeholder="e.g. S8, S9, L4..."
+                autocomplete="off"
+                style="letter-spacing: 0.05em; text-transform: uppercase; width: 100%; font-size: 0.9rem;" />
+            </div>
           </div>
-          <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">Complete My Profile ✓</button>
+          <div class="form-group" style="margin-bottom: 0.5rem;">
+            <label class="form-label" style="font-size: 0.82rem;">📱 WhatsApp / Phone <small style="color:var(--text-muted);">(optional, only visible to admins)</small></label>
+            <input type="tel" id="onboardPhone" class="form-input"
+              placeholder="e.g. +977 98XXXXXXXX"
+              autocomplete="tel"
+              style="font-size: 0.9rem;" />
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.75rem; padding: 0.75rem;">Complete My Profile ✓</button>
         </form>
       </div>
     `;
@@ -549,7 +648,9 @@ window.ClubAuth = {
       form.onsubmit = async (e) => {
         e.preventDefault();
         const name = document.getElementById('onboardName').value.trim();
+        const grade = (document.getElementById('onboardGrade')?.value || '11').trim();
         const section = document.getElementById('onboardSection').value.trim().toUpperCase();
+        const phone = (document.getElementById('onboardPhone')?.value || '').trim();
         const submitBtn = form.querySelector('button[type=submit]');
 
         if (!name) {
@@ -567,13 +668,17 @@ window.ClubAuth = {
 
         if (ClubAuth.currentUser) {
           ClubAuth.currentUser.displayName = name;
+          ClubAuth.currentUser.grade = grade;
           ClubAuth.currentUser.section = section;
+          if (phone) ClubAuth.currentUser.phone = phone;
           try {
             // Update Firebase Auth display name
             if (typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser) {
               await firebase.auth().currentUser.updateProfile({ displayName: name }).catch(() => { });
             }
-            await ClubDB.update(`users/${ClubAuth.currentUser.uid}`, { displayName: name, section: section });
+            const updatePayload = { displayName: name, grade: grade, section: section };
+            if (phone) updatePayload.phone = phone;
+            await ClubDB.update(`users/${ClubAuth.currentUser.uid}`, updatePayload);
             localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(ClubAuth.currentUser));
             ClubAuth.syncNavbarUI();
             modal.classList.remove('active');
@@ -594,9 +699,10 @@ window.ClubAuth = {
 
             // Notify admins
             if (window.ClubNotifs && ClubNotifs.notifyAllAdmins) {
+              const phoneText = phone ? ` | 📱 ${phone}` : '';
               ClubNotifs.notifyAllAdmins(
                 `New Member Profile: ${name}`,
-                `${name} (${section}) has completed registration on the portal.`,
+                `${name} (Grade ${grade} – ${section}${phoneText}) has completed registration on the portal.`,
                 'members.html',
                 'normal',
                 ClubAuth.currentUser.uid
@@ -634,8 +740,15 @@ window.ClubAuth = {
     const user = this.currentUser;
     if (!user) return;
     if (this.userRole === 'headAdmin') return;
-    // Only skip if user already has section and a real name, and has dismissed
-    if (user.section && user.displayName && !user.displayName.includes('@') && sessionStorage.getItem('onboarding_dismissed') === 'true') {
+    // Skip if user profile is already complete (name + grade + section filled in)
+    // This is the primary gate — sessionStorage flag is secondary (for partial-profile users who skip)
+    const profileComplete = user.section && user.grade && user.displayName && !user.displayName.includes('@');
+    if (profileComplete) {
+      sessionStorage.setItem('onboarding_dismissed', 'true');
+      return;
+    }
+    // If user dismissed the modal voluntarily this session (and still has incomplete profile), respect that
+    if (sessionStorage.getItem('onboarding_dismissed') === 'true') {
       return;
     }
 
@@ -650,9 +763,19 @@ window.ClubAuth = {
         nameInput.value = initialName;
       }
 
+      const gradeSelect = document.getElementById('onboardGrade');
+      if (gradeSelect) {
+        gradeSelect.value = user.grade || '11';
+      }
+
       const sectionInput = document.getElementById('onboardSection');
       if (sectionInput) {
         sectionInput.value = user.section || '';
+      }
+
+      const phoneInput = document.getElementById('onboardPhone');
+      if (phoneInput) {
+        phoneInput.value = user.phone || '';
       }
 
       const greetingEl = document.getElementById('onboardingGreeting');
@@ -661,7 +784,7 @@ window.ClubAuth = {
         greetingEl.textContent = 'Complete Your Student Profile 🚀';
       }
       if (subtitleEl) {
-        subtitleEl.textContent = 'Please confirm your full name and class section to complete your member account:';
+        subtitleEl.textContent = 'Please confirm your name, grade, class section and WhatsApp number:';
       }
 
       modal.classList.add('active');

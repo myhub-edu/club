@@ -235,42 +235,133 @@ window.ClubWebPush = {
     if (typeof Notification === 'undefined') return false;
     if (Notification.permission === 'granted') return true;
     if (Notification.permission === 'denied') return false;
-    const result = await Notification.requestPermission();
-    return result === 'granted';
+    try {
+      const result = await Notification.requestPermission();
+      return result === 'granted';
+    } catch (_) {
+      return false;
+    }
   },
 
   /** Show an OS-level browser/Android notification */
   show(title, body, options = {}) {
-    if (!this._canPush()) return;
-    const isInAdmin = window.location.pathname.includes('/admin/');
-    const prefix = isInAdmin ? '../' : '';
-    const logoUrl = prefix + 'assets/logo/club_logo.png';
-    const n = new Notification(title, {
-      body,
-      icon: logoUrl,
-      badge: logoUrl,
-      tag: options.tag || ('club_' + Date.now()),
-      requireInteraction: options.urgent || false,
-      silent: false,
-      ...options
-    });
-    // Click → navigate to the right page
-    if (options.url) {
-      n.onclick = () => {
-        window.focus();
-        window.location.href = options.url;
-        n.close();
-      };
+    if (!this._canPush()) return null;
+    try {
+      const isInAdmin = window.location.pathname.includes('/admin/');
+      const prefix = isInAdmin ? '../' : '';
+      const logoUrl = prefix + 'assets/logo/club_logo.png';
+      const n = new Notification(title, {
+        body,
+        icon: logoUrl,
+        badge: logoUrl,
+        tag: options.tag || ('club_' + Date.now()),
+        requireInteraction: options.urgent || false,
+        silent: false,
+        ...options
+      });
+      // Click → navigate to the right page with URL normalization
+      if (options.url) {
+        let destUrl = String(options.url).trim();
+        // If navigation was triggered from an admin page and url is relative to site root
+        if (isInAdmin && !destUrl.startsWith('http') && !destUrl.startsWith('../') && !destUrl.startsWith('/admin') && !destUrl.startsWith('admin/')) {
+          if (destUrl.startsWith('/')) destUrl = '..' + destUrl;
+          else destUrl = '../' + destUrl;
+        }
+        // Defensive normalization for any paths missing .html extension
+        if (destUrl.includes('event?') && !destUrl.includes('event.html?')) destUrl = destUrl.replace('event?', 'event.html?');
+        else if (destUrl.includes('project?') && !destUrl.includes('project.html?')) destUrl = destUrl.replace('project?', 'project.html?');
+        else if (destUrl.includes('events?') && !destUrl.includes('events.html?')) destUrl = destUrl.replace('events?', 'events.html?');
+        else if (destUrl.includes('projects?') && !destUrl.includes('projects.html?')) destUrl = destUrl.replace('projects?', 'projects.html?');
+
+        n.onclick = () => {
+          window.focus();
+          window.location.href = destUrl;
+          try { n.close(); } catch (_) {}
+        };
+      }
+      return n;
+    } catch (e) {
+      console.warn('[ClubWebPush] show notification failed:', e);
+      return null;
     }
-    return n;
   },
 
-  /** Called after login to ask for permission once */
+  /** Renders an interactive, user-gesture permission prompt banner */
+  showPromptBanner() {
+    if (typeof Notification === 'undefined') return;
+    if (Notification.permission !== 'default') return;
+    if (document.getElementById('clubPushBanner')) return;
+
+    // Check if dismissed recently (24-hour snooze)
+    const dismissedUntil = localStorage.getItem('club_push_prompt_dismissed');
+    if (dismissedUntil && Date.now() < Number(dismissedUntil)) return;
+
+    const banner = document.createElement('div');
+    banner.id = 'clubPushBanner';
+    banner.className = 'club-push-banner';
+    banner.innerHTML = `
+      <div style="display: flex; gap: 0.85rem; align-items: flex-start;">
+        <div style="font-size: 1.6rem; line-height: 1; padding-top: 2px;">🔔</div>
+        <div style="flex: 1;">
+          <div style="font-size: 0.95rem; font-weight: 700; color: #fff; margin-bottom: 0.25rem;">Enable Club Notifications?</div>
+          <div style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.45;">
+            Get instant alerts for new events, project blueprints, and announcements.
+          </div>
+        </div>
+        <button id="clubPushBannerClose" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.1rem; line-height: 1; padding: 2px 4px;" title="Dismiss">✕</button>
+      </div>
+      <div style="display: flex; gap: 0.5rem; justify-content: flex-end; align-items: center;">
+        <button id="clubPushDismissBtn" class="btn btn-secondary btn-sm" style="padding: 0.35rem 0.85rem; font-size: 0.8rem;">Not Now</button>
+        <button id="clubPushAllowBtn" class="btn btn-primary btn-sm" style="padding: 0.35rem 0.95rem; font-size: 0.8rem; font-weight: 600;">Enable Alerts</button>
+      </div>
+    `;
+
+    document.body.appendChild(banner);
+
+    const closeBanner = (days = 1) => {
+      localStorage.setItem('club_push_prompt_dismissed', String(Date.now() + (days * 86400000)));
+      banner.style.transition = 'opacity 0.3s, transform 0.3s';
+      banner.style.opacity = '0';
+      banner.style.transform = 'translateY(20px)';
+      setTimeout(() => banner.remove(), 320);
+    };
+
+    const closeBtn = document.getElementById('clubPushBannerClose');
+    if (closeBtn) closeBtn.onclick = () => closeBanner(1);
+
+    const dismissBtn = document.getElementById('clubPushDismissBtn');
+    if (dismissBtn) dismissBtn.onclick = () => closeBanner(1);
+
+    const allowBtn = document.getElementById('clubPushAllowBtn');
+    if (allowBtn) {
+      allowBtn.onclick = async () => {
+        // Direct click handler provides valid user gesture for browser permission prompt
+        const granted = await window.ClubWebPush.requestPermission();
+        if (granted) {
+          localStorage.setItem('club_push_prompt_dismissed', 'granted');
+          banner.remove();
+          if (typeof showToast === 'function') {
+            showToast('🔔 Notifications enabled! You will now receive club updates.', 'success');
+          }
+          window.ClubWebPush.show('Notifications Enabled 🎉', 'You will now receive alerts for new club projects and events!');
+        } else {
+          closeBanner(3);
+          if (typeof showToast === 'function') {
+            showToast('Notifications blocked or denied. You can re-enable anytime in browser settings.', 'info');
+          }
+        }
+      };
+    }
+  },
+
+  /** Called after login or page load to offer notification enablement */
   promptOnce() {
     if (typeof Notification === 'undefined') return;
     if (Notification.permission !== 'default') return;
-    // Small delay so it doesn't interrupt login toast
-    setTimeout(() => this.requestPermission(), 2500);
+    // Delay slightly so the page content and layout are visible first
+    setTimeout(() => {
+      this.showPromptBanner();
+    }, 1500);
   }
 };
 
@@ -365,7 +456,12 @@ window.ClubDB = {
       } catch (err) {
         if (err && err.message && err.message.toLowerCase().includes('permission')) {
           console.warn(`[ClubDB] Firebase permission denied on "${path}". Verify Firebase Security Rules.`);
-          window.dispatchEvent(new CustomEvent('club-permission-denied', { detail: { path, message: err.message } }));
+          // Only dispatch the UI warning event if the user is genuinely NOT logged in.
+          // When logged in, this is a transient startup error (auth token not yet propagated) — ignore it.
+          const isLoggedIn = !!(window.ClubAuth && ClubAuth.currentUser);
+          if (!isLoggedIn) {
+            window.dispatchEvent(new CustomEvent('club-permission-denied', { detail: { path, message: err.message } }));
+          }
         }
         /* Fall back to local cache on network/permission error */
       }
@@ -394,7 +490,10 @@ window.ClubDB = {
       } catch (err) {
         console.warn(`[ClubDB.set] Firebase write note on "${path}":`, err.message);
         if (err && err.message && err.message.toLowerCase().includes('permission')) {
-          window.dispatchEvent(new CustomEvent('club-permission-denied', { detail: { path, message: err.message } }));
+          const isLoggedIn = !!(window.ClubAuth && ClubAuth.currentUser);
+          if (!isLoggedIn) {
+            window.dispatchEvent(new CustomEvent('club-permission-denied', { detail: { path, message: err.message } }));
+          }
         }
       }
     }
@@ -431,7 +530,10 @@ window.ClubDB = {
       } catch (err) {
         console.warn(`[ClubDB.push] Firebase push error on "${path}":`, err.message);
         if (err && err.message && err.message.toLowerCase().includes('permission')) {
-          window.dispatchEvent(new CustomEvent('club-permission-denied', { detail: { path, message: err.message } }));
+          const isLoggedIn = !!(window.ClubAuth && ClubAuth.currentUser);
+          if (!isLoggedIn) {
+            window.dispatchEvent(new CustomEvent('club-permission-denied', { detail: { path, message: err.message } }));
+          }
           throw err;
         }
       }
@@ -534,7 +636,10 @@ window.ClubDB = {
           firebaseDb.ref(path).on('value', fbCallback, (err) => {
             if (err && err.message && err.message.toLowerCase().includes('permission')) {
               console.warn(`[ClubDB onValue] Firebase permission denied on "${path}". Verify Firebase Security Rules.`);
-              window.dispatchEvent(new CustomEvent('club-permission-denied', { detail: { path, message: err.message } }));
+              const isLoggedIn = !!(window.ClubAuth && ClubAuth.currentUser);
+              if (!isLoggedIn) {
+                window.dispatchEvent(new CustomEvent('club-permission-denied', { detail: { path, message: err.message } }));
+              }
             }
           });
         } catch (_) {}

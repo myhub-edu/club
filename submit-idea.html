@@ -20,6 +20,19 @@
   
   <script src="js/firebase-config.js"></script>
   <script src="js/auth.js"></script>
+  <script>
+    // ── Member-only page guard ──────────────────────────────────────────
+    (function() {
+      function _guardAuth() {
+        if (window.ClubAuth && ClubAuth.userRole === 'guest' && !ClubAuth.currentUser) {
+          const page = window.location.pathname.split('/').pop() + window.location.search;
+          window.location.replace('login.html?redirect=' + encodeURIComponent(page));
+        }
+      }
+      document.addEventListener('club-auth-changed', _guardAuth);
+      setTimeout(_guardAuth, 2000);
+    })();
+  </script>
   <script src="js/notifications.js" defer></script>
   <script src="js/main.js" defer></script>
 </head>

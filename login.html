@@ -227,7 +227,7 @@
         successBox.style.display = 'none';
       }
 
-      // 1. Active session banner
+      // 1. Active session banner — called immediately and again when auth resolves
       const tryRenderBanner = () => {
         if (ClubAuth.currentUser) {
           const banner = document.getElementById('alreadyLoggedInBox');
@@ -244,10 +244,22 @@
               ClubAuth.logout();
               banner.style.display = 'none';
             };
+
+            // Auto-redirect if profile is complete (no onboarding needed)
+            const u = ClubAuth.currentUser;
+            const profileComplete = u.section && u.grade && u.displayName && !u.displayName.includes('@');
+            if (profileComplete) {
+              // Show a quick toast then redirect after 1.5s
+              if (typeof showToast === 'function') showToast(`Already signed in as ${u.displayName}. Redirecting...`, 'info');
+              setTimeout(() => ClubAuth.handlePostLoginRedirect(), 1500);
+            }
           }
         }
       };
       tryRenderBanner();
+      // Also re-run when Firebase auth resolves asynchronously
+      document.addEventListener('club-auth-changed', tryRenderBanner);
+
 
       // 2. Google Sign-in (Popup)
       const googleBtn = document.getElementById('googleLoginBtn');
