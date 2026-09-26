@@ -1,0 +1,25 @@
+# Robots.txt for Liverpool International Secondary College Science & IT Club
+User-agent: *
+Allow: /
+Allow: /index.html
+Allow: /about.html
+Allow: /projects.html
+Allow: /project.html
+Allow: /events.html
+Allow: /event.html
+Allow: /moments.html
+Allow: /voices.html
+Allow: /resources.html
+Allow: /login.html
+Allow: /assets/
+
+# Disallow private user and admin dashboards from indexing
+Disallow: /admin/
+Disallow: /profile.html
+Disallow: /notifications.html
+Disallow: /submit-idea.html
+Disallow: /submit-feedback.html
+Disallow: /contact-admin.html
+
+# Sitemap pointer
+Sitemap: https://liverpool-science-it-club.edu/sitemap.xml

@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <link rel="icon" type="image/png" href="../assets/logo/club_logo.png" />
+  <link rel="apple-touch-icon" href="../assets/logo/club_logo.png" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Send Broadcasts | Admin Dashboard</title>
+  <link rel="stylesheet" href="../css/global.css" />
+  <link rel="stylesheet" href="../css/admin.css" />
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="../js/firebase-config.js"></script>
+  <script src="../js/notifications.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="js/admin.js" defer></script>
+  <style>
+    @media (max-width: 900px) {
+      .broadcast-layout {
+        grid-template-columns: 1fr !important;
+      }
+    }
+
+    .broadcast-item {
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 0.85rem 1rem;
+      transition: border-color 0.2s;
+    }
+
+    .broadcast-item:hover {
+      border-color: var(--border-glow);
+    }
+
+    .broadcast-item .del-btn {
+      padding: 3px 10px;
+      font-size: 0.72rem;
+      cursor: pointer;
+      border: 1px solid rgba(244, 63, 94, 0.4);
+      border-radius: var(--radius-sm);
+      background: rgba(244, 63, 94, 0.08);
+      color: var(--accent-rose);
+      transition: background 0.2s;
+    }
+
+    .broadcast-item .del-btn:hover {
+      background: rgba(244, 63, 94, 0.2);
+    }
+  </style>
+</head>
+
+<body class="admin-body">
+  <div class="admin-sidebar-overlay" id="adminSidebarOverlay"></div>
+
+  <aside class="admin-sidebar" id="adminSidebar">
+    <div class="admin-sidebar-brand">
+      <img src="../assets/logo/club_logo.png" alt="Logo" />
+      <span>Club Admin <small>v2.0</small></span>
+    </div>
+    <nav class="admin-nav">
+      <a href="index.html" class="admin-nav-item"><span class="nav-label">📊 Dashboard</span></a>
+      <a href="members.html" class="admin-nav-item"><span class="nav-label">👥 Members</span></a>
+      <a href="projects.html" class="admin-nav-item"><span class="nav-label">🔬 Projects</span></a>
+      <a href="events.html" class="admin-nav-item"><span class="nav-label">📅 Events</span></a>
+      <a href="moments.html" class="admin-nav-item"><span class="nav-label">📸 Moments</span></a>
+      <a href="voices.html" class="admin-nav-item"><span class="nav-label">💬 Testimonials</span></a>
+      <a href="ideas.html" class="admin-nav-item"><span class="nav-label">💡 Student Ideas</span></a>
+      <a href="notifications.html" class="admin-nav-item active"><span class="nav-label">📢 Broadcasts</span></a>
+      <a href="messages.html" class="admin-nav-item"><span class="nav-label">✉️ Messages</span></a>
+      <a href="resources.html" class="admin-nav-item"><span class="nav-label">📚 Resources</span></a>
+      <a href="settings.html" class="admin-nav-item"><span class="nav-label">⚙️ Settings</span></a>
+      <div style="border-top: 1px solid var(--border-subtle); margin: 0.75rem 0;"></div>
+      <a href="../index.html" class="admin-nav-item" style="color: var(--accent-cyan);"><span class="nav-label">🌐 View
+          Live Site</span><span>↗</span></a>
+    </nav>
+    <div class="admin-sidebar-footer">
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <img id="adminCurrentUserAvatar" src="" alt="Admin"
+          style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
+        <div>
+          <strong id="adminCurrentUserName" style="font-size: 0.85rem; display: block;">Admin</strong>
+          <span id="adminCurrentUserRole" class="badge badge-purple" style="font-size: 0.65rem;">ADMIN</span>
+        </div>
+      </div>
+      <button id="adminLogoutBtn" title="Logout"
+        style="background: transparent; border: none; color: var(--accent-rose); cursor: pointer; font-size: 1.1rem;">⎋</button>
+    </div>
+  </aside>
+
+  <div class="admin-main-wrapper">
+    <header class="admin-topbar">
+      <div class="admin-topbar-left">
+        <button id="adminSidebarToggle" class="hamburger-btn" style="color: var(--text-primary);"
+          aria-label="Toggle sidebar">☰</button>
+        <h2 class="admin-page-title">Broadcast Notifications</h2>
+      </div>
+    </header>
+
+    <main class="admin-content">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;" class="broadcast-layout">
+        <!-- Composer Form -->
+        <div class="card" style="border-top: 4px solid var(--accent-emerald);">
+          <h3 style="margin-bottom: 1.25rem;">📢 Compose Notification</h3>
+          <form id="broadcastForm" autocomplete="off">
+            <div class="form-group">
+              <label class="form-label">Notification Title <span style="color:var(--accent-rose);">*</span></label>
+              <input type="text" id="notifTitle" class="form-input" required placeholder="e.g. Lab Meeting Rescheduled"
+                maxlength="120" />
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-group">
+                <label class="form-label">Audience</label>
+                <select id="notifAudience" class="form-select" required>
+                  <option value="all">All Members</option>
+                  <option value="single">Single Member</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Priority</label>
+                <select id="notifPriority" class="form-select" required>
+                  <option value="normal">Normal</option>
+                  <option value="important">Urgent 🚨</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group" id="singleUserGroup" style="display: none;">
+              <label class="form-label">Target Member</label>
+              <select id="notifTargetUser" class="form-select">
+                <option value="">Loading members...</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Destination Link (When member clicks "View More →")</label>
+              <select id="notifDestination" class="form-select">
+                <option value="">Auto-Detect from content</option>
+                <option value="events.html">📅 Events & Workshops</option>
+                <option value="projects.html">🚀 Projects Showcase</option>
+                <option value="moments.html">📸 Moments Archive</option>
+                <option value="voices.html">💬 Student Voices</option>
+                <option value="resources.html">📚 Learning Resources</option>
+                <option value="contact-admin.html">✉️ Message Head Admin</option>
+                <option value="submit-idea.html">💡 Propose Project Idea</option>
+                <option value="profile.html">👤 Member Profile</option>
+                <option value="custom">🔗 Custom Link...</option>
+              </select>
+            </div>
+
+            <div class="form-group" id="customUrlGroup" style="display: none;">
+              <label class="form-label">Custom Link / Page URL</label>
+              <input type="text" id="notifCustomUrl" class="form-input" placeholder="e.g. events.html or https://..." />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Message Content <span style="color:var(--accent-rose);">*</span></label>
+              <textarea id="notifMsg" class="form-textarea" rows="4" required
+                placeholder="Type the announcement clearly..." maxlength="600"></textarea>
+              <small id="msgCharCount" style="font-size:0.72rem;color:var(--text-muted);">0 / 600 characters</small>
+            </div>
+
+            <button type="submit" id="broadcastSubmitBtn" class="btn btn-primary" style="width: 100%;">
+              ⚡ Dispatch Notification
+            </button>
+          </form>
+        </div>
+
+        <!-- Sent Broadcast History -->
+        <div class="card">
+          <div
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+            <h3>Recent Global Broadcasts</h3>
+            <button class="btn btn-sm btn-outline" id="refreshHistoryBtn" onclick="loadBroadcastHistory()">↻
+              Refresh</button>
+          </div>
+          <div id="sentBroadcastsList"
+            style="display: flex; flex-direction: column; gap: 0.75rem; max-height: 520px; overflow-y: auto; padding-right: 2px;">
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Loading broadcasts...</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    let allUsersCache = {};
+    // In-memory cache of global broadcasts (so delete is instant without re-fetch)
+    let broadcastCache = {};
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const audienceSelect = document.getElementById('notifAudience');
+      const singleUserGroup = document.getElementById('singleUserGroup');
+      const targetUserSelect = document.getElementById('notifTargetUser');
+      const form = document.getElementById('broadcastForm');
+      const msgArea = document.getElementById('notifMsg');
+
+      // Character counter
+      msgArea.addEventListener('input', () => {
+        document.getElementById('msgCharCount').textContent = `${msgArea.value.length} / 600 characters`;
+      });
+
+      // Destination link selector
+      const destSelect = document.getElementById('notifDestination');
+      const customUrlGroup = document.getElementById('customUrlGroup');
+      const customUrlInput = document.getElementById('notifCustomUrl');
+      if (destSelect && customUrlGroup) {
+        destSelect.addEventListener('change', () => {
+          customUrlGroup.style.display = destSelect.value === 'custom' ? 'block' : 'none';
+        });
+      }
+
+      // Load users for single-target dropdown
+      try {
+        allUsersCache = (await ClubDB.get('users')) || {};
+        const userList = Object.entries(allUsersCache)
+          .map(([uid, u]) => ({ uid, ...u }))
+          .filter(u => u.uid);
+
+        if (userList.length > 0) {
+          targetUserSelect.innerHTML = `<option value="">— Select Member —</option>` +
+            userList
+              .sort((a, b) => (a.displayName || '').localeCompare(b.displayName || ''))
+              .map(u => `<option value="${u.uid}">${u.displayName || u.email || u.uid}${u.section ? ' (' + u.section + ')' : ''}</option>`)
+              .join('');
+        } else {
+          targetUserSelect.innerHTML = `<option value="">No members found</option>`;
+        }
+      } catch (err) {
+        console.error('Error loading users:', err);
+        targetUserSelect.innerHTML = `<option value="">Error loading members</option>`;
+      }
+
+      audienceSelect.addEventListener('change', () => {
+        singleUserGroup.style.display = audienceSelect.value === 'single' ? 'block' : 'none';
+      });
+
+      // ─── Load & Render Broadcast History ──────────────────────────────
+      window.loadBroadcastHistory = async function () {
+        const listContainer = document.getElementById('sentBroadcastsList');
+        const refreshBtn = document.getElementById('refreshHistoryBtn');
+        if (refreshBtn) { refreshBtn.disabled = true; refreshBtn.textContent = '↻ Loading...'; }
+
+        try {
+          const global = (await ClubDB.get('notifications/global')) || {};
+          broadcastCache = global;
+          renderBroadcastList();
+        } catch (err) {
+          console.error('loadBroadcastHistory error:', err);
+          listContainer.innerHTML = `<p style="color:var(--accent-rose);font-size:0.85rem;">Error loading broadcasts. Check your connection.</p>`;
+        } finally {
+          if (refreshBtn) { refreshBtn.disabled = false; refreshBtn.textContent = '↻ Refresh'; }
+        }
+      };
+
+      function renderBroadcastList() {
+        const listContainer = document.getElementById('sentBroadcastsList');
+        const items = Object.entries(broadcastCache)
+          .map(([k, v]) => ({ _key: k, ...(typeof v === 'object' ? v : {}) }))
+          .filter(n => n._key);
+
+        if (items.length === 0) {
+          listContainer.innerHTML = `
+            <div style="text-align:center;padding:2.5rem 1rem;color:var(--text-muted);">
+              <div style="font-size:2rem;margin-bottom:0.5rem;">📢</div>
+              <p style="font-size:0.85rem;">No global announcements dispatched yet.</p>
+            </div>`;
+          return;
+        }
+
+        items.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+        listContainer.innerHTML = items.map(n => {
+          const key = n._key;
+          const timeAgo = n.createdAt ? relativeTime(n.createdAt) : '—';
+          return `
+            <div class="broadcast-item" id="broadcast-${key}">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:0.5rem;margin-bottom:0.3rem;flex-wrap:wrap;">
+                <strong style="font-size:0.92rem;word-break:break-word;flex:1;">${esc(n.title || '(No Title)')}</strong>
+                <span class="badge ${n.priority === 'important' ? 'badge-rose' : 'badge-cyan'}" style="flex-shrink:0;font-size:0.65rem;">${n.priority === 'important' ? '🚨 Urgent' : 'Normal'}</span>
+              </div>
+              <p style="font-size:0.83rem;color:var(--text-secondary);margin-bottom:0.5rem;word-break:break-word;line-height:1.4;">${esc(n.message || '')}</p>
+              ${n.url ? `<div style="margin-bottom:0.5rem;"><a href="../${esc(n.url)}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;color:var(--accent-cyan);font-size:0.75rem;text-decoration:none;background:rgba(0,242,254,0.08);padding:2px 8px;border-radius:4px;border:1px solid rgba(0,242,254,0.2);">🔗 Links to: ${esc(n.url)} ↗</a></div>` : ''}
+              <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.72rem;color:var(--text-muted);flex-wrap:wrap;gap:0.25rem;">
+                <span>${timeAgo} · ${esc(n.createdBy || 'Admin')}</span>
+                <button class="del-btn" onclick="deleteBroadcast('${key}')">🗑 Delete</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // ─── Delete Broadcast ─────────────────────────────────────────────
+      window.deleteBroadcast = async function (key) {
+        if (!confirm('Delete this broadcast? It will be removed from all members\' feeds.')) return;
+
+        // Optimistic UI - remove immediately
+        const el = document.getElementById('broadcast-' + key);
+        if (el) {
+          el.style.opacity = '0.4';
+          el.style.pointerEvents = 'none';
+        }
+
+        try {
+          await ClubDB.remove(`notifications/global/${key}`);
+          delete broadcastCache[key];
+          renderBroadcastList();
+          if (typeof showToast === 'function') showToast('Broadcast deleted successfully.', 'info');
+        } catch (err) {
+          console.error('deleteBroadcast error:', err);
+          if (el) { el.style.opacity = '1'; el.style.pointerEvents = ''; }
+          if (typeof showToast === 'function') showToast('Delete failed: ' + err.message, 'error');
+        }
+      };
+
+      // ─── Submit Broadcast ─────────────────────────────────────────────
+      form.onsubmit = async (e) => {
+        e.preventDefault();
+        const submitBtn = document.getElementById('broadcastSubmitBtn');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Dispatching...';
+
+        try {
+          const title = document.getElementById('notifTitle').value.trim();
+          const audience = audienceSelect.value;
+          const priority = document.getElementById('notifPriority').value;
+          const message = document.getElementById('notifMsg').value.trim();
+
+          if (!title) { showToast('Title is required.', 'error'); return; }
+          if (!message) { showToast('Message is required.', 'error'); return; }
+
+          const adminUser = ClubAuth.currentUser;
+          const adminName = adminUser ? (adminUser.displayName || 'Admin') : 'Admin';
+
+          let destinationUrl = destSelect ? destSelect.value : '';
+          if (destinationUrl === 'custom') {
+            destinationUrl = customUrlInput ? customUrlInput.value.trim() : '';
+          }
+
+          const notifObj = {
+            title,
+            message,
+            priority,
+            createdAt: Date.now(),
+            createdBy: `${adminName}`
+          };
+
+          if (destinationUrl) {
+            notifObj.url = destinationUrl;
+          }
+
+          if (audience === 'all') {
+            const result = await ClubDB.push('notifications/global', notifObj);
+            if (result && result.id) {
+              // Mirror exactly what Firebase returns — store by key, value = notif object
+              const { id: _discard, ...notifData } = result;
+              broadcastCache[result.id] = notifData;
+            }
+            // OS push to admin
+            if (window.ClubWebPush && ClubWebPush._canPush()) {
+              ClubWebPush.show(title, message, {
+                urgent: priority === 'important',
+                url: destinationUrl ? ('/' + destinationUrl) : '/notifications.html',
+                tag: 'broadcast_' + Date.now()
+              });
+            }
+            showToast('📢 Global broadcast dispatched to all members!', 'success');
+          } else {
+            const targetUid = targetUserSelect.value;
+            if (!targetUid) { showToast('Select a target member.', 'error'); return; }
+            // Include target uid so recipient can identify the notification
+            await ClubDB.push(`notifications/users/${targetUid}`, { ...notifObj, uid: targetUid });
+            const targetUser = allUsersCache[targetUid];
+            showToast(`✅ Notification sent to ${targetUser ? (targetUser.displayName || targetUid) : targetUid}!`, 'success');
+          }
+
+          form.reset();
+          document.getElementById('msgCharCount').textContent = '0 / 600 characters';
+          singleUserGroup.style.display = 'none';
+          if (customUrlGroup) customUrlGroup.style.display = 'none';
+          audienceSelect.value = 'all';
+          renderBroadcastList();
+        } catch (err) {
+          console.error('Broadcast submit error:', err);
+          showToast('Error sending notification: ' + err.message, 'error');
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = '⚡ Dispatch Notification';
+        }
+      };
+
+      // ─── Helpers ──────────────────────────────────────────────────────
+      function esc(str) {
+        if (!str) return '';
+        const d = document.createElement('div');
+        d.innerText = String(str);
+        return d.innerHTML;
+      }
+
+      function relativeTime(ts) {
+        const s = Math.floor((Date.now() - ts) / 1000);
+        if (s < 60) return 'just now';
+        if (s < 3600) return `${Math.floor(s / 60)}m ago`;
+        if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
+        return new Date(ts).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+      }
+
+      loadBroadcastHistory();
+
+      // Realtime listener for broadcast updates
+      if (window.ClubDB && ClubDB.onValue) {
+        ClubDB.onValue('notifications/global', (g) => {
+          broadcastCache = g || {};
+          renderBroadcastList();
+        });
+      }
+    });
+  </script>
+</body>
+
+</html>

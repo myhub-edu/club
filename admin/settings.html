@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>System Settings & Governance | Admin Dashboard</title>
+  
+  <link rel="icon" type="image/png" href="../assets/logo/club_logo.png" />
+  <link rel="apple-touch-icon" href="../assets/logo/club_logo.png" />
+  <link rel="shortcut icon" href="../assets/logo/club_logo.png" />
+  <link rel="stylesheet" href="../css/global.css" />
+  <link rel="stylesheet" href="../css/admin.css" />
+  
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  
+  <script src="../js/firebase-config.js"></script>
+  <script src="../js/notifications.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="js/admin.js" defer></script>
+</head>
+<body class="admin-body">
+  <!-- Sidebar Overlay for Mobile -->
+  <div class="admin-sidebar-overlay" id="adminSidebarOverlay"></div>
+
+  <!-- Admin Sidebar -->
+  <aside class="admin-sidebar" id="adminSidebar">
+    <div class="admin-sidebar-brand">
+      <img src="../assets/logo/club_logo.png" alt="Logo" />
+      <span>Club Admin <small>v2.0</small></span>
+    </div>
+    <nav class="admin-nav">
+      <a href="index.html" class="admin-nav-item"><span class="nav-label">📊 Dashboard</span></a>
+      <a href="members.html" class="admin-nav-item"><span class="nav-label">👥 Members</span></a>
+      <a href="projects.html" class="admin-nav-item"><span class="nav-label">🔬 Projects</span></a>
+      <a href="events.html" class="admin-nav-item"><span class="nav-label">📅 Events</span></a>
+      <a href="moments.html" class="admin-nav-item"><span class="nav-label">📸 Moments</span></a>
+      <a href="voices.html" class="admin-nav-item"><span class="nav-label">💬 Testimonials</span></a>
+      <a href="ideas.html" class="admin-nav-item"><span class="nav-label">💡 Student Ideas</span></a>
+      <a href="notifications.html" class="admin-nav-item"><span class="nav-label">📢 Broadcasts</span></a>
+      <a href="messages.html" class="admin-nav-item"><span class="nav-label">✉️ Messages</span></a>
+      <a href="resources.html" class="admin-nav-item"><span class="nav-label">📚 Resources</span></a>
+      <a href="settings.html" class="admin-nav-item active"><span class="nav-label">⚙️ Settings</span></a>
+      <div style="border-top: 1px solid var(--border-subtle); margin: 0.75rem 0;"></div>
+      <a href="../index.html" class="admin-nav-item" style="color: var(--accent-cyan);"><span class="nav-label">🌐 View Live Site</span><span>↗</span></a>
+    </nav>
+    <div class="admin-sidebar-footer">
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <img id="adminCurrentUserAvatar" src="../assets/logo/club_logo.png" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
+        <div>
+          <strong id="adminCurrentUserName" style="font-size: 0.85rem; display: block;">Admin</strong>
+          <span id="adminCurrentUserRole" class="badge badge-purple" style="font-size: 0.65rem;">ADMIN</span>
+        </div>
+      </div>
+      <button id="adminLogoutBtn" style="background: transparent; border: none; color: var(--accent-rose); cursor: pointer; font-size: 1.1rem;">⎋</button>
+    </div>
+  </aside>
+
+  <!-- Admin Main Layout -->
+  <div class="admin-main-wrapper">
+    <header class="admin-topbar">
+      <div class="admin-topbar-left">
+        <button id="adminSidebarToggle" class="hamburger-btn" style="color: var(--text-primary);">☰</button>
+        <h2 class="admin-page-title">Website Settings & Leadership Governance</h2>
+      </div>
+    </header>
+
+    <main class="admin-content">
+      <!-- Top Grid: Club Settings & Rules -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.75rem; margin-bottom: 2rem;" class="settings-layout">
+        <!-- Club Metadata Settings -->
+        <div class="card">
+          <h3 style="margin-bottom: 1.25rem;">🏫 Club Identity & Details</h3>
+          <form id="clubSettingsForm">
+            <div class="form-group">
+              <label class="form-label">Club Name</label>
+              <input type="text" id="settingClubName" class="form-input" required value="Science & IT Club" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Tagline & Moto</label>
+              <input type="text" id="settingTagline" class="form-input" value="Empowering Students to Engineer Tomorrow" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Affiliated Institution</label>
+              <input type="text" id="settingInstitution" class="form-input" required value="Liverpool International Secondary College" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Regular Workshop Meeting Schedule</label>
+              <input type="text" id="settingMeetingSchedule" class="form-input" value="Tuesdays & Fridays, 3:30 PM - 5:00 PM" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Primary Innovation Laboratory</label>
+              <input type="text" id="settingLabLocation" class="form-input" value="Innovation Center (Room 204) & Maker Lab" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Contact Email</label>
+              <input type="email" id="settingContactEmail" class="form-input" value="stem-club@liverpool.edu" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Live Notice Banner <small style="color:var(--text-muted);">(Optional - appears on top of website)</small></label>
+              <input type="text" id="settingNoticeBanner" class="form-input" placeholder="e.g. Science Expo registration closes this Friday!" />
+            </div>
+
+            <button type="submit" id="saveSettingsBtn" class="btn btn-primary btn-sm">Save Club Details ✓</button>
+          </form>
+        </div>
+
+        <!-- Firebase Rules & Security Overview -->
+        <div class="card">
+          <h3 style="margin-bottom: 1.25rem;">🔒 Realtime Database & Storage Status</h3>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
+            Enforced server-side with optimized Base64 image storage and Firebase security rules:
+          </p>
+          <div style="background: rgba(0,0,0,0.35); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); margin-bottom: 1.25rem; font-size: 0.82rem; line-height: 1.6;">
+            <div>✅ <strong>Base64 In-Database Image Storage:</strong> Client canvas compression active (~30-60KB / image).</div>
+            <div style="margin-top:0.4rem;">✅ <strong>Date System:</strong> Standard MM/DD/YYYY text format (e.g. 07/15/2026).</div>
+            <div style="margin-top:0.4rem;">✅ <strong>Grade Policy:</strong> Grade 11 fixed for all student members with custom Section (S8, L4...).</div>
+            <div style="margin-top:0.4rem;">✅ <strong>Persistence:</strong> Settings & Leadership sync live across all sessions.</div>
+          </div>
+          <pre style="background: rgba(0,0,0,0.4); padding: 1rem; border-radius: var(--radius-sm); font-size: 0.74rem; color: var(--accent-cyan); overflow-x: auto; max-height: 240px; user-select: all;">
+{
+  "rules": {
+    "admins": {
+      ".read": "auth != null",
+      ".write": "auth != null && (root.child('headAdmin').child(auth.uid).exists() || auth.uid === 'Hmv08XzSqDSvVmYQuijqaEYg0MX2' || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')"
+    },
+    "headAdmin": {
+      ".read": "auth != null",
+      ".write": "auth != null && (root.child('headAdmin').child(auth.uid).exists() || auth.uid === 'Hmv08XzSqDSvVmYQuijqaEYg0MX2' || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')"
+    },
+    "users": {
+      ".read": "auth != null",
+      "$uid": {
+        ".read": "auth != null",
+        ".write": "auth != null && ($uid === auth.uid || root.child('admins').child(auth.uid).exists() || root.child('headAdmin').child(auth.uid).exists() || auth.uid === 'Hmv08XzSqDSvVmYQuijqaEYg0MX2' || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')"
+      }
+    },
+    "ideas": {
+      ".read": "auth != null",
+      "$iid": {
+        ".read": "auth != null",
+        ".write": "auth != null && (auth.uid === newData.child('uid').val() || auth.uid === data.child('uid').val() || root.child('admins').child(auth.uid).exists() || root.child('headAdmin').child(auth.uid).exists() || auth.uid === 'Hmv08XzSqDSvVmYQuijqaEYg0MX2' || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')"
+      }
+    },
+    "feedback": {
+      ".read": "auth != null",
+      "$fid": {
+        ".read": "auth != null",
+        ".write": "auth != null && (auth.uid === newData.child('uid').val() || auth.uid === data.child('uid').val() || root.child('admins').child(auth.uid).exists() || root.child('headAdmin').child(auth.uid).exists() || auth.uid === 'Hmv08XzSqDSvVmYQuijqaEYg0MX2' || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')"
+      }
+    },
+    "messages": {
+      ".read": "auth != null && (root.child('headAdmin').child(auth.uid).exists() || root.child('admins').child(auth.uid).exists() || auth.uid === 'Hmv08XzSqDSvVmYQuijqaEYg0MX2' || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')",
+      "$mid": {
+        ".read": "auth != null && (auth.uid === data.child('fromUid').val() || root.child('headAdmin').child(auth.uid).exists() || root.child('admins').child(auth.uid).exists() || auth.uid === 'Hmv08XzSqDSvVmYQuijqaEYg0MX2' || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')",
+        ".write": "auth != null && (auth.uid === newData.child('fromUid').val() || root.child('headAdmin').child(auth.uid).exists() || root.child('admins').child(auth.uid).exists() || auth.uid === 'Hmv08XzSqDSvVmYQuijqaEYg0MX2' || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')"
+      }
+    },
+    "projects": { ".read": true, ".write": "auth != null && (root.child('admins').child(auth.uid).exists() || root.child('headAdmin').child(auth.uid).exists() || auth.uid === 'Hmv08XzSqDSvVmYQuijqaEYg0MX2' || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')" },
+    "events": { ".read": true, ".write": "auth != null && (root.child('admins').child(auth.uid).exists() || root.child('headAdmin').child(auth.uid).exists() || auth.uid === 'Hmv08XzSqDSvVmYQuijqaEYg0MX2' || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')" },
+    "resources": { ".read": true, ".write": "auth != null && (root.child('admins').child(auth.uid).exists() || root.child('headAdmin').child(auth.uid).exists() || auth.uid === 'Hmv08XzSqDSvVmYQuijqaEYg0MX2' || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')" },
+    "voices": { ".read": true, ".write": "auth != null && (root.child('admins').child(auth.uid).exists() || root.child('headAdmin').child(auth.uid).exists() || auth.uid === 'Hmv08XzSqDSvVmYQuijqaEYg0MX2' || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com' || (auth.uid === newData.child('uid').val()))" },
+    "moments": { ".read": true, ".write": "auth != null && (root.child('admins').child(auth.uid).exists() || root.child('headAdmin').child(auth.uid).exists() || auth.uid === 'Hmv08XzSqDSvVmYQuijqaEYg0MX2' || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')" },
+    "leadership": { ".read": true, ".write": "auth != null && (root.child('admins').child(auth.uid).exists() || root.child('headAdmin').child(auth.uid).exists() || auth.uid === 'Hmv08XzSqDSvVmYQuijqaEYg0MX2' || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')" },
+    "settings": { ".read": true, ".write": "auth != null && (root.child('admins').child(auth.uid).exists() || root.child('headAdmin').child(auth.uid).exists() || auth.uid === 'Hmv08XzSqDSvVmYQuijqaEYg0MX2' || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')" },
+    "notifications": { ".read": "auth != null", ".write": "auth != null && (root.child('admins').child(auth.uid).exists() || root.child('headAdmin').child(auth.uid).exists() || auth.uid === 'Hmv08XzSqDSvVmYQuijqaEYg0MX2' || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')" },
+    "notificationReads": {
+      "$uid": {
+        ".read": "auth != null && ($uid === auth.uid || root.child('admins').child(auth.uid).exists() || root.child('headAdmin').child(auth.uid).exists() || auth.uid === 'Hmv08XzSqDSvVmYQuijqaEYg0MX2' || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')",
+        "$nid": {
+          ".write": "auth != null && ($uid === auth.uid || root.child('admins').child(auth.uid).exists() || root.child('headAdmin').child(auth.uid).exists() || auth.uid === 'Hmv08XzSqDSvVmYQuijqaEYg0MX2' || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')"
+        }
+      }
+    }
+  }
+}
+          </pre>
+        </div>
+      </div>
+
+      <!-- Leadership Team Management Section -->
+      <div class="card" style="margin-bottom: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <h3>👥 Club Leadership & Advisors (/leadership)</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">
+              Manage faculty advisors and student committee leads displayed on the About Us page.
+            </p>
+          </div>
+          <button class="btn btn-sm btn-primary" onclick="openCreateLeaderModal()">+ Add New Leader</button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Photo</th>
+                <th>Name</th>
+                <th>Role / Designation</th>
+                <th>Grade / Department</th>
+                <th>Bio / Quote</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="leadershipTableBody">
+              <tr><td colspan="6" style="text-align: center; padding: 2rem;">Loading leadership roster...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Database Maintenance & Snapshot -->
+      <div class="card" style="border-top: 3px solid var(--accent-purple);">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <h4>Database Maintenance & Backup Snapshot</h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">
+              Export a complete JSON backup of events, projects, moments, leadership, and settings, or reset local demo state.
+            </p>
+          </div>
+          <div style="display: flex; gap: 0.75rem;">
+            <button class="btn btn-sm btn-outline" onclick="exportDataSnapshot()">📥 Export Snapshot JSON</button>
+            <button class="btn btn-sm btn-primary" onclick="resyncWithFirebase()">🔄 Resync from Firebase</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Create/Edit Leader Modal -->
+  <div class="modal-overlay" id="leaderModal">
+    <div class="modal-content" style="max-width: 580px;">
+      <div class="modal-header">
+        <h3 id="leaderModalTitle">Add Leadership Member</h3>
+        <button class="modal-close" onclick="closeModal('leaderModal')">✕</button>
+      </div>
+      <form id="leaderEditorForm">
+        <input type="hidden" id="editLeaderId" value="" />
+
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input type="text" id="modalLeaderName" class="form-input" required placeholder="e.g. Faculty Chair or Student President Name" />
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label class="form-label">Role / Designation</label>
+            <input type="text" id="modalLeaderRole" class="form-input" required placeholder="e.g. Student President or Faculty Advisor" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Grade / Section / Dept</label>
+            <input type="text" id="modalLeaderSection" class="form-input" placeholder="e.g. Grade 11 – S8 or Faculty & Staff" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Leader Photo (Upload Photo or Use Club Badge)</label>
+          <div style="display: flex; gap: 0.75rem; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap;">
+            <img id="leaderPhotoPreview" src="../assets/logo/club_logo.png" alt="Preview" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-cyan);" />
+            <label class="btn btn-sm btn-outline" style="cursor: pointer;">
+              📁 Upload New Photo
+              <input type="file" id="leaderPhotoFileInput" accept="image/*" style="display: none;" />
+            </label>
+            <span id="leaderUploadStatus" style="font-size: 0.75rem; color: var(--text-muted);">or pick default:</span>
+          </div>
+          <select id="modalLeaderPhotoSelect" class="form-select">
+            <option value="assets/logo/club_logo.png">Default Club Badge (assets/logo/club_logo.png)</option>
+          </select>
+          <input type="hidden" id="customLeaderPhotoData" value="" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Bio & Mentorship Quote</label>
+          <textarea id="modalLeaderBio" class="form-textarea" rows="3" required placeholder="Summary of background, STEM credentials, or student achievements..."></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Save Leader Profile ✓</button>
+      </form>
+    </div>
+  </div>
+
+  <style>
+    @media (max-width: 900px) {
+      .settings-layout {
+        grid-template-columns: 1fr !important;
+      }
+    }
+  </style>
+
+  <script>
+    let allLeadership = {};
+    let currentSettings = {};
+
+    async function loadSettingsAndLeadership() {
+      // 1. Load Settings
+      currentSettings = (await ClubDB.get('settings')) || window.SEED_DATA.settings || {};
+      if (currentSettings.clubName) document.getElementById('settingClubName').value = currentSettings.clubName;
+      if (currentSettings.tagline) document.getElementById('settingTagline').value = currentSettings.tagline;
+      if (currentSettings.institution) document.getElementById('settingInstitution').value = currentSettings.institution;
+      if (currentSettings.schedule) document.getElementById('settingMeetingSchedule').value = currentSettings.schedule;
+      if (currentSettings.labLocation) document.getElementById('settingLabLocation').value = currentSettings.labLocation;
+      if (currentSettings.contactEmail) document.getElementById('settingContactEmail').value = currentSettings.contactEmail;
+      if (currentSettings.noticeBanner) document.getElementById('settingNoticeBanner').value = currentSettings.noticeBanner;
+
+      // 2. Load Leadership
+      const rawLead = (await ClubDB.get('leadership')) || {};
+      allLeadership = {};
+      Object.entries(rawLead).forEach(([k, v]) => {
+        if (v && typeof v === 'object') {
+          allLeadership[k] = { ...v, id: v.id || k, _key: k };
+        }
+      });
+      renderLeadershipTable();
+    }
+
+    function renderLeadershipTable() {
+      const tbody = document.getElementById('leadershipTableBody');
+      const list = Object.values(allLeadership);
+
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 2rem;">No leadership members configured.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = list.map(l => {
+        const key = l._key || l.id;
+        const photo = l.photo || 'assets/logo/club_logo.png';
+        const imgSrc = (photo.startsWith('data:') || photo.startsWith('http')) ? photo : ('../' + photo);
+        return `
+          <tr>
+            <td><img src="${imgSrc}" alt="${l.name}" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 1px solid var(--accent-cyan);" /></td>
+            <td><strong>${l.name || 'Untitled'}</strong></td>
+            <td><span class="badge badge-purple">${l.role || 'Leader'}</span></td>
+            <td style="font-size: 0.85rem;">${l.section || '-'}</td>
+            <td style="font-size: 0.82rem; color: var(--text-secondary); max-width: 280px;">${(l.bio || '').substring(0, 80)}...</td>
+            <td>
+              <div class="action-btn-group">
+                <button class="btn btn-sm btn-secondary" onclick="editLeader('${key}')">✏️</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteLeader('${key}')">🗑️</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    const saveBtn = document.getElementById('saveSettingsBtn');
+
+    // Save Club Identity Settings
+    document.getElementById('clubSettingsForm').onsubmit = async (e) => {
+      e.preventDefault();
+      if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving...'; }
+      try {
+        const updated = {
+          clubName: document.getElementById('settingClubName').value.trim(),
+          tagline: document.getElementById('settingTagline').value.trim(),
+          institution: document.getElementById('settingInstitution').value.trim(),
+          schedule: document.getElementById('settingMeetingSchedule').value.trim(),
+          labLocation: document.getElementById('settingLabLocation').value.trim(),
+          contactEmail: document.getElementById('settingContactEmail').value.trim(),
+          noticeBanner: document.getElementById('settingNoticeBanner').value.trim()
+        };
+        await ClubDB.set('settings', updated);
+        currentSettings = updated;
+        showToast("Club settings saved successfully! ✓", "success");
+      } catch (err) {
+        console.error(err);
+        showToast("Error saving settings.", "error");
+      } finally {
+        if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Save Club Details ✓'; }
+      }
+    };
+
+    // Leadership CRUD
+    window.openCreateLeaderModal = function() {
+      document.getElementById('editLeaderId').value = '';
+      document.getElementById('leaderModalTitle').textContent = 'Add Leadership Member';
+      document.getElementById('leaderEditorForm').reset();
+      document.getElementById('customLeaderPhotoData').value = '';
+      document.getElementById('leaderPhotoPreview').src = '../assets/logo/club_logo.png';
+      openModal('leaderModal');
+    };
+
+    window.editLeader = function(key) {
+      const l = allLeadership[key];
+      if (!l) return;
+      document.getElementById('editLeaderId').value = key;
+      document.getElementById('leaderModalTitle').textContent = 'Edit Leader: ' + (l.name || '');
+      document.getElementById('modalLeaderName').value = l.name || '';
+      document.getElementById('modalLeaderRole').value = l.role || '';
+      document.getElementById('modalLeaderSection').value = l.section || '';
+      document.getElementById('modalLeaderBio').value = l.bio || '';
+
+      const photo = l.photo || '';
+      if (photo.startsWith('data:')) {
+        document.getElementById('customLeaderPhotoData').value = photo;
+        document.getElementById('leaderPhotoPreview').src = photo;
+      } else {
+        document.getElementById('customLeaderPhotoData').value = '';
+        document.getElementById('modalLeaderPhotoSelect').value = photo;
+        document.getElementById('leaderPhotoPreview').src = photo.startsWith('http') ? photo : ('../' + photo);
+      }
+      openModal('leaderModal');
+    };
+
+    window.deleteLeader = async function(key) {
+      if (!confirm("Are you sure you want to remove this leadership member?")) return;
+      await ClubDB.remove(`leadership/${key}`);
+      delete allLeadership[key];
+      renderLeadershipTable();
+      showToast("Leader removed from roster.", "info");
+    };
+
+    // Leader photo file upload
+    const leaderFileInput = document.getElementById('leaderPhotoFileInput');
+    if (leaderFileInput) {
+      leaderFileInput.addEventListener('change', async (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        try {
+          document.getElementById('leaderUploadStatus').textContent = 'Optimizing...';
+          const base64 = await window.compressImageToBase64(file, 240, 240, 0.85);
+          document.getElementById('customLeaderPhotoData').value = base64;
+          document.getElementById('leaderPhotoPreview').src = base64;
+          document.getElementById('leaderUploadStatus').textContent = '✓ Uploaded';
+          showToast('Photo compressed & ready!', 'success');
+        } catch (err) {
+          console.error(err);
+          showToast('Upload failed: ' + err.message, 'error');
+        }
+      });
+    }
+
+    document.getElementById('modalLeaderPhotoSelect').addEventListener('change', (e) => {
+      document.getElementById('customLeaderPhotoData').value = '';
+      const val = e.target.value;
+      document.getElementById('leaderPhotoPreview').src = val.startsWith('http') ? val : ('../' + val);
+      document.getElementById('leaderUploadStatus').textContent = 'Preset selected';
+    });
+
+    document.getElementById('leaderEditorForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('editLeaderId').value;
+      const name = document.getElementById('modalLeaderName').value.trim();
+      const role = document.getElementById('modalLeaderRole').value.trim();
+      const section = document.getElementById('modalLeaderSection').value.trim();
+      const customPhoto = document.getElementById('customLeaderPhotoData').value;
+      const photo = customPhoto || document.getElementById('modalLeaderPhotoSelect').value;
+      const bio = document.getElementById('modalLeaderBio').value.trim();
+
+      if (id) {
+        const updated = { name, role, section, photo, bio };
+        await ClubDB.update(`leadership/${id}`, updated);
+        allLeadership[id] = { ...allLeadership[id], ...updated, id, _key: id };
+        showToast("Leader profile updated!", "success");
+      } else {
+        const newLead = { name, role, section, photo, bio, createdAt: Date.now() };
+        const created = await ClubDB.push('leadership', newLead);
+        const newKey = (created && created.id) ? created.id : ('lead_' + Date.now());
+        allLeadership[newKey] = { ...created, id: newKey, _key: newKey };
+        showToast("New leader added to roster!", "success");
+      }
+
+      closeModal('leaderModal');
+      renderLeadershipTable();
+    };
+
+    window.exportDataSnapshot = async function() {
+      const allData = await ClubDB.get('');
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(allData, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", "club_database_snapshot.json");
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      showToast("Snapshot exported!", "success");
+    };
+
+    window.resyncWithFirebase = async function() {
+      if (!confirm("Clear local cache and refresh all data directly from Firebase Realtime Database?")) return;
+      ['CLUB_WEB_DB_STORE_V1', 'CLUB_WEB_DB_STORE_V2', 'CLUB_WEB_DB_STORE_V3', 'CLUB_WEB_DB_STORE_V4', 'CLUB_WEB_DB_STORE_V5'].forEach(k => {
+        try { localStorage.removeItem(k); } catch (_) {}
+      });
+      showToast("Local cache cleared. Fetching live Firebase data...", "info");
+      setTimeout(() => window.location.reload(), 600);
+    };
+
+    // Settings page: load immediately
+    loadSettingsAndLeadership();
+    // Also reload after admin auth resolves to get any server-side override
+    document.addEventListener('club-auth-changed', () => {
+      loadSettingsAndLeadership();
+    });
+    window.addEventListener('club-db-updated', () => loadSettingsAndLeadership());
+  </script>
+</body>
+</html>

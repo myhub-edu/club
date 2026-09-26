@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="assets/logo/club_logo.png" />
+  <link rel="apple-touch-icon" href="assets/logo/club_logo.png" />
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Projects Showcase | Science & IT Club | Liverpool International Secondary College</title>
+  <meta name="description" content="Explore cutting-edge student projects in robotics, AI, IoT hardware, and software engineering built by students at Liverpool International Secondary College." />
+  <meta name="keywords" content="Student Projects, High School Robotics, Arduino Projects, Python AI YOLO, ESP32 Weather Station, STEM Innovation" />
+  <meta name="author" content="Liverpool International Secondary College - Science & IT Club" />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#070b14" />
+  <link rel="canonical" href="projects.html" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="projects.html" />
+  <meta property="og:title" content="Projects Showcase | Science & IT Club" />
+  <meta property="og:description" content="Explore cutting-edge student projects in robotics, AI, IoT hardware, and software engineering." />
+  <meta property="og:image" content="assets/logo/club_logo.png" />
+  <meta property="og:site_name" content="Science & IT Club" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Projects Showcase | Science & IT Club" />
+  <meta name="twitter:description" content="Explore cutting-edge student projects in robotics, AI, IoT hardware, and software engineering." />
+  <meta name="twitter:image" content="assets/logo/club_logo.png" />
+
+  <!-- Schema.org JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "Science & IT Club Student Projects",
+    "description": "Directory of student-built engineering blueprints, robotics rovers, and computer vision projects.",
+    "publisher": {
+      "@type": "EducationalOrganization",
+      "name": "Liverpool International Secondary College"
+    }
+  }
+  </script>
+  
+  <link rel="stylesheet" href="css/global.css" />
+  
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  
+  <script src="js/firebase-config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/notifications.js" defer></script>
+  <script src="js/main.js" defer></script>
+</head>
+<body>
+  <div class="ambient-glow"></div>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="container header-container">
+      <a href="index.html" class="brand">
+        <img src="assets/logo/club_logo.png" alt="Club Logo" class="brand-logo" />
+        <span class="brand-text">Science & <span>IT Club</span></span>
+      </a>
+      <nav class="desktop-nav">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="about.html" class="nav-link">About</a>
+        <a href="projects.html" class="nav-link active">Projects</a>
+        <a href="events.html" class="nav-link">Events</a>
+        <a href="moments.html" class="nav-link">Moments</a>
+        <a href="voices.html" class="nav-link">Voices</a>
+        <a href="resources.html" class="nav-link">Resources</a>
+      </nav>
+      <div class="header-actions">
+        <a href="login.html" class="btn btn-primary btn-sm">Member Login</a>
+        <button class="hamburger-btn" id="drawerToggleBtn" aria-label="Open Menu">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Drawer -->
+  <div class="mobile-drawer-overlay" id="mobileDrawerOverlay"></div>
+  <aside class="mobile-drawer" id="mobileDrawer">
+    <div class="mobile-drawer-header">
+      <div class="brand">
+        <img src="assets/logo/club_logo.png" alt="Club Logo" class="brand-logo" />
+        <span class="brand-text">Science & <span>IT Club</span></span>
+      </div>
+      <button class="hamburger-btn" id="drawerCloseBtn" aria-label="Close Menu">✕</button>
+    </div>
+    <nav class="drawer-links">
+      <a href="index.html" class="drawer-link">🏠 Home</a>
+      <a href="about.html" class="drawer-link">ℹ️ About the Club</a>
+      <a href="projects.html" class="drawer-link active">🔬 Projects Showcase</a>
+      <a href="events.html" class="drawer-link">📅 Events & Workshops</a>
+      <a href="moments.html" class="drawer-link">📸 Captured Moments</a>
+      <a href="voices.html" class="drawer-link">💬 Student Voices</a>
+      <a href="resources.html" class="drawer-link">📚 Learning Resources</a>
+    </nav>
+  </aside>
+
+  <main style="padding: 3rem 0;">
+    <div class="container">
+      <div style="text-align: center; margin-bottom: 2.5rem;">
+        <span class="badge badge-cyan">Innovation Lab</span>
+        <h1 style="margin-top: 0.5rem; margin-bottom: 0.75rem;">Student Engineering & Research Projects</h1>
+        <p style="max-width: 650px; margin: 0 auto;">Discover the hardware builds, software platforms, and scientific prototypes designed and coded by club members.</p>
+      </div>
+
+      <!-- Controls: Filters & Search -->
+      <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 2.5rem;">
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;" id="categoryFilterContainer">
+          <button class="btn btn-sm btn-primary filter-btn" data-cat="all">All Projects</button>
+          <button class="btn btn-sm btn-secondary filter-btn" data-cat="Robotics">Robotics</button>
+          <button class="btn btn-sm btn-secondary filter-btn" data-cat="Coding & Programming">Coding & Programming</button>
+          <button class="btn btn-sm btn-secondary filter-btn" data-cat="IoT & Electronics">IoT & Electronics</button>
+          <button class="btn btn-sm btn-secondary filter-btn" data-cat="AI & Software">AI & Software</button>
+        </div>
+
+        <div style="width: 100%; max-width: 320px;">
+          <input type="text" id="projectSearchInput" class="form-input" placeholder="🔍 Search projects by title or tech..." />
+        </div>
+      </div>
+
+      <!-- Projects Grid -->
+      <div id="projectsDisplayGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.75rem;">
+        <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+          <p>Loading projects...</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Mobile Bottom Nav -->
+  <nav class="bottom-nav">
+    <a href="index.html" class="bottom-nav-item"><span class="icon">🏠</span><span>Home</span></a>
+    <a href="projects.html" class="bottom-nav-item active"><span class="icon">🔬</span><span>Projects</span></a>
+    <a href="events.html" class="bottom-nav-item"><span class="icon">📅</span><span>Events</span></a>
+    <a href="voices.html" class="bottom-nav-item"><span class="icon">💬</span><span>Voices</span></a>
+    <a href="profile.html" class="bottom-nav-item"><span class="icon">👤</span><span>Profile</span></a>
+  </nav>
+
+  <footer class="site-footer">
+    <div class="container" style="text-align: center;">
+      <p>© 2026 Liverpool International Secondary College – Science & IT Club</p>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const grid = document.getElementById('projectsDisplayGrid');
+      const searchInput = document.getElementById('projectSearchInput');
+      const filterBtns = document.querySelectorAll('.filter-btn');
+
+      let allProjects = [];
+      let activeCategory = 'all';
+
+      async function loadProjects() {
+        const raw = (await ClubDB.get('projects')) || {};
+        // Repair: ensure every project's id field matches its key
+        allProjects = Object.entries(raw).map(([key, p]) => {
+          if (!p.id || p.id !== key) return { ...p, id: key };
+          return p;
+        });
+        render();
+      }
+
+      function render() {
+        const query = searchInput.value.toLowerCase().trim();
+        const filtered = allProjects.filter(p => {
+          const matchCat = activeCategory === 'all' || p.category === activeCategory;
+          const matchSearch = !query || 
+            (p.title && p.title.toLowerCase().includes(query)) ||
+            (p.description && p.description.toLowerCase().includes(query)) ||
+            (p.technology && p.technology.toLowerCase().includes(query));
+          return matchCat && matchSearch;
+        });
+
+        if (allProjects.length === 0) {
+          grid.innerHTML = `
+            <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 3.5rem 2rem; border: 1px solid var(--border-subtle); background: rgba(15, 23, 42, 0.6);">
+              <div style="font-size: 3rem; margin-bottom: 1rem;">🔬</div>
+              <span class="badge badge-cyan" style="margin-bottom: 0.75rem; display: inline-block;">Engineering Lab</span>
+              <h3 style="margin-bottom: 0.75rem; font-size: 1.35rem;">Projects Being Prepared</h3>
+              <p style="color: var(--text-secondary); max-width: 500px; margin: 0 auto 1.5rem; line-height: 1.6;">
+                Student engineering prototypes, robotics blueprints, and software repositories will be showcased here once published by the club.
+              </p>
+              <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                <a href="submit-idea.html" class="btn btn-primary btn-sm">Propose a Project Idea 💡</a>
+                <a href="events.html" class="btn btn-outline btn-sm">Upcoming Workshops 📅</a>
+              </div>
+            </div>
+          `;
+          return;
+        }
+
+        if (filtered.length === 0) {
+          grid.innerHTML = `
+            <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+              <h3>No projects match your filter</h3>
+              <p style="margin-top: 0.5rem; color: var(--text-muted);">Try adjusting your search terms or category selection.</p>
+            </div>
+          `;
+          return;
+        }
+
+        grid.innerHTML = filtered.map(p => `
+          <div class="card" style="display: flex; flex-direction: column;">
+            <img src="${p.coverImage}" alt="${p.title}" class="card-media" />
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+              <span class="badge badge-cyan">${p.category}</span>
+              <span class="badge ${p.status === 'completed' ? 'badge-emerald' : 'badge-amber'}">${p.status}</span>
+            </div>
+            <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">${p.title}</h3>
+            <p style="font-size: 0.9rem; line-height: 1.5; margin-bottom: 1rem; flex: 1;">${p.description}</p>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.25rem; background: rgba(0,0,0,0.2); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm);">
+              <strong>Stack:</strong> ${p.technology}
+            </div>
+            <a href="project?id=${p.id}" class="btn btn-secondary" style="width: 100%;">View Full Blueprint →</a>
+          </div>
+        `).join('');
+      }
+
+      filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          filterBtns.forEach(b => {
+            b.classList.remove('btn-primary');
+            b.classList.add('btn-secondary');
+          });
+          btn.classList.remove('btn-secondary');
+          btn.classList.add('btn-primary');
+          activeCategory = btn.dataset.cat;
+          render();
+        });
+      });
+
+      searchInput.addEventListener('input', render);
+
+      loadProjects();
+    });
+  </script>
+</body>
+</html>

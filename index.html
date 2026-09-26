@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Science & IT Club | Liverpool International Secondary College | Robotics, AI & STEM</title>
+  <meta name="description" content="Official website of the Science & IT Club at Liverpool International Secondary College. Discover cutting-edge student projects in robotics, AI, IoT hardware, hackathons, and scientific research." />
+  <meta name="keywords" content="Liverpool International Secondary College, Science & IT Club, High School Robotics, Student Coding, AI Machine Learning, Secondary STEM, Hackathon 2026, IoT Electronics" />
+  <meta name="author" content="Liverpool International Secondary College - Science & IT Club" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+  <meta name="theme-color" content="#070b14" />
+  <link rel="canonical" href="index.html" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="index.html" />
+  <meta property="og:title" content="Science & IT Club | Liverpool International Secondary College" />
+  <meta property="og:description" content="Empowering young minds to build, code, and innovate through robotics, AI, and hands-on scientific research." />
+  <meta property="og:image" content="assets/logo/club_logo.png" />
+  <meta property="og:site_name" content="Science & IT Club" />
+  <meta property="og:locale" content="en_US" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Science & IT Club | Liverpool International Secondary College" />
+  <meta name="twitter:description" content="Empowering young minds to build, code, and innovate through robotics, AI, and hands-on scientific research." />
+  <meta name="twitter:image" content="assets/logo/club_logo.png" />
+
+  <!-- JSON-LD Structured Data for High SEO Reach -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "EducationalOrganization",
+        "@id": "https://liverpool-science-it-club.edu/#organization",
+        "name": "Science & IT Club - Liverpool International Secondary College",
+        "url": "https://liverpool-science-it-club.edu",
+        "logo": "https://liverpool-science-it-club.edu/assets/logo/club_logo.png",
+        "description": "Student-led innovation society focusing on robotics engineering, artificial intelligence, electronics, and scientific research.",
+        "parentOrganization": {
+          "@type": "EducationalOrganization",
+          "name": "Liverpool International Secondary College"
+        }
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://liverpool-science-it-club.edu/#website",
+        "url": "https://liverpool-science-it-club.edu",
+        "name": "Science & IT Club",
+        "publisher": { "@id": "https://liverpool-science-it-club.edu/#organization" }
+      }
+    ]
+  }
+  </script>
+  
+    <link rel="icon" type="image/png" href="assets/logo/club_logo.png" />
+  <link rel="apple-touch-icon" href="assets/logo/club_logo.png" />
+  <link rel="shortcut icon" href="assets/logo/club_logo.png" />
+  <link rel="stylesheet" href="css/global.css" />
+  
+  <!-- Firebase Compat CDN -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  
+  <script src="js/firebase-config.js"></script>
+  <script src="js/notifications.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/main.js" defer></script>
+</head>
+<body>
+  <div class="ambient-glow"></div>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="container header-container">
+      <a href="index.html" class="brand">
+        <img src="assets/logo/club_logo.png" alt="Club Logo" class="brand-logo" />
+        <span class="brand-text">Science & <span>IT Club</span></span>
+      </a>
+
+      <nav class="desktop-nav">
+        <a href="index.html" class="nav-link active">Home</a>
+        <a href="about.html" class="nav-link">About</a>
+        <a href="projects.html" class="nav-link">Projects</a>
+        <a href="events.html" class="nav-link">Events</a>
+        <a href="moments.html" class="nav-link">Moments</a>
+        <a href="voices.html" class="nav-link">Voices</a>
+        <a href="resources.html" class="nav-link">Resources</a>
+      </nav>
+
+      <div class="header-actions">
+        <!-- Auth will populate login button or user menu -->
+        <a href="login.html" class="btn btn-primary btn-sm">Member Login</a>
+        <button class="hamburger-btn" id="drawerToggleBtn" aria-label="Open Menu">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Drawer Overlay & Drawer -->
+  <div class="mobile-drawer-overlay" id="mobileDrawerOverlay"></div>
+  <aside class="mobile-drawer" id="mobileDrawer">
+    <div class="mobile-drawer-header">
+      <div class="brand">
+        <img src="assets/logo/club_logo.png" alt="Club Logo" class="brand-logo" />
+        <span class="brand-text">Science & <span>IT Club</span></span>
+      </div>
+      <button class="hamburger-btn" id="drawerCloseBtn" aria-label="Close Menu">✕</button>
+    </div>
+    <nav class="drawer-links">
+      <a href="index.html" class="drawer-link active">🏠 Home</a>
+      <a href="about.html" class="drawer-link">ℹ️ About the Club</a>
+      <a href="projects.html" class="drawer-link">🔬 Projects Showcase</a>
+      <a href="events.html" class="drawer-link">📅 Events & Workshops</a>
+      <a href="moments.html" class="drawer-link">📸 Captured Moments</a>
+      <a href="voices.html" class="drawer-link">💬 Student Voices</a>
+      <a href="resources.html" class="drawer-link">📚 Learning Resources</a>
+      <div style="border-top: 1px solid var(--border-subtle); margin: 0.75rem 0;"></div>
+      <a href="submit-idea.html" class="drawer-link">💡 Propose Project Idea</a>
+      <a href="submit-feedback.html" class="drawer-link">⭐ Share Feedback</a>
+      <a href="contact-admin.html" class="drawer-link">✉️ Write to Head Admin</a>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main>
+    <!-- Hero Section -->
+    <section style="padding: 4.5rem 0 3.5rem; text-align: center; position: relative;">
+      <div class="container" style="max-width: 860px;">
+        <div style="display: inline-flex; align-items: center; gap: 0.5rem; margin-bottom: 1.25rem;">
+          <span class="badge badge-cyan">Liverpool International Secondary College</span>
+          <span class="badge badge-purple">Est. 2026</span>
+        </div>
+        <h1 style="margin-bottom: 1.25rem;">
+          Empowering Young Minds to <span style="background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Build, Code & Innovate</span>
+        </h1>
+        <p style="font-size: 1.15rem; margin-bottom: 2rem; color: var(--text-secondary); max-width: 680px; margin-left: auto; margin-right: auto;">
+          The premier student-led innovation hub uniting robotics engineering, AI machine learning, scientific research, and collaborative hardware builds.
+        </p>
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+          <a href="projects.html" class="btn btn-primary">Explore Projects →</a>
+          <a href="events.html" class="btn btn-secondary">Upcoming Events 📅</a>
+          <a href="submit-idea.html" class="btn btn-outline">Submit an Idea 💡</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- What We Do (2x2 Touch Cards) -->
+    <section style="padding: 3rem 0; background: rgba(15, 23, 42, 0.4);">
+      <div class="container">
+        <div style="text-align: center; margin-bottom: 2.5rem;">
+          <span class="badge badge-purple">Core Pillars</span>
+          <h2 style="margin-top: 0.5rem;">What We Do in the Club</h2>
+          <p>Four interconnected domains driving student breakthroughs every term.</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem;">
+          <div class="card" style="border-top: 3px solid var(--accent-cyan);">
+            <div style="font-size: 2.2rem; margin-bottom: 0.75rem;">🔬</div>
+            <h3 style="margin-bottom: 0.5rem;">Science & Research</h3>
+            <p style="font-size: 0.92rem;">Empirical laboratory experiments, physics simulations, and scientific exploration bridging textbook theories with real-world discoveries.</p>
+          </div>
+
+          <div class="card" style="border-top: 3px solid var(--accent-blue);">
+            <div style="font-size: 2.2rem; margin-bottom: 0.75rem;">💻</div>
+            <h3 style="margin-bottom: 0.5rem;">Technology & AI</h3>
+            <p style="font-size: 0.92rem;">From Python algorithms and full-stack software development to machine learning edge devices and modern cybersecurity essentials.</p>
+          </div>
+
+          <div class="card" style="border-top: 3px solid var(--accent-purple);">
+            <div style="font-size: 2.2rem; margin-bottom: 0.75rem;">🤖</div>
+            <h3 style="margin-bottom: 0.5rem;">Robotics & IoT</h3>
+            <p style="font-size: 0.92rem;">Autonomous wheeled rovers, LiDAR sensors, 3D printing custom mechanical parts, and smart internet-connected microcontrollers.</p>
+          </div>
+
+          <div class="card" style="border-top: 3px solid var(--accent-emerald);">
+            <div style="font-size: 2.2rem; margin-bottom: 0.75rem;">🚀</div>
+            <h3 style="margin-bottom: 0.5rem;">Innovation & Expos</h3>
+            <p style="font-size: 0.92rem;">Participating in regional hackathons, annual STEM exhibitions, inter-school engineering contests, and community technology showcases.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Upcoming Event Banner (Dynamically Loaded from DB) -->
+    <section style="padding: 3.5rem 0;">
+      <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <span class="badge badge-emerald">Live Calendar</span>
+            <h2 style="margin-top: 0.4rem;">Next Upcoming Event</h2>
+          </div>
+          <a href="events.html" style="font-weight: 600;">View All Events →</a>
+        </div>
+        <div id="upcomingEventContainer">
+          <!-- Dynamically populated by main.js from Firebase / ClubDB -->
+          <div class="card" style="text-align: center; padding: 2rem;">Loading next event...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Featured Projects (Dynamically Loaded) -->
+    <section style="padding: 3.5rem 0; background: rgba(15, 23, 42, 0.4);">
+      <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <span class="badge badge-cyan">Student Showcase</span>
+            <h2 style="margin-top: 0.4rem;">Featured Club Projects</h2>
+            <p>Hands-on hardware and software engineered by our student teams.</p>
+          </div>
+          <a href="projects.html" class="btn btn-outline btn-sm">Explore All Projects →</a>
+        </div>
+
+        <div id="homeProjectsGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+          <!-- Dynamically populated by main.js from Firebase / ClubDB -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Captured Moments Preview -->
+    <section style="padding: 3.5rem 0;">
+      <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <span class="badge badge-amber">Memories & Workshops</span>
+            <h2 style="margin-top: 0.4rem;">Captured Moments</h2>
+            <p>A glimpse into our lab sessions, competitions, and late-night builds.</p>
+          </div>
+          <a href="moments.html" class="btn btn-outline btn-sm">Full Gallery 📸</a>
+        </div>
+
+        <div id="homeMomentsGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem;">
+          <!-- Dynamically populated by main.js -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Student Voices Testimonials -->
+    <section style="padding: 3.5rem 0; background: rgba(15, 23, 42, 0.4);">
+      <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <span class="badge badge-purple">Community Impact</span>
+            <h2 style="margin-top: 0.4rem;">What Students Say</h2>
+            <p>Real feedback and experiences from our active club members.</p>
+          </div>
+          <a href="submit-feedback.html" class="btn btn-primary btn-sm">Share Your Experience ⭐</a>
+        </div>
+
+        <div id="homeVoicesGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+          <!-- Dynamically populated by main.js -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Final Call to Action -->
+    <section style="padding: 4rem 0; text-align: center;">
+      <div class="container" style="max-width: 760px;">
+        <div class="card" style="padding: 3rem 2rem; border: 1px solid var(--border-glow); background: radial-gradient(circle at 50% 0%, rgba(0, 242, 254, 0.12) 0%, rgba(15, 23, 42, 0.9) 80%);">
+          <h2 id="ctaHeading" style="margin-bottom: 1rem;">Ready to Build the Future With Us?</h2>
+          <p id="ctaBody" style="margin-bottom: 2rem;">
+            Whether you are passionate about programming, soldering circuits, building AI models, or discovering science wonders, there is a place for you in our club.
+          </p>
+          <div id="ctaButtons" style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            <!-- Populated by ctaInit() below -->
+            <a href="login.html" class="btn btn-primary">Join Club / Member Sign-In</a>
+            <a href="submit-idea.html" class="btn btn-secondary">Propose a New Project 🚀</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // Dynamic CTA — update buttons based on auth state
+    function ctaInit() {
+      const user = window.ClubAuth && window.ClubAuth.currentUser;
+      const heading = document.getElementById('ctaHeading');
+      const body = document.getElementById('ctaBody');
+      const buttons = document.getElementById('ctaButtons');
+      if (!buttons) return;
+
+      if (user) {
+        const role = (window.ClubAuth && window.ClubAuth.userRole) || user.role || 'member';
+        const isAdmin = role === 'admin' || role === 'headAdmin';
+        const firstName = ((user.displayName || 'Member').trim().split(/\s+/)[0]) || 'Member';
+        if (heading) heading.textContent = `Welcome back, ${firstName}! 👋`;
+        if (body) body.textContent = "You're already signed in. Head to your dashboard or submit a new project idea.";
+        buttons.innerHTML = `
+          <a href="${isAdmin ? 'admin/index.html' : 'profile.html'}" class="btn btn-primary">
+            ${isAdmin ? '⚡ Admin Dashboard' : '👤 My Dashboard'}
+          </a>
+          <a href="submit-idea.html" class="btn btn-secondary">Propose a New Project 🚀</a>
+        `;
+      } else {
+        if (heading) heading.textContent = "Ready to Build the Future With Us?";
+        if (body) body.textContent = "Whether you are passionate about programming, soldering circuits, building AI models, or discovering science wonders, there is a place for you in our club.";
+        buttons.innerHTML = `
+          <a href="login.html" class="btn btn-primary">Join Club / Member Sign-In</a>
+          <a href="submit-idea.html" class="btn btn-secondary">Propose a New Project 🚀</a>
+        `;
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      ctaInit();
+      setTimeout(ctaInit, 250);
+      setTimeout(ctaInit, 800);
+    });
+    document.addEventListener('club-auth-changed', ctaInit);
+  </script>
+
+  <!-- Mobile Bottom Navigation Bar -->
+  <nav class="bottom-nav">
+    <a href="index.html" class="bottom-nav-item active">
+      <span class="icon">🏠</span>
+      <span>Home</span>
+    </a>
+    <a href="projects.html" class="bottom-nav-item">
+      <span class="icon">🔬</span>
+      <span>Projects</span>
+    </a>
+    <a href="events.html" class="bottom-nav-item">
+      <span class="icon">📅</span>
+      <span>Events</span>
+    </a>
+    <a href="voices.html" class="bottom-nav-item">
+      <span class="icon">💬</span>
+      <span>Voices</span>
+    </a>
+    <a href="profile.html" class="bottom-nav-item">
+      <span class="icon">👤</span>
+      <span>Profile</span>
+    </a>
+  </nav>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="brand">
+            <img src="assets/logo/club_logo.png" alt="Club Logo" class="brand-logo" />
+            <span class="brand-text">Science & <span>IT Club</span></span>
+          </div>
+          <p style="font-size: 0.88rem; color: var(--text-muted);">
+            Liverpool International Secondary College.<br />
+            Inspiring the next generation of engineers, coders, and scientists.
+          </p>
+        </div>
+
+        <div class="footer-links-group">
+          <h4>Explore</h4>
+          <ul>
+            <li><a href="about.html">About the Club</a></li>
+            <li><a href="projects.html">Student Projects</a></li>
+            <li><a href="events.html">Events & Workshops</a></li>
+            <li><a href="moments.html">Photo Gallery</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-links-group">
+          <h4>Members</h4>
+          <ul>
+            <li><a href="login.html">Google Sign-In</a></li>
+            <li><a href="notifications.html">Notifications</a></li>
+            <li><a href="submit-idea.html">Submit Project Idea</a></li>
+            <li><a href="contact-admin.html">Contact Head Admin</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-links-group">
+          <h4>Admin</h4>
+          <ul>
+            <li><a href="admin/index.html">Admin Dashboard</a></li>
+            <li><a href="resources.html">Learning Resources</a></li>
+            <li><a href="voices.html">Student Testimonials</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>© 2026 Liverpool International Secondary College – Science & IT Club. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

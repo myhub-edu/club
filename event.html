@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Event Details | Science &amp; IT Club | Liverpool College</title>
+  <meta name="description" content="Full details about an upcoming Science &amp; IT Club workshop, hackathon, or exhibition at Liverpool International Secondary College." />
+  <meta name="keywords" content="STEM Event, Hackathon 2026, Science Expo Liverpool, Robotics Workshop, Secondary College IT Fair" />
+  <meta name="author" content="Science &amp; IT Club - Liverpool International Secondary College" />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#070b14" />
+  <link rel="canonical" href="event.html" />
+  <link rel="icon" type="image/png" href="assets/logo/club_logo.png" />
+  <link rel="apple-touch-icon" href="assets/logo/club_logo.png" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="event.html" />
+  <meta property="og:title" content="Event Details | Science &amp; IT Club" />
+  <meta property="og:description" content="Join our upcoming STEM hackathons, robotics workshops, and annual science expos." />
+  <meta property="og:image" content="assets/events/science-expo.jpg" />
+  <meta property="og:site_name" content="Science &amp; IT Club" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Event Details | Science &amp; IT Club" />
+  <meta name="twitter:description" content="Join our upcoming STEM hackathons, robotics workshops, and annual science expos." />
+  <meta name="twitter:image" content="assets/events/science-expo.jpg" />
+
+  <!-- Schema.org JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "EducationEvent",
+    "name": "Science & IT Club Event",
+    "description": "Student technology workshop and innovation event at Liverpool International Secondary College.",
+    "organizer": {
+      "@type": "EducationalOrganization",
+      "name": "Liverpool International Secondary College - Science & IT Club"
+    }
+  }
+  </script>
+  
+  <link rel="stylesheet" href="css/global.css" />
+  
+  <!-- Firebase Compat CDN -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  
+  <script src="js/firebase-config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/notifications.js" defer></script>
+  <script src="js/main.js" defer></script>
+</head>
+<body>
+  <div class="ambient-glow"></div>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="container header-container">
+      <a href="index.html" class="brand">
+        <img src="assets/logo/club_logo.png" alt="Club Logo" class="brand-logo" />
+        <span class="brand-text">Science &amp; <span>IT Club</span></span>
+      </a>
+      <nav class="desktop-nav">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="about.html" class="nav-link">About</a>
+        <a href="projects.html" class="nav-link">Projects</a>
+        <a href="events.html" class="nav-link active">Events</a>
+        <a href="moments.html" class="nav-link">Moments</a>
+        <a href="voices.html" class="nav-link">Voices</a>
+        <a href="resources.html" class="nav-link">Resources</a>
+      </nav>
+      <div class="header-actions">
+        <a href="login.html" class="btn btn-primary btn-sm">Member Login</a>
+        <button class="hamburger-btn" id="drawerToggleBtn" aria-label="Open Menu">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Drawer -->
+  <div class="mobile-drawer-overlay" id="mobileDrawerOverlay"></div>
+  <aside class="mobile-drawer" id="mobileDrawer">
+    <div class="mobile-drawer-header">
+      <div class="brand">
+        <img src="assets/logo/club_logo.png" alt="Club Logo" class="brand-logo" />
+        <span class="brand-text">Science &amp; <span>IT Club</span></span>
+      </div>
+      <button class="hamburger-btn" id="drawerCloseBtn" aria-label="Close Menu">✕</button>
+    </div>
+    <nav class="drawer-links">
+      <a href="index.html" class="drawer-link">🏠 Home</a>
+      <a href="about.html" class="drawer-link">ℹ️ About the Club</a>
+      <a href="projects.html" class="drawer-link">🔬 Projects Showcase</a>
+      <a href="events.html" class="drawer-link active">📅 Events &amp; Workshops</a>
+      <a href="moments.html" class="drawer-link">📸 Captured Moments</a>
+      <a href="voices.html" class="drawer-link">💬 Student Voices</a>
+      <a href="resources.html" class="drawer-link">📚 Learning Resources</a>
+    </nav>
+  </aside>
+
+  <main style="padding: 2.5rem 0 5rem;">
+    <div class="container" style="max-width: 900px;" id="eventDetailContainer">
+      <div class="card" style="text-align: center; padding: 3rem;">
+        <p>Loading event information...</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Mobile Bottom Nav -->
+  <nav class="bottom-nav">
+    <a href="index.html" class="bottom-nav-item"><span class="icon">🏠</span><span>Home</span></a>
+    <a href="projects.html" class="bottom-nav-item"><span class="icon">🔬</span><span>Projects</span></a>
+    <a href="events.html" class="bottom-nav-item active"><span class="icon">📅</span><span>Events</span></a>
+    <a href="voices.html" class="bottom-nav-item"><span class="icon">💬</span><span>Voices</span></a>
+    <a href="profile.html" class="bottom-nav-item"><span class="icon">👤</span><span>Profile</span></a>
+  </nav>
+
+  <footer class="site-footer">
+    <div class="container" style="text-align: center;">
+      <p>© 2026 Liverpool International Secondary College – Science &amp; IT Club</p>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const container = document.getElementById('eventDetailContainer');
+      const params = new URLSearchParams(window.location.search);
+      const eventId = params.get('id');
+
+      const allEvents = (await ClubDB.get('events')) || {};
+      let eventItem = null;
+      if (eventId) {
+        // Try direct key lookup first
+        if (allEvents[eventId]) {
+          eventItem = allEvents[eventId];
+        } else {
+          // Fallback: scan by id field (handles Firebase push keys)
+          eventItem = Object.values(allEvents).find(e => e.id === eventId || e.slug === eventId);
+        }
+      }
+      // Only fall back to first event if no id was given
+      if (!eventItem && !eventId) {
+        eventItem = Object.values(allEvents)[0];
+      }
+
+      if (!eventItem) {
+        container.innerHTML = `
+          <div class="card" style="text-align: center; padding: 3.5rem 2rem;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">📅</div>
+            <h2 style="margin-bottom: 0.75rem;">Event Not Found</h2>
+            <p style="margin: 0 0 1.5rem; color: var(--text-secondary);">The requested event could not be located. It may have been removed or the link is incorrect.</p>
+            <a href="events.html" class="btn btn-primary">← Back to Events Calendar</a>
+          </div>
+        `;
+        return;
+      }
+
+      document.title = `${eventItem.title} | Science & IT Club`;
+
+      const statusBadge = eventItem.status === 'upcoming' ? 'badge-emerald' : 'badge-amber';
+      const statusLabel = eventItem.status === 'upcoming' ? '🟢 Upcoming' : '✅ Completed';
+
+      container.innerHTML = `
+        <div style="margin-bottom: 1.5rem;">
+          <a href="events.html" style="font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.4rem; color: var(--text-secondary); margin-bottom: 1rem; text-decoration: none; transition: color 0.2s ease;" onmouseover="this.style.color='var(--accent-cyan)'" onmouseout="this.style.color='var(--text-secondary)'">
+            ← Back to Events Calendar
+          </a>
+          <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap;">
+            <span class="badge ${statusBadge}">${statusLabel}</span>
+            <span class="badge badge-purple">📅 ${eventItem.date}</span>
+            ${eventItem.time ? `<span class="badge badge-cyan">⏰ ${eventItem.time}</span>` : ''}
+          </div>
+          <h1 style="font-size: clamp(1.8rem, 4vw, 2.75rem); margin-bottom: 1rem; line-height: 1.2;">${eventItem.title}</h1>
+        </div>
+
+        <div class="card" style="margin-bottom: 2rem; overflow: hidden; padding: 0; border-radius: var(--radius-md);">
+          <img src="${eventItem.coverImage}" alt="${eventItem.title}" style="width: 100%; max-height: 440px; object-fit: cover; display: block;" loading="lazy" />
+        </div>
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.75rem;" class="event-details-grid">
+          <div>
+            <div class="card" style="margin-bottom: 1.5rem;">
+              <h3 style="margin-bottom: 1rem;">About This Event</h3>
+              <p style="font-size: 1rem; line-height: 1.7; margin-bottom: 1.25rem;">${eventItem.description}</p>
+              <p style="font-size: 0.95rem; line-height: 1.7; color: var(--text-secondary);">
+                All attendees will have hands-on access to club hardware, workstations, and live demonstrations led by our student project heads and faculty advisors.
+              </p>
+            </div>
+
+            <div class="card">
+              <h3 style="margin-bottom: 1rem;">Agenda &amp; Highlights</h3>
+              <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.75rem; padding: 0; margin: 0;">
+                <li style="display: flex; gap: 0.75rem; align-items: flex-start;">
+                  <span class="badge badge-cyan" style="flex-shrink: 0; margin-top: 2px;">Phase 1</span>
+                  <div><strong>Keynote &amp; Project Unveiling:</strong> Brief overview of the hardware and software tracks.</div>
+                </li>
+                <li style="display: flex; gap: 0.75rem; align-items: flex-start;">
+                  <span class="badge badge-purple" style="flex-shrink: 0; margin-top: 2px;">Phase 2</span>
+                  <div><strong>Interactive Demo Stations:</strong> Autonomous rovers, AI camera vision, and IoT sensors.</div>
+                </li>
+                <li style="display: flex; gap: 0.75rem; align-items: flex-start;">
+                  <span class="badge badge-emerald" style="flex-shrink: 0; margin-top: 2px;">Phase 3</span>
+                  <div><strong>Open Q&amp;A &amp; Team Sign-ups:</strong> Join active project groups and submit idea proposals.</div>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div>
+            <div class="card" style="margin-bottom: 1.5rem; background: rgba(0, 242, 254, 0.04); border-color: var(--border-glow);">
+              <h3 style="margin-bottom: 1rem;">Event Details</h3>
+              <div style="display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.92rem;">
+                <div>📍 <strong>Venue:</strong><br /><span style="color: var(--text-secondary);">${eventItem.location}</span></div>
+                <div>📅 <strong>Date:</strong><br /><span style="color: var(--text-secondary);">${eventItem.date}</span></div>
+                ${eventItem.time ? `<div>⏰ <strong>Time:</strong><br /><span style="color: var(--text-secondary);">${eventItem.time}</span></div>` : ''}
+                <div>🎓 <strong>Admission:</strong><br /><span style="color: var(--accent-emerald);">Free for all students</span></div>
+              </div>
+            </div>
+
+            <div class="card" style="background: rgba(139, 92, 246, 0.05); border-color: rgba(139, 92, 246, 0.3);">
+              <h4 style="margin-bottom: 0.75rem;">Stay Informed 🔔</h4>
+              <p style="font-size: 0.87rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.5;">
+                Enable notifications in your browser to get instant alerts when new events are announced or updated.
+              </p>
+              <button class="btn btn-outline btn-sm" style="width: 100%;" onclick="enableNotifications()">
+                🔔 Enable Event Alerts
+              </button>
+            </div>
+
+            <div class="card" style="margin-top: 1rem; background: rgba(0, 242, 254, 0.03);">
+              <h4 style="margin-bottom: 0.75rem;">Have a Question? 💬</h4>
+              <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.5;">
+                Reach out to club admins directly with any questions about this event.
+              </p>
+              <a href="contact-admin.html" class="btn btn-primary btn-sm" style="width: 100%;">Contact Admin →</a>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Enable notifications button handler
+      window.enableNotifications = async function() {
+        if (window.ClubWebPush) {
+          const granted = await ClubWebPush.requestPermission();
+          if (granted) {
+            if (typeof showToast === 'function') showToast('🔔 Notifications enabled! You\'ll be alerted for new events.', 'success');
+          } else {
+            if (typeof showToast === 'function') showToast('Notifications blocked. Enable them in your browser settings.', 'info');
+          }
+        } else {
+          if (typeof showToast === 'function') showToast('Notifications not supported on this browser.', 'info');
+        }
+      };
+    });
+  </script>
+
+  <style>
+    @media (max-width: 768px) {
+      .event-details-grid {
+        grid-template-columns: 1fr !important;
+      }
+    }
+  </style>
+</body>
+</html>

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="assets/logo/club_logo.png" />
+  <link rel="apple-touch-icon" href="assets/logo/club_logo.png" />
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Propose a Project Idea | Science & IT Club | Liverpool College</title>
+  <meta name="description" content="Submit student engineering proposals, hardware prototypes, and software project ideas to Science & IT Club faculty mentors at Liverpool International Secondary College." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="submit-idea.html" />
+  
+  <link rel="stylesheet" href="css/global.css" />
+  
+  <!-- Firebase Compat CDN -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  
+  <script src="js/firebase-config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/notifications.js" defer></script>
+  <script src="js/main.js" defer></script>
+</head>
+<body>
+  <div class="ambient-glow"></div>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="container header-container">
+      <a href="index.html" class="brand">
+        <img src="assets/logo/club_logo.png" alt="Club Logo" class="brand-logo" />
+        <span class="brand-text">Science & <span>IT Club</span></span>
+      </a>
+      <nav class="desktop-nav">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="about.html" class="nav-link">About</a>
+        <a href="projects.html" class="nav-link">Projects</a>
+        <a href="events.html" class="nav-link">Events</a>
+        <a href="moments.html" class="nav-link">Moments</a>
+        <a href="voices.html" class="nav-link">Voices</a>
+        <a href="resources.html" class="nav-link">Resources</a>
+      </nav>
+      <div class="header-actions">
+        <a href="login.html" class="btn btn-primary btn-sm">Member Login</a>
+        <button class="hamburger-btn" id="drawerToggleBtn" aria-label="Open Menu">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Drawer -->
+  <div class="mobile-drawer-overlay" id="mobileDrawerOverlay"></div>
+  <aside class="mobile-drawer" id="mobileDrawer">
+    <div class="mobile-drawer-header">
+      <div class="brand">
+        <img src="assets/logo/club_logo.png" alt="Club Logo" class="brand-logo" />
+        <span class="brand-text">Science & <span>IT Club</span></span>
+      </div>
+      <button class="hamburger-btn" id="drawerCloseBtn" aria-label="Close Menu">✕</button>
+    </div>
+    <nav class="drawer-links">
+      <a href="index.html" class="drawer-link">🏠 Home</a>
+      <a href="about.html" class="drawer-link">ℹ️ About the Club</a>
+      <a href="projects.html" class="drawer-link">🔬 Projects Showcase</a>
+      <a href="events.html" class="drawer-link">📅 Events & Workshops</a>
+      <a href="moments.html" class="drawer-link">📸 Captured Moments</a>
+      <a href="voices.html" class="drawer-link">💬 Student Voices</a>
+      <a href="resources.html" class="drawer-link">📚 Learning Resources</a>
+      <div style="border-top: 1px solid var(--border-subtle); margin: 0.75rem 0;"></div>
+      <a href="submit-idea.html" class="drawer-link active">💡 Propose Project Idea</a>
+      <a href="submit-feedback.html" class="drawer-link">⭐ Share Feedback</a>
+      <a href="contact-admin.html" class="drawer-link">✉️ Write to Head Admin</a>
+    </nav>
+  </aside>
+
+  <main style="padding: 3rem 0 5rem;">
+    <div class="container" style="max-width: 680px;">
+      <div style="text-align: center; margin-bottom: 2rem;">
+        <span class="badge badge-cyan">Student Innovation</span>
+        <h1 style="margin-top: 0.5rem; margin-bottom: 0.75rem;">Propose a Project Idea</h1>
+        <p>Have an idea for a robot, AI tool, physics experiment, or campus app? Submit it for advisor review and lab funding support.</p>
+      </div>
+
+      <div class="card" style="border-top: 4px solid var(--accent-cyan);">
+        <form id="ideaProposalForm">
+          <div class="form-group">
+            <label class="form-label">Project Title</label>
+            <input type="text" id="ideaTitle" class="form-input" required placeholder="e.g. Smart Campus Solar Trash Compactor" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <select id="ideaCategory" class="form-select" required>
+              <option value="Coding & Programming">💻 Coding & Programming (Python, Web, C++, Apps)</option>
+              <option value="Robotics">🤖 Robotics & Automation</option>
+              <option value="IoT & Electronics">⚡ IoT & Embedded Electronics</option>
+              <option value="AI & Software">🧠 Artificial Intelligence & Machine Learning</option>
+              <option value="Science & Physics">🔬 Science, Chemistry & Physics</option>
+              <option value="Green Tech">🌱 Green Technology & Sustainability</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Detailed Description & Objective</label>
+            <textarea id="ideaDesc" class="form-textarea" rows="4" required placeholder="Explain what the project aims to do, how it works, and what problem it solves on campus or in the community..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Estimated Materials or Hardware Needed (Optional)</label>
+            <input type="text" id="ideaMaterials" class="form-input" placeholder="e.g. Arduino Uno, Ultrasonic sensor, Servo motors" />
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%;" id="submitIdeaBtn">
+            🚀 Submit Project Proposal
+          </button>
+        </form>
+
+        <div id="ideaSuccessBox" style="display: none; text-align: center; padding: 2rem 1rem;">
+          <div style="font-size: 3rem; margin-bottom: 0.75rem;">🎉</div>
+          <h3>Idea Submitted for Review!</h3>
+          <p style="margin: 0.75rem 0 1.5rem; color: var(--text-secondary);">
+            Thank you! Your submission is now marked as <strong>Pending</strong>. Club advisors review proposals weekly. You can track progress on your profile.
+          </p>
+          <div style="display: flex; gap: 1rem; justify-content: center;">
+            <a href="profile.html" class="btn btn-primary btn-sm">View in Profile</a>
+            <button class="btn btn-outline btn-sm" onclick="resetIdeaForm()">Submit Another</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Mobile Bottom Nav -->
+  <nav class="bottom-nav">
+    <a href="index.html" class="bottom-nav-item"><span class="icon">🏠</span><span>Home</span></a>
+    <a href="projects.html" class="bottom-nav-item"><span class="icon">🔬</span><span>Projects</span></a>
+    <a href="events.html" class="bottom-nav-item"><span class="icon">📅</span><span>Events</span></a>
+    <a href="voices.html" class="bottom-nav-item"><span class="icon">💬</span><span>Voices</span></a>
+    <a href="profile.html" class="bottom-nav-item"><span class="icon">👤</span><span>Profile</span></a>
+  </nav>
+
+  <footer class="site-footer">
+    <div class="container" style="text-align: center;">
+      <p>© 2026 Liverpool International Secondary College – Science & IT Club</p>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.getElementById('ideaProposalForm');
+      const successBox = document.getElementById('ideaSuccessBox');
+      const submitBtn = form ? form.querySelector('button[type=submit]') : null;
+
+      if (!form) return;
+
+      form.onsubmit = async (e) => {
+        e.preventDefault();
+
+        if (!ClubAuth.currentUser) {
+          showToast("Please sign in first to submit an idea.", "error");
+          window.location.href = 'login.html?redirect=submit-idea.html';
+          return;
+        }
+
+        if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Submitting...'; }
+
+        try {
+          const user = ClubAuth.currentUser;
+          const title = document.getElementById('ideaTitle').value.trim();
+          const category = document.getElementById('ideaCategory').value;
+          const description = document.getElementById('ideaDesc').value.trim();
+          const materials = document.getElementById('ideaMaterials') ? document.getElementById('ideaMaterials').value.trim() : '';
+
+          if (!title || !category || !description) {
+            showToast("Please fill in all required fields.", "error");
+            return;
+          }
+
+          const newIdea = {
+            uid: user.uid,
+            displayName: user.displayName || 'Student',
+            title,
+            category,
+            description,
+            materials,
+            status: 'pending',
+            date: window.ClubDates ? ClubDates.getTodayFormatted() : new Date().toLocaleDateString('en-US'),
+            createdAt: Date.now()
+          };
+
+          await ClubDB.push('ideas', newIdea);
+
+          // ✅ Notify all admins about new idea submission
+          if (window.ClubNotifs && ClubNotifs.notifyAllAdmins) {
+            await ClubNotifs.notifyAllAdmins(
+              `💡 New Project Idea from ${user.displayName || 'Student'}`,
+              `"${title}" (${category}) — Awaiting review in the Student Ideas panel.`,
+              'ideas.html',
+              'normal'
+            );
+          }
+
+          // ✅ Confirm personal notification to student
+          if (window.ClubNotifs && ClubNotifs._pushPersonal) {
+            await ClubNotifs._pushPersonal(user.uid, {
+              title: '💡 Idea Received for Review',
+              message: `Your proposal "${title}" has been assigned to the review committee. You'll be notified on the decision.`,
+              priority: 'normal'
+            });
+          }
+
+          form.style.display = 'none';
+          if (successBox) successBox.style.display = 'block';
+          showToast("Idea successfully submitted! Admin will review soon.", "success");
+        } catch (err) {
+          console.error('Idea submit error:', err);
+          showToast("Error submitting idea. Please try again.", "error");
+        } finally {
+          if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Submit Idea Proposal 🚀'; }
+        }
+      };
+
+      window.resetIdeaForm = () => {
+        if (form) { form.reset(); form.style.display = 'block'; }
+        if (successBox) successBox.style.display = 'none';
+      };
+    });
+  </script>
+</body>
+</html>

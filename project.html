@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="assets/logo/club_logo.png" />
+  <link rel="apple-touch-icon" href="assets/logo/club_logo.png" />
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Project Blueprint & Technical Documentation | Science & IT Club | Liverpool College</title>
+  <meta name="description" content="Explore technical architecture, component schematics, and software source stack for student STEM engineering projects at Liverpool International Secondary College." />
+  <meta name="keywords" content="STEM Project Blueprint, Robotics Arduino, Computer Vision AI, IoT Weather Station, Liverpool International Secondary College, Student Engineering" />
+  <meta name="author" content="Science & IT Club - Liverpool International Secondary College" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="project.html" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="project.html" />
+  <meta property="og:title" content="Project Blueprint & Schematics | Science & IT Club" />
+  <meta property="og:description" content="Detailed engineering documentation, code repositories, and hardware designs developed by high school innovators." />
+  <meta property="og:image" content="assets/projects/robotics-bot.jpg" />
+  <meta property="og:site_name" content="Science & IT Club" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Project Blueprint | Science & IT Club" />
+  <meta name="twitter:description" content="Detailed engineering documentation and hardware designs developed by student innovators." />
+  <meta name="twitter:image" content="assets/projects/robotics-bot.jpg" />
+
+  <!-- Schema.org JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Science & IT Club Student Engineering Project",
+    "description": "Student engineering prototype blueprint from Liverpool International Secondary College.",
+    "publisher": {
+      "@type": "EducationalOrganization",
+      "name": "Liverpool International Secondary College"
+    }
+  }
+  </script>
+  
+  <link rel="stylesheet" href="css/global.css" />
+  
+  <!-- Firebase Compat CDN -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  
+  <script src="js/firebase-config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/notifications.js" defer></script>
+  <script src="js/main.js" defer></script>
+</head>
+<body>
+  <div class="ambient-glow"></div>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="container header-container">
+      <a href="index.html" class="brand">
+        <img src="assets/logo/club_logo.png" alt="Club Logo" class="brand-logo" />
+        <span class="brand-text">Science & <span>IT Club</span></span>
+      </a>
+      <nav class="desktop-nav">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="about.html" class="nav-link">About</a>
+        <a href="projects.html" class="nav-link active">Projects</a>
+        <a href="events.html" class="nav-link">Events</a>
+        <a href="moments.html" class="nav-link">Moments</a>
+        <a href="voices.html" class="nav-link">Voices</a>
+        <a href="resources.html" class="nav-link">Resources</a>
+      </nav>
+      <div class="header-actions">
+        <a href="login.html" class="btn btn-primary btn-sm">Member Login</a>
+        <button class="hamburger-btn" id="drawerToggleBtn" aria-label="Open Menu">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Drawer -->
+  <div class="mobile-drawer-overlay" id="mobileDrawerOverlay"></div>
+  <aside class="mobile-drawer" id="mobileDrawer">
+    <div class="mobile-drawer-header">
+      <div class="brand">
+        <img src="assets/logo/club_logo.png" alt="Club Logo" class="brand-logo" />
+        <span class="brand-text">Science & <span>IT Club</span></span>
+      </div>
+      <button class="hamburger-btn" id="drawerCloseBtn" aria-label="Close Menu">✕</button>
+    </div>
+    <nav class="drawer-links">
+      <a href="index.html" class="drawer-link">🏠 Home</a>
+      <a href="about.html" class="drawer-link">ℹ️ About the Club</a>
+      <a href="projects.html" class="drawer-link active">🔬 Projects Showcase</a>
+      <a href="events.html" class="drawer-link">📅 Events & Workshops</a>
+      <a href="moments.html" class="drawer-link">📸 Captured Moments</a>
+      <a href="voices.html" class="drawer-link">💬 Student Voices</a>
+      <a href="resources.html" class="drawer-link">📚 Learning Resources</a>
+    </nav>
+  </aside>
+
+  <main style="padding: 2.5rem 0 4rem;">
+    <div class="container" style="max-width: 900px;" id="projectDetailContainer">
+      <div class="card" style="text-align: center; padding: 3rem;">
+        <p>Loading project blueprint...</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Mobile Bottom Nav -->
+  <nav class="bottom-nav">
+    <a href="index.html" class="bottom-nav-item"><span class="icon">🏠</span><span>Home</span></a>
+    <a href="projects.html" class="bottom-nav-item active"><span class="icon">🔬</span><span>Projects</span></a>
+    <a href="events.html" class="bottom-nav-item"><span class="icon">📅</span><span>Events</span></a>
+    <a href="voices.html" class="bottom-nav-item"><span class="icon">💬</span><span>Voices</span></a>
+    <a href="profile.html" class="bottom-nav-item"><span class="icon">👤</span><span>Profile</span></a>
+  </nav>
+
+  <footer class="site-footer">
+    <div class="container" style="text-align: center;">
+      <p>© 2026 Liverpool International Secondary College – Science & IT Club</p>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const container = document.getElementById('projectDetailContainer');
+      const params = new URLSearchParams(window.location.search);
+      const projectId = params.get('id');
+      const slug = params.get('slug');
+
+      // Repair: ensure id fields match their keys (fixes corrupted admin saves)
+      const allProjects = Object.fromEntries(
+        Object.entries((await ClubDB.get('projects')) || {}).map(([key, p]) => [key, { ...p, id: p.id || key }])
+      );
+      let project = null;
+
+      if (projectId) {
+        // First try direct key lookup (fastest)
+        if (allProjects[projectId]) {
+          project = allProjects[projectId];
+        } else {
+          // Fallback: scan by id field (handles Firebase push keys stored as id)
+          project = Object.values(allProjects).find(p => p.id === projectId || p.slug === projectId);
+        }
+      } else if (slug) {
+        project = Object.values(allProjects).find(p => p.slug === slug);
+      }
+
+      // Only fall back to first project if NO id/slug was given at all
+      if (!project && !projectId && !slug) {
+        project = Object.values(allProjects)[0];
+      }
+
+      if (!project) {
+        container.innerHTML = `
+          <div class="card" style="text-align: center; padding: 3rem;">
+            <h2>Project Not Found</h2>
+            <p style="margin: 1rem 0 1.5rem;">The requested project could not be located in our records.</p>
+            <a href="projects.html" class="btn btn-primary">← Back to All Projects</a>
+          </div>
+        `;
+        return;
+      }
+
+      document.title = `${project.title} | Science & IT Club`;
+
+      container.innerHTML = `
+        <div style="margin-bottom: 1.5rem;">
+          <a href="projects.html" style="font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.4rem; color: var(--text-secondary); margin-bottom: 1rem;">
+            ← Back to Projects Showcase
+          </a>
+          <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap;">
+            <span class="badge badge-cyan">${project.category}</span>
+            <span class="badge ${project.status === 'completed' ? 'badge-emerald' : 'badge-amber'}">${project.status}</span>
+          </div>
+          <h1 style="font-size: clamp(1.8rem, 4vw, 2.75rem); margin-bottom: 1rem;">${project.title}</h1>
+        </div>
+
+        <div class="card" style="margin-bottom: 2rem; overflow: hidden; padding: 0;">
+          <img src="${project.coverImage}" alt="${project.title}" style="width: 100%; max-height: 480px; object-fit: cover;" />
+        </div>
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.75rem;" class="project-details-grid">
+          <div>
+            <div class="card" style="margin-bottom: 1.5rem;">
+              <h3 style="margin-bottom: 1rem;">Project Overview & Objective</h3>
+              <p style="font-size: 1rem; line-height: 1.7; margin-bottom: 1.25rem;">
+                ${project.description}
+              </p>
+              <p style="font-size: 0.95rem; line-height: 1.7;">
+                Developed entirely within the college's STEM laboratories, this initiative leverages modular components, telemetry communication, and iterative firmware design tested against standardized school competition criteria.
+              </p>
+            </div>
+
+            <div class="card">
+              <h3 style="margin-bottom: 1rem;">Technology & Tooling Stack</h3>
+              <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                ${(project.technology || 'Electronics, Code').split(',').map(tech => `
+                  <span class="badge badge-purple" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">${tech.trim()}</span>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="card" style="margin-bottom: 1.5rem;">
+              <h4 style="margin-bottom: 0.75rem;">Student Team Contributors</h4>
+              <p style="font-size: 0.9rem; color: var(--accent-cyan); font-weight: 600;">
+                ${project.team || 'Active Club Members'}
+              </p>
+              <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-subtle); font-size: 0.82rem; color: var(--text-muted);">
+                ${project.mentor ? 'Advising Mentor: ' + project.mentor : 'Guided by Club Faculty & Mentors'}
+              </div>
+            </div>
+
+            <div class="card" style="background: rgba(0, 242, 254, 0.04); border-color: var(--border-glow);">
+              <h4 style="margin-bottom: 0.5rem;">Have an Improvement Idea?</h4>
+              <p style="font-size: 0.85rem; margin-bottom: 1rem;">Club members can submit architectural extensions or suggest software enhancements.</p>
+              <a href="submit-idea.html" class="btn btn-primary btn-sm" style="width: 100%;">Propose Idea 💡</a>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+  </script>
+
+  <style>
+    @media (max-width: 768px) {
+      .project-details-grid {
+        grid-template-columns: 1fr !important;
+      }
+    }
+  </style>
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="assets/logo/club_logo.png" />
+  <link rel="apple-touch-icon" href="assets/logo/club_logo.png" />
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Club Announcements & Notifications | Science & IT Club | Liverpool College</title>
+  <meta name="description" content="Read club announcements, workshop invitations, project blueprint approvals, and hackathon schedules from Science & IT Club at Liverpool International Secondary College." />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="canonical" href="notifications.html" />
+  
+  <link rel="stylesheet" href="css/global.css" />
+  
+  <!-- Firebase Compat CDN -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  
+  <script src="js/firebase-config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/notifications.js"></script>
+  <script src="js/main.js" defer></script>
+</head>
+<body>
+  <div class="ambient-glow"></div>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="container header-container">
+      <a href="index.html" class="brand">
+        <img src="assets/logo/club_logo.png" alt="Club Logo" class="brand-logo" />
+        <span class="brand-text">Science & <span>IT Club</span></span>
+      </a>
+      <nav class="desktop-nav">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="about.html" class="nav-link">About</a>
+        <a href="projects.html" class="nav-link">Projects</a>
+        <a href="events.html" class="nav-link">Events</a>
+        <a href="moments.html" class="nav-link">Moments</a>
+        <a href="voices.html" class="nav-link">Voices</a>
+        <a href="resources.html" class="nav-link">Resources</a>
+      </nav>
+      <div class="header-actions">
+        <a href="login.html" class="btn btn-primary btn-sm">Member Login</a>
+        <button class="hamburger-btn" id="drawerToggleBtn" aria-label="Open Menu">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Drawer -->
+  <div class="mobile-drawer-overlay" id="mobileDrawerOverlay"></div>
+  <aside class="mobile-drawer" id="mobileDrawer">
+    <div class="mobile-drawer-header">
+      <div class="brand">
+        <img src="assets/logo/club_logo.png" alt="Club Logo" class="brand-logo" />
+        <span class="brand-text">Science & <span>IT Club</span></span>
+      </div>
+      <button class="hamburger-btn" id="drawerCloseBtn" aria-label="Close Menu">✕</button>
+    </div>
+    <nav class="drawer-links">
+      <a href="index.html" class="drawer-link">🏠 Home</a>
+      <a href="about.html" class="drawer-link">ℹ️ About the Club</a>
+      <a href="projects.html" class="drawer-link">🔬 Projects Showcase</a>
+      <a href="events.html" class="drawer-link">📅 Events & Workshops</a>
+      <a href="moments.html" class="drawer-link">📸 Captured Moments</a>
+      <a href="voices.html" class="drawer-link">💬 Student Voices</a>
+      <a href="resources.html" class="drawer-link">📚 Learning Resources</a>
+    </nav>
+  </aside>
+
+  <main style="padding: 3rem 0 5rem;">
+    <div class="container" style="max-width: 800px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <span class="badge badge-cyan">Member Inbox</span>
+          <h1 style="margin-top: 0.4rem; font-size: 1.8rem;">Announcements & Notifications</h1>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="ClubNotifications.markAllAsRead()">Mark all as read ✓</button>
+      </div>
+
+      <div id="fullNotificationList">
+        <div class="card" style="text-align: center; padding: 3rem;">
+          <p>Loading notifications...</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Mobile Bottom Nav -->
+  <nav class="bottom-nav">
+    <a href="index.html" class="bottom-nav-item"><span class="icon">🏠</span><span>Home</span></a>
+    <a href="projects.html" class="bottom-nav-item"><span class="icon">🔬</span><span>Projects</span></a>
+    <a href="events.html" class="bottom-nav-item"><span class="icon">📅</span><span>Events</span></a>
+    <a href="voices.html" class="bottom-nav-item"><span class="icon">💬</span><span>Voices</span></a>
+    <a href="profile.html" class="bottom-nav-item"><span class="icon">👤</span><span>Profile</span></a>
+  </nav>
+
+  <footer class="site-footer">
+    <div class="container" style="text-align: center;">
+      <p>© 2026 Liverpool International Secondary College – Science & IT Club</p>
+    </div>
+  </footer>
+</body>
+</html>

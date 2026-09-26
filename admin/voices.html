@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="../assets/logo/club_logo.png" />
+  <link rel="apple-touch-icon" href="../assets/logo/club_logo.png" />
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Moderate Testimonials | Admin Dashboard</title>
+  
+  <link rel="stylesheet" href="../css/global.css" />
+  <link rel="stylesheet" href="../css/admin.css" />
+  
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  
+  <script src="../js/firebase-config.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="js/admin.js" defer></script>
+</head>
+<body class="admin-body">
+  <!-- Sidebar Overlay for Mobile -->
+  <div class="admin-sidebar-overlay" id="adminSidebarOverlay"></div>
+
+  <!-- Admin Sidebar -->
+  <aside class="admin-sidebar" id="adminSidebar">
+    <div class="admin-sidebar-brand">
+      <img src="../assets/logo/club_logo.png" alt="Logo" />
+      <span>Club Admin <small>v2.0</small></span>
+    </div>
+    <nav class="admin-nav">
+      <a href="index.html" class="admin-nav-item"><span class="nav-label">📊 Dashboard</span></a>
+      <a href="members.html" class="admin-nav-item"><span class="nav-label">👥 Members</span></a>
+      <a href="projects.html" class="admin-nav-item"><span class="nav-label">🔬 Projects</span></a>
+      <a href="events.html" class="admin-nav-item"><span class="nav-label">📅 Events</span></a>
+      <a href="moments.html" class="admin-nav-item"><span class="nav-label">📸 Moments</span></a>
+      <a href="voices.html" class="admin-nav-item active">
+        <span class="nav-label">💬 Testimonials</span>
+        <span class="badge badge-amber" id="sidebarPendingVoicesBadge" style="display:none; font-size:0.7rem;">0</span>
+      </a>
+      <a href="ideas.html" class="admin-nav-item"><span class="nav-label">💡 Student Ideas</span></a>
+      <a href="notifications.html" class="admin-nav-item"><span class="nav-label">📢 Broadcasts</span></a>
+      <a href="messages.html" class="admin-nav-item"><span class="nav-label">✉️ Messages</span></a>
+      <a href="resources.html" class="admin-nav-item"><span class="nav-label">📚 Resources</span></a>
+      <a href="settings.html" class="admin-nav-item"><span class="nav-label">⚙️ Settings</span></a>
+      <div style="border-top: 1px solid var(--border-subtle); margin: 0.75rem 0;"></div>
+      <a href="../index.html" class="admin-nav-item" style="color: var(--accent-cyan);"><span class="nav-label">🌐 View Live Site</span><span>↗</span></a>
+    </nav>
+    <div class="admin-sidebar-footer">
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <img id="adminCurrentUserAvatar" src="" alt="Admin" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
+        <div>
+          <strong id="adminCurrentUserName" style="font-size: 0.85rem; display: block;">Admin</strong>
+          <span id="adminCurrentUserRole" class="badge badge-purple" style="font-size: 0.65rem;">ADMIN</span>
+        </div>
+      </div>
+      <button id="adminLogoutBtn" title="Logout" style="background: transparent; border: none; color: var(--accent-rose); cursor: pointer; font-size: 1.1rem;">⎋</button>
+    </div>
+  </aside>
+
+  <!-- Admin Main Layout -->
+  <div class="admin-main-wrapper">
+    <header class="admin-topbar">
+      <div class="admin-topbar-left">
+        <button id="adminSidebarToggle" class="hamburger-btn" style="color: var(--text-primary);" aria-label="Toggle sidebar">☰</button>
+        <h2 class="admin-page-title">Moderate Student Voices</h2>
+      </div>
+    </header>
+
+    <main class="admin-content">
+      <!-- Pending Moderation Queue -->
+      <div class="table-card" style="margin-bottom: 2.5rem; border-top: 3px solid var(--accent-amber);">
+        <div class="table-header-bar">
+          <div>
+            <h4 style="color: var(--accent-amber);">⏳ Pending Review Queue</h4>
+            <small style="color: var(--text-muted);">Student reviews awaiting public approval.</small>
+          </div>
+          <button class="btn btn-sm btn-outline" onclick="loadVoicesData()">↻ Refresh</button>
+        </div>
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Section</th>
+                <th>Rating</th>
+                <th>Testimonial</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="pendingFeedbackTableBody">
+              <tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">Loading pending reviews...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Published Public Voices -->
+      <div class="table-card" style="border-top: 3px solid var(--accent-emerald);">
+        <div class="table-header-bar">
+          <div>
+            <h4 style="color: var(--accent-emerald);">✅ Published Student Voices</h4>
+            <small style="color: var(--text-muted);">Currently visible to visitors on the public Voices page.</small>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Section</th>
+                <th>Rating</th>
+                <th>Quote</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="approvedVoicesTableBody">
+              <tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">Loading published voices...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    function starRating(rating) {
+      const r = parseInt(rating) || 5;
+      return '★'.repeat(Math.min(r, 5)) + '☆'.repeat(Math.max(0, 5 - r));
+    }
+
+    async function loadVoicesData() {
+      // 1. Pending Feedback & Voices moderation queue
+      try {
+        const [feedback, voices] = await Promise.all([
+          ClubDB.get('feedback').catch(() => ({})),
+          ClubDB.get('voices').catch(() => ({}))
+        ]);
+
+        const pendingList = [];
+        const seenKeys = new Set();
+
+        // Check feedback collection
+        Object.entries(feedback || {}).forEach(([k, f]) => {
+          if (f && typeof f === 'object' && f.status === 'pending') {
+            seenKeys.add(k);
+            pendingList.push({ ...f, id: f.id || k, _key: k, _source: 'feedback' });
+          }
+        });
+
+        // Also check voices collection for any submitted with pending status
+        Object.entries(voices || {}).forEach(([k, v]) => {
+          if (v && typeof v === 'object' && v.status === 'pending' && !seenKeys.has(k)) {
+            pendingList.push({ ...v, id: v.id || k, _key: k, _source: 'voices' });
+          }
+        });
+
+        const pendingTbody = document.getElementById('pendingFeedbackTableBody');
+
+        if (pendingList.length === 0) {
+          pendingTbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 2.5rem; color: var(--text-muted);">
+            <div style="font-size:1.5rem; margin-bottom:0.5rem;">✅</div>
+            <strong>All caught up!</strong> No reviews waiting in the moderation queue.
+          </td></tr>`;
+        } else {
+          pendingList.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+          pendingTbody.innerHTML = pendingList.map(f => {
+            const key = f._key || f.id;
+            const src = f._source || 'feedback';
+            return `
+              <tr>
+                <td><strong>${f.displayName || 'Student'}</strong></td>
+                <td><small style="color:var(--text-muted);">${f.section ? 'Sec ' + f.section : (f.grade || 'Member')}</small></td>
+                <td><span style="color:var(--accent-amber); font-size:1rem; white-space: nowrap;">${starRating(f.rating)}</span></td>
+                <td style="max-width: 280px; word-break: break-word;">"${(f.message || '').substring(0, 100)}${f.message && f.message.length > 100 ? '...' : ''}"</td>
+                <td style="font-size: 0.8rem; color: var(--text-muted); white-space: nowrap;">${f.createdAt ? new Date(f.createdAt).toLocaleDateString() : (f.date || '—')}</td>
+                <td>
+                  <div class="action-btn-group">
+                    <button class="btn btn-sm btn-primary" onclick="approveFeedback('${key}', '${src}')">✓ Approve</button>
+                    <button class="btn btn-sm btn-danger" onclick="rejectFeedback('${key}', '${src}')">✕ Reject</button>
+                  </div>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
+      } catch (err) {
+        console.error('Error loading feedback:', err);
+        document.getElementById('pendingFeedbackTableBody').innerHTML =
+          `<tr><td colspan="6" style="text-align:center; color:var(--accent-rose); padding:1.5rem;">Error loading feedback data.</td></tr>`;
+      }
+
+      // 2. Approved Voices
+      try {
+        const voices = (await ClubDB.get('voices')) || {};
+        const approvedList = Object.entries(voices)
+          .map(([k, v]) => ({ ...v, id: v.id || k, _key: k }))
+          .filter(v => v.status === 'approved');
+        const approvedTbody = document.getElementById('approvedVoicesTableBody');
+
+        if (approvedList.length === 0) {
+          approvedTbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 2.5rem; color: var(--text-muted);">
+            <div style="font-size:1.5rem; margin-bottom:0.5rem;">💬</div>
+            No testimonials currently published.
+          </td></tr>`;
+        } else {
+          approvedList.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+          approvedTbody.innerHTML = approvedList.map(v => {
+            const key = v._key || v.id;
+            const quote = v.message || v.quote || v.review || v.feedback || v.comment || v.content || v.text || '';
+            return `
+              <tr>
+                <td><strong>${v.displayName || 'Student'}</strong></td>
+                <td><small style="color:var(--text-muted);">${v.section ? 'Sec ' + v.section : (v.grade || 'Member')}</small></td>
+                <td><span style="color:var(--accent-amber); font-size:1rem; white-space: nowrap;">${starRating(v.rating)}</span></td>
+                <td style="max-width: 280px; word-break: break-word;">"${quote ? (quote.substring(0, 100) + (quote.length > 100 ? '...' : '')) : '<em style="color:var(--text-muted);">No quote text</em>'}"</td>
+                <td><span class="status-pill approved">Approved</span></td>
+                <td>
+                  <button class="btn btn-sm btn-danger" onclick="deleteVoice('${key}')">🗑 Remove</button>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
+      } catch (err) {
+        console.error('Error loading voices:', err);
+        document.getElementById('approvedVoicesTableBody').innerHTML =
+          `<tr><td colspan="6" style="text-align:center; color:var(--accent-rose); padding:1.5rem;">Error loading voices data.</td></tr>`;
+      }
+
+      if (window.AdminApp && window.AdminApp.refreshBadgeCounts) {
+        window.AdminApp.refreshBadgeCounts();
+      }
+    }
+
+    window.approveFeedback = async function(id, source = 'feedback') {
+      const btn = (typeof event !== 'undefined' && event) ? event.target : null;
+      if (btn) { btn.disabled = true; btn.textContent = 'Approving...'; }
+      try {
+        let fb = null;
+        if (source === 'feedback') {
+          fb = await ClubDB.get(`feedback/${id}`);
+        } else {
+          fb = await ClubDB.get(`voices/${id}`);
+        }
+        if (!fb) { showToast("Feedback not found.", "error"); return; }
+
+        const quoteText = fb.message || fb.quote || fb.review || fb.feedback || fb.comment || fb.content || fb.text || '';
+
+        if (source === 'voices') {
+          await ClubDB.update(`voices/${id}`, { 
+            status: 'approved',
+            message: quoteText,
+            quote: quoteText
+          });
+        } else {
+          const voiceData = {
+            displayName: fb.displayName || fb.name || 'Student',
+            grade: fb.grade || (fb.section ? 'Sec ' + fb.section : 'Club Member'),
+            section: fb.section || '',
+            rating: fb.rating || 5,
+            message: quoteText,
+            quote: quoteText,
+            status: 'approved',
+            uid: fb.uid || null,
+            createdAt: fb.createdAt || Date.now()
+          };
+          const newVoice = await ClubDB.push('voices', voiceData);
+          if (newVoice && newVoice.id) {
+            await ClubDB.update(`voices/${newVoice.id}`, { id: newVoice.id, message: quoteText, quote: quoteText });
+          }
+          await ClubDB.update(`feedback/${id}`, { status: 'approved' });
+        }
+
+        // Notify user
+        if (fb.uid) {
+          await ClubDB.push(`notifications/users/${fb.uid}`, {
+            title: "Testimonial Approved! ⭐",
+            message: "Your review was approved by club leadership and is now featured on the public Student Voices wall.",
+            priority: "normal",
+            createdAt: Date.now(),
+            createdBy: "Club Moderation",
+            url: "voices.html"
+          });
+        }
+
+        showToast("Testimonial approved and published!", "success");
+      } catch (err) {
+        console.error('Approve error:', err);
+        showToast("Error approving testimonial.", "error");
+      }
+      loadVoicesData();
+    };
+
+    window.rejectFeedback = async function(id, source = 'feedback') {
+      try {
+        if (source === 'voices') {
+          await ClubDB.update(`voices/${id}`, { status: 'rejected' });
+        } else {
+          await ClubDB.update(`feedback/${id}`, { status: 'rejected' });
+        }
+        showToast("Feedback rejected.", "info");
+      } catch (err) {
+        showToast("Error rejecting feedback.", "error");
+      }
+      loadVoicesData();
+    };
+
+    window.deleteVoice = async function(id) {
+      if (!confirm("Remove this testimonial from public display?")) return;
+      try {
+        await ClubDB.remove(`voices/${id}`);
+        showToast("Testimonial removed.", "info");
+      } catch (err) {
+        showToast("Error removing testimonial.", "error");
+      }
+      loadVoicesData();
+    };
+
+    loadVoicesData();
+    window.addEventListener('club-db-updated', () => loadVoicesData());
+    document.addEventListener('club-auth-changed', () => loadVoicesData());
+
+    if (window.ClubDB && ClubDB.onValue) {
+      ClubDB.onValue('feedback', () => loadVoicesData());
+      ClubDB.onValue('voices', () => loadVoicesData());
+    }
+  </script>
+</body>
+</html>

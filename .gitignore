@@ -1,0 +1,10 @@
+# Dependencies & OS files
+.DS_Store
+Thumbs.db
+*.log
+node_modules/
+
+# Local IDE & temp
+.vscode/
+.idea/
+*.tmp

@@ -1,0 +1,69 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  SCIENCE & IT CLUB — ADMIN REFERENCE NOTES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ADMIN PORTAL:  [YOUR SITE LINK]/admin/
+
+HOW TO GET ADMIN ACCESS:
+  1. Register on the website with your own email (Google Sign-In)
+  2. Contact the developer — he will promote your account to Admin
+     or Head Admin from the Members panel
+  3. Once promoted, go to [YOUR SITE LINK]/admin/ and you're in
+
+  ℹ️  You do NOT get a separate admin password.
+      You log in with the same account you registered with.
+      The developer controls who gets admin access.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  HEAD ADMIN (Full Access)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CONTENT MANAGEMENT
+  • Add / edit / delete → Projects, Events, Moments, Resources
+  • Manage Leadership profiles shown on site
+  • Update club Settings (name, schedule, lab room, contact)
+
+MEMBER MANAGEMENT
+  • View all registered members + their profile & section
+  • Promote member → Admin
+  • Promote Admin → Head Admin
+  • Demote Head Admin → Admin
+  • (Master admin emails can never be demoted)
+
+STUDENT SUBMISSIONS
+  • Review submitted Project Ideas
+  • Accept idea → notifies student automatically
+  • Reject idea → notifies student automatically
+  • Convert idea directly into a live Club Project
+  • Approve / hide Testimonials (Voices)
+
+COMMUNICATIONS
+  • Send global broadcast notification to ALL members
+  • Send personal notification to a single member
+  • Read & reply to student messages (inbox)
+  • Delete old broadcast notifications
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ADMIN (Limited — no role/settings control)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  • All content management (projects, events, etc.)
+  • Review & act on student ideas
+  • Read & reply to messages
+  • Send notifications (global & personal)
+  • Promote members → Admin
+  • Cannot promote to Head Admin
+  • Cannot change settings or demote Head Admins
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  IMPORTANT NOTES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  • Firebase rules are live — all access is enforced server-side
+  • Banned members cannot write anything to the database
+  • Notifications go to student's in-site inbox + optional OS push
+  • All admin actions send automatic notifications to affected students
+  • DB project: studio-8470850847-5d1ba (asia-southeast1)
+  • Rules file: user_admin_note/firebase-rules-v1.json (keep as backup)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

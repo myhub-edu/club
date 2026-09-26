@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Member Profile | Science & IT Club | Liverpool College</title>
+  <meta name="description"
+    content="View and edit your Science & IT Club member profile, track submitted project blueprints, and manage your club participation at Liverpool International Secondary College." />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="canonical" href="profile.html" />
+
+  <link rel="icon" type="image/png" href="assets/logo/club_logo.png" />
+  <link rel="apple-touch-icon" href="assets/logo/club_logo.png" />
+  <link rel="shortcut icon" href="assets/logo/club_logo.png" />
+  <link rel="stylesheet" href="css/global.css" />
+
+  <!-- Firebase Compat CDN -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <script src="js/firebase-config.js"></script>
+  <script src="js/notifications.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/main.js" defer></script>
+</head>
+
+<body>
+  <div class="ambient-glow"></div>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="container header-container">
+      <a href="index.html" class="brand">
+        <img src="assets/logo/club_logo.png" alt="Club Logo" class="brand-logo" />
+        <span class="brand-text">Science & <span>IT Club</span></span>
+      </a>
+      <nav class="desktop-nav">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="about.html" class="nav-link">About</a>
+        <a href="projects.html" class="nav-link">Projects</a>
+        <a href="events.html" class="nav-link">Events</a>
+        <a href="moments.html" class="nav-link">Moments</a>
+        <a href="voices.html" class="nav-link">Voices</a>
+        <a href="resources.html" class="nav-link">Resources</a>
+      </nav>
+      <div class="header-actions">
+        <!-- Replaced dynamically by auth.js -->
+        <a href="login.html" class="btn btn-primary btn-sm">Member Login</a>
+        <button class="hamburger-btn" id="drawerToggleBtn" aria-label="Open Menu">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Drawer -->
+  <div class="mobile-drawer-overlay" id="mobileDrawerOverlay"></div>
+  <aside class="mobile-drawer" id="mobileDrawer">
+    <div class="mobile-drawer-header">
+      <div class="brand">
+        <img src="assets/logo/club_logo.png" alt="Club Logo" class="brand-logo" />
+        <span class="brand-text">Science & <span>IT Club</span></span>
+      </div>
+      <button class="hamburger-btn" id="drawerCloseBtn" aria-label="Close Menu">✕</button>
+    </div>
+    <nav class="drawer-links">
+      <a href="index.html" class="drawer-link">🏠 Home</a>
+      <a href="about.html" class="drawer-link">ℹ️ About the Club</a>
+      <a href="projects.html" class="drawer-link">🔬 Projects Showcase</a>
+      <a href="events.html" class="drawer-link">📅 Events & Workshops</a>
+      <a href="moments.html" class="drawer-link">📸 Captured Moments</a>
+      <a href="voices.html" class="drawer-link">💬 Student Voices</a>
+      <a href="resources.html" class="drawer-link">📚 Learning Resources</a>
+      <div style="border-top: 1px solid var(--border-subtle); margin: 0.75rem 0;"></div>
+      <a href="submit-idea.html" class="drawer-link">💡 Propose Project Idea</a>
+      <a href="submit-feedback.html" class="drawer-link">⭐ Share Feedback</a>
+      <a href="contact-admin.html" class="drawer-link">✉️ Write to Head Admin</a>
+    </nav>
+  </aside>
+
+  <main style="padding: 3rem 0 5rem;">
+    <div class="container" style="max-width: 840px;">
+      <div id="profileLoading" class="card" style="text-align: center; padding: 3rem;">
+        <p>Checking authentication status...</p>
+      </div>
+
+      <div id="profileContent" style="display: none;">
+        <!-- Top Profile Card -->
+        <div class="card" style="margin-bottom: 2rem; border-top: 4px solid var(--accent-cyan);">
+          <div style="display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap;">
+            <div style="position: relative; display: inline-block;">
+              <img id="profileAvatar" src="assets/logo/club_logo.png" alt="Avatar"
+                style="width: 88px; height: 88px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-cyan); display: block;" />
+              <label for="avatarFileInput" title="Change Profile Picture"
+                style="position: absolute; bottom: 0; right: 0; background: var(--accent-cyan); color: #0b0f19; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.85rem; border: 2px solid var(--bg-surface); box-shadow: 0 2px 6px rgba(0,0,0,0.4);">
+                📷
+              </label>
+              <input type="file" id="avatarFileInput" accept="image/*" style="display: none;" />
+            </div>
+            <div style="flex: 1;">
+              <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.35rem; flex-wrap: wrap;">
+                <h2 id="profileName" style="font-size: 1.5rem;"></h2>
+                <span id="profileRoleBadge" class="badge badge-cyan"></span>
+              </div>
+              <p id="profileEmail" style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.35rem;"></p>
+              <div id="profileSection" style="font-size: 0.88rem; color: var(--text-secondary); font-weight: 500;"></div>
+              <p id="profileBioDisplay" style="font-size: 0.88rem; color: var(--text-muted); margin-top: 0.35rem; font-style: italic;"></p>
+            </div>
+            <div>
+              <button id="logoutButton" class="btn btn-sm btn-danger">Log Out</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Edit Profile Form -->
+        <div class="card" style="margin-bottom: 2rem;">
+          <h3 style="margin-bottom: 1.25rem;">Update Profile Information</h3>
+          <form id="editProfileForm">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+              <div class="form-group">
+                <label class="form-label" for="editName">Full Name</label>
+                <input type="text" id="editName" class="form-input" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="editSection">Class Section <small style="color:var(--text-muted);">(Grade 11 &ndash; all members)</small></label>
+                <input type="text" id="editSection" class="form-input" required
+                  placeholder="e.g. S8, S9, L4, L5..."
+                  autocomplete="off"
+                  style="letter-spacing: 0.05em; text-transform: uppercase;" />
+              </div>
+            </div>
+            <div class="form-group" style="margin-bottom: 1rem;">
+              <label class="form-label" for="editBio">About Me <small style="color:var(--text-muted);">(optional &mdash; tell the club a little about yourself)</small></label>
+              <textarea id="editBio" class="form-input" rows="3" placeholder="e.g. Passionate about robotics and Python. Love 3D printing and competitive coding..."
+                style="resize: vertical; min-height: 80px; font-family: inherit;"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm">Save Changes &#10003;</button>
+          </form>
+        </div>
+
+        <!-- Activity History & Trackers -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+          <!-- My Submitted Ideas -->
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <h4>My Submitted Ideas</h4>
+              <a href="submit-idea.html" class="btn btn-sm btn-outline">+ New Idea</a>
+            </div>
+            <div id="myIdeasContainer" style="display: flex; flex-direction: column; gap: 0.75rem;">
+              <p style="font-size: 0.85rem; color: var(--text-muted);">Loading ideas...</p>
+            </div>
+          </div>
+
+          <!-- My Feedback & Reviews -->
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <h4>My Feedback</h4>
+              <a href="submit-feedback.html" class="btn btn-sm btn-outline">+ Review</a>
+            </div>
+            <div id="myFeedbackContainer" style="display: flex; flex-direction: column; gap: 0.75rem;">
+              <p style="font-size: 0.85rem; color: var(--text-muted);">Loading reviews...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Mobile Bottom Nav -->
+  <nav class="bottom-nav">
+    <a href="index.html" class="bottom-nav-item"><span class="icon">🏠</span><span>Home</span></a>
+    <a href="projects.html" class="bottom-nav-item"><span class="icon">🔬</span><span>Projects</span></a>
+    <a href="events.html" class="bottom-nav-item"><span class="icon">📅</span><span>Events</span></a>
+    <a href="voices.html" class="bottom-nav-item"><span class="icon">💬</span><span>Voices</span></a>
+    <a href="profile.html" class="bottom-nav-item active"><span class="icon">👤</span><span>Profile</span></a>
+  </nav>
+
+  <footer class="site-footer">
+    <div class="container" style="text-align: center;">
+      <p>© 2026 Liverpool International Secondary College – Science & IT Club</p>
+    </div>
+  </footer>
+
+  <script>
+    // Wait for ClubAuth to be fully ready before rendering profile
+    function initProfile() {
+      if (!window.ClubAuth || ClubAuth.currentUser === undefined) {
+        setTimeout(initProfile, 100);
+        return;
+      }
+
+      if (!ClubAuth.currentUser) {
+        window.location.href = 'login.html?redirect=profile.html';
+        return;
+      }
+
+      runProfile();
+    }
+
+    async function runProfile() {
+      const user = ClubAuth.currentUser;
+      const loadingEl = document.getElementById('profileLoading');
+      const contentEl = document.getElementById('profileContent');
+      if (loadingEl) loadingEl.style.display = 'none';
+      if (contentEl) contentEl.style.display = 'block';
+
+      // Merge fresh DB data over local session so bio/section are always current
+      try {
+        const freshProfile = (await ClubDB.get(`users/${user.uid}`)) || {};
+        Object.assign(user, freshProfile);
+        localStorage.setItem('CLUB_CURRENT_USER_SESSION', JSON.stringify(user));
+        if (ClubAuth) ClubAuth.currentUser = user;
+      } catch (err) {
+        console.warn('Could not refresh user profile from DB:', err);
+      }
+
+      const avatarEl = document.getElementById('profileAvatar');
+      if (avatarEl) avatarEl.src = user.photoURL || 'assets/logo/club_logo.png';
+
+      const nameEl = document.getElementById('profileName');
+      if (nameEl) nameEl.textContent = user.displayName || 'Club Member';
+
+      const emailEl = document.getElementById('profileEmail');
+      if (emailEl) emailEl.textContent = user.email || '';
+
+      const sectionEl = document.getElementById('profileSection');
+      if (sectionEl) {
+        sectionEl.textContent = user.section ? 'Grade 11 \u2013 ' + user.section : (user.grade || 'Grade 11');
+      }
+
+      const bioDisplayEl = document.getElementById('profileBioDisplay');
+      if (bioDisplayEl) {
+        bioDisplayEl.textContent = user.bio ? '\u201c' + user.bio + '\u201d' : '';
+      }
+
+      const roleBadge = document.getElementById('profileRoleBadge');
+      if (roleBadge) {
+        const role = user.role || 'member';
+        roleBadge.textContent = role.toUpperCase();
+        if (role === 'admin') roleBadge.className = 'badge badge-purple';
+        else if (role === 'headAdmin') roleBadge.className = 'badge badge-rose';
+        else roleBadge.className = 'badge badge-cyan';
+      }
+
+      const editNameEl = document.getElementById('editName');
+      if (editNameEl) editNameEl.value = user.displayName || '';
+
+      const editSectionEl = document.getElementById('editSection');
+      if (editSectionEl) editSectionEl.value = user.section || user.grade || '';
+
+      const editBioEl = document.getElementById('editBio');
+      if (editBioEl) editBioEl.value = user.bio || '';
+
+      const logoutBtn = document.getElementById('logoutButton');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => ClubAuth.logout());
+      }
+
+      // Handle Avatar Picture Upload
+      const avatarInput = document.getElementById('avatarFileInput');
+      if (avatarInput) {
+        avatarInput.addEventListener('change', async (e) => {
+          const file = e.target.files && e.target.files[0];
+          if (!file) return;
+          try {
+            showToast('Optimizing and saving photo...', 'info');
+            const base64 = await window.compressImageToBase64(file, 220, 220, 0.85);
+            if (avatarEl) avatarEl.src = base64;
+            user.photoURL = base64;
+            await ClubDB.update(`users/${user.uid}`, { photoURL: base64 });
+            localStorage.setItem('CLUB_CURRENT_USER_SESSION', JSON.stringify(user));
+            ClubAuth.currentUser = user;
+            ClubAuth.syncNavbarUI();
+            showToast('Profile photo updated successfully! \u2713', 'success');
+          } catch (err) {
+            console.error('Avatar upload error:', err);
+            showToast('Failed to update photo: ' + err.message, 'error');
+          }
+        });
+      }
+
+      // Handle profile edits
+      const editForm = document.getElementById('editProfileForm');
+      if (editForm) {
+        editForm.onsubmit = async (e) => {
+          e.preventDefault();
+          const saveBtn = editForm.querySelector('button[type=submit]');
+          const newName = (document.getElementById('editName')?.value || '').trim();
+          const newSection = (document.getElementById('editSection')?.value || '').trim().toUpperCase();
+          const newBio = (document.getElementById('editBio')?.value || '').trim();
+
+          if (!newSection) {
+            showToast('Please enter your class section (e.g. S8, L4).', 'error');
+            return;
+          }
+
+          if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving...'; }
+
+          try {
+            if (typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser) {
+              await firebase.auth().currentUser.updateProfile({ displayName: newName }).catch(() => {});
+            }
+            await ClubDB.update(`users/${user.uid}`, { displayName: newName, section: newSection, bio: newBio });
+            user.displayName = newName;
+            user.section = newSection;
+            user.bio = newBio;
+            localStorage.setItem('CLUB_CURRENT_USER_SESSION', JSON.stringify(user));
+            ClubAuth.currentUser = user;
+
+            if (nameEl) nameEl.textContent = newName;
+            if (sectionEl) sectionEl.textContent = 'Grade 11 \u2013 ' + newSection;
+            if (bioDisplayEl) bioDisplayEl.textContent = newBio ? '\u201c' + newBio + '\u201d' : '';
+
+            ClubAuth.syncNavbarUI();
+            showToast('Profile updated successfully! \u2713', 'success');
+          } catch (err) {
+            console.error('Failed to update profile:', err);
+            showToast('Error updating profile: ' + err.message, 'error');
+          } finally {
+            if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Save Profile Changes \u2713'; }
+          }
+        };
+      }
+
+      // Load User Ideas
+      try {
+        const allIdeas = (await ClubDB.get('ideas')) || {};
+        const userIdeas = Object.values(allIdeas).filter(i => i && i.uid === user.uid);
+        const ideasBox = document.getElementById('myIdeasContainer');
+
+        if (ideasBox) {
+          if (userIdeas.length === 0) {
+            ideasBox.innerHTML = `<p style="font-size: 0.85rem; color: var(--text-muted);">You have not proposed any project ideas yet. <a href="submit-idea.html" style="color:var(--accent-cyan);">Submit one now \u2192</a></p>`;
+          } else {
+            ideasBox.innerHTML = userIdeas.map(i => `
+                <div style="background: rgba(0,0,0,0.2); padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); margin-bottom:0.5rem;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; flex-wrap:wrap; gap:0.5rem;">
+                    <strong style="font-size: 0.9rem;">${i.title || 'Untitled'}</strong>
+                    <span class="status-pill ${i.status || 'pending'}">${i.status || 'pending'}</span>
+                  </div>
+                  <p style="font-size: 0.8rem; color: var(--text-secondary);">${(i.description || '').substring(0, 80)}...</p>
+                </div>
+              `).join('');
+          }
+        }
+      } catch (e) {
+        console.warn('Error loading user ideas:', e);
+      }
+
+      // Load User Feedback / Voices (check both paths)
+      try {
+        const [allVoices, allFeedback] = await Promise.all([
+          ClubDB.get('voices').catch(() => ({})),
+          ClubDB.get('feedback').catch(() => ({}))
+        ]);
+        const combined = { ...(allVoices || {}), ...(allFeedback || {}) };
+        const userFeedback = Object.values(combined).filter(f => f && f.uid === user.uid);
+        const fbBox = document.getElementById('myFeedbackContainer');
+
+        if (fbBox) {
+          if (userFeedback.length === 0) {
+            fbBox.innerHTML = `<p style="font-size: 0.85rem; color: var(--text-muted);">No reviews shared yet. <a href="submit-feedback.html" style="color:var(--accent-cyan);">Share your experience \u2192</a></p>`;
+          } else {
+            fbBox.innerHTML = userFeedback.map(f => `
+                <div style="background: rgba(0,0,0,0.2); padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); margin-bottom:0.5rem;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; flex-wrap:wrap; gap:0.5rem;">
+                    <span style="color: var(--accent-amber); font-size: 0.85rem;">${'\u2605'.repeat(f.rating || 5)}</span>
+                    <span class="status-pill ${f.status || 'pending'}">${f.status || 'pending'}</span>
+                  </div>
+                  <p style="font-size: 0.8rem; color: var(--text-secondary);">"${(f.message || '').substring(0, 80)}..."</p>
+                </div>
+              `).join('');
+          }
+        }
+      } catch (e) {
+        console.warn('Error loading user feedback:', e);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', initProfile);
+    document.addEventListener('club-auth-changed', runProfile);
+  </script>
+</body>
+
+</html>

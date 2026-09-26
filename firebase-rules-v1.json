@@ -1,0 +1,135 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    // ─── MASTER ADMIN SHORTHAND ───────────────────────────────────────────────
+    // Used everywhere below. Master emails ALWAYS have admin rights regardless
+    // of what is in the headAdmin / admins DB nodes. This survives a full DB wipe.
+    //
+    // isMaster  = auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com'
+    // isHead    = root.child('headAdmin').child(auth.uid).val() === true || isMaster
+    // isAdmin   = root.child('admins').child(auth.uid).val() === true || isHead
+    // notBanned = root.child('users').child(auth.uid).child('banned').val() !== true
+
+    // ─── PUBLIC CONTENT (read by anyone, write by admins only) ───────────────
+    "projects":  {
+      ".read": true,
+      ".write": "auth !== null && root.child('users').child(auth.uid).child('banned').val() !== true && (root.child('admins').child(auth.uid).val() === true || root.child('headAdmin').child(auth.uid).val() === true || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')"
+    },
+    "events":    {
+      ".read": true,
+      ".write": "auth !== null && root.child('users').child(auth.uid).child('banned').val() !== true && (root.child('admins').child(auth.uid).val() === true || root.child('headAdmin').child(auth.uid).val() === true || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')"
+    },
+    "moments":   {
+      ".read": true,
+      ".write": "auth !== null && root.child('users').child(auth.uid).child('banned').val() !== true && (root.child('admins').child(auth.uid).val() === true || root.child('headAdmin').child(auth.uid).val() === true || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')"
+    },
+    "resources": {
+      ".read": true,
+      ".write": "auth !== null && root.child('users').child(auth.uid).child('banned').val() !== true && (root.child('admins').child(auth.uid).val() === true || root.child('headAdmin').child(auth.uid).val() === true || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')"
+    },
+    "leadership":{
+      ".read": true,
+      ".write": "auth !== null && root.child('users').child(auth.uid).child('banned').val() !== true && (root.child('admins').child(auth.uid).val() === true || root.child('headAdmin').child(auth.uid).val() === true || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')"
+    },
+    "settings":  {
+      ".read": true,
+      ".write": "auth !== null && root.child('users').child(auth.uid).child('banned').val() !== true && (root.child('headAdmin').child(auth.uid).val() === true || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')"
+    },
+
+    // ─── VOICES (public read; members submit own; admins manage all) ──────────
+    "voices": {
+      ".read": true,
+      "$id": {
+        ".write": "auth !== null && (root.child('admins').child(auth.uid).val() === true || root.child('headAdmin').child(auth.uid).val() === true || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com' || (!data.exists() && root.child('users').child(auth.uid).child('banned').val() !== true && newData.child('uid').val() === auth.uid))",
+        ".validate": "!newData.exists() || (newData.child('message').isString() && newData.child('message').val().length >= 1 && newData.child('message').val().length <= 3000)"
+      }
+    },
+
+    // ─── USERS ────────────────────────────────────────────────────────────────
+    "users": {
+      // Full list: admins + master emails can read
+      ".read": "auth !== null && (root.child('users').child(auth.uid).child('banned').val() !== true) && (root.child('admins').child(auth.uid).val() === true || root.child('headAdmin').child(auth.uid).val() === true || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')",
+      "$uid": {
+        // Own profile or admin
+        ".read": "auth !== null && (auth.uid === $uid || root.child('users').child(auth.uid).child('banned').val() !== true && (root.child('admins').child(auth.uid).val() === true || root.child('headAdmin').child(auth.uid).val() === true || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com'))",
+        // Admins write anything. User can self-register (role=member OR headAdmin for master bootstrap)
+        // and update allowed own fields (cannot change uid/role/banned/bannedAt/bannedBy)
+        ".write": "auth !== null && ((root.child('admins').child(auth.uid).val() === true || root.child('headAdmin').child(auth.uid).val() === true || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com') || (auth.uid === $uid && root.child('users').child(auth.uid).child('banned').val() !== true && ((!data.exists() && newData.child('uid').val() === auth.uid && (newData.child('role').val() === 'member' || newData.child('role').val() === 'headAdmin') && newData.child('banned').val() !== true) || (data.exists() && newData.child('uid').val() === data.child('uid').val() && newData.child('role').val() === data.child('role').val() && newData.child('banned').val() === data.child('banned').val() && newData.child('bannedAt').val() === data.child('bannedAt').val() && newData.child('bannedBy').val() === data.child('bannedBy').val()))))"
+      }
+    },
+
+    // ─── ADMINS / HEADADMIN ───────────────────────────────────────────────────
+    "admins": {
+      // List read: existing admins + master emails
+      ".read": "auth !== null && root.child('users').child(auth.uid).child('banned').val() !== true && (root.child('admins').child(auth.uid).val() === true || root.child('headAdmin').child(auth.uid).val() === true || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')",
+      "$uid": {
+        ".read": "auth !== null && (auth.uid === $uid || root.child('admins').child(auth.uid).val() === true || root.child('headAdmin').child(auth.uid).val() === true || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')",
+        // Write: existing headAdmin OR master email (bootstrap after DB wipe)
+        ".write": "auth !== null && root.child('users').child(auth.uid).child('banned').val() !== true && (root.child('headAdmin').child(auth.uid).val() === true || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')"
+      }
+    },
+    "headAdmin": {
+      // List read: existing admins + master emails
+      ".read": "auth !== null && root.child('users').child(auth.uid).child('banned').val() !== true && (root.child('admins').child(auth.uid).val() === true || root.child('headAdmin').child(auth.uid).val() === true || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')",
+      "$uid": {
+        ".read": "auth !== null && (auth.uid === $uid || root.child('admins').child(auth.uid).val() === true || root.child('headAdmin').child(auth.uid).val() === true || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')",
+        // Write: existing headAdmin OR master email (bootstrap after DB wipe)
+        ".write": "auth !== null && root.child('users').child(auth.uid).child('banned').val() !== true && (root.child('headAdmin').child(auth.uid).val() === true || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')"
+      }
+    },
+
+    // ─── IDEAS (authenticated members read for profile; members submit; admins manage) ──
+    "ideas": {
+      ".read": "auth !== null && root.child('users').child(auth.uid).child('banned').val() !== true",
+      "$id": {
+        ".read": "auth !== null && (auth.uid === data.child('uid').val() || (root.child('users').child(auth.uid).child('banned').val() !== true && (root.child('admins').child(auth.uid).val() === true || root.child('headAdmin').child(auth.uid).val() === true || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')))",
+        ".write": "auth !== null && ((root.child('admins').child(auth.uid).val() === true || root.child('headAdmin').child(auth.uid).val() === true || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com') || (!data.exists() && root.child('users').child(auth.uid).child('banned').val() !== true && newData.child('uid').val() === auth.uid))",
+        ".validate": "!newData.exists() || (newData.child('title').isString() && newData.child('title').val().length >= 1 && newData.child('title').val().length <= 160 && newData.child('category').isString() && newData.child('category').val().length >= 1 && newData.child('category').val().length <= 80 && newData.child('description').isString() && newData.child('description').val().length >= 1 && newData.child('description').val().length <= 4000)"
+      }
+    },
+
+    // ─── FEEDBACK (authenticated members read for profile; members submit; admins manage) ─
+    "feedback": {
+      ".read": "auth !== null && root.child('users').child(auth.uid).child('banned').val() !== true",
+      "$id": {
+        ".read": "auth !== null && (auth.uid === data.child('uid').val() || (root.child('users').child(auth.uid).child('banned').val() !== true && (root.child('admins').child(auth.uid).val() === true || root.child('headAdmin').child(auth.uid).val() === true || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')))",
+        ".write": "auth !== null && ((root.child('admins').child(auth.uid).val() === true || root.child('headAdmin').child(auth.uid).val() === true || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com') || (!data.exists() && root.child('users').child(auth.uid).child('banned').val() !== true && newData.child('uid').val() === auth.uid))",
+        ".validate": "!newData.exists() || (newData.child('message').isString() && newData.child('message').val().length >= 1 && newData.child('message').val().length <= 3000 && newData.child('rating').isNumber() && newData.child('rating').val() >= 1 && newData.child('rating').val() <= 5)"
+      }
+    },
+
+    // ─── MESSAGES (members read own threads; members send; admins read & reply) ──
+    "messages": {
+      ".read": "auth !== null && root.child('users').child(auth.uid).child('banned').val() !== true",
+      "$id": {
+        ".read": "auth !== null && (auth.uid === data.child('fromUid').val() || (root.child('users').child(auth.uid).child('banned').val() !== true && (root.child('admins').child(auth.uid).val() === true || root.child('headAdmin').child(auth.uid).val() === true || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')))",
+        ".write": "auth !== null && ((root.child('admins').child(auth.uid).val() === true || root.child('headAdmin').child(auth.uid).val() === true || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com') || (!data.exists() && root.child('users').child(auth.uid).child('banned').val() !== true && newData.child('fromUid').val() === auth.uid))",
+        ".validate": "!newData.exists() || (newData.child('subject').isString() && newData.child('subject').val().length >= 1 && newData.child('subject').val().length <= 180 && newData.child('message').isString() && newData.child('message').val().length >= 1 && newData.child('message').val().length <= 4000)"
+      }
+    },
+
+    // ─── NOTIFICATIONS ────────────────────────────────────────────────────────
+    "notifications": {
+      "global": {
+        ".read": "auth !== null && root.child('users').child(auth.uid).child('banned').val() !== true",
+        ".write": "auth !== null && root.child('users').child(auth.uid).child('banned').val() !== true && (root.child('admins').child(auth.uid).val() === true || root.child('headAdmin').child(auth.uid).val() === true || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')"
+      },
+      "users": {
+        "$uid": {
+          ".read": "auth !== null && (auth.uid === $uid || (root.child('users').child(auth.uid).child('banned').val() !== true && (root.child('admins').child(auth.uid).val() === true || root.child('headAdmin').child(auth.uid).val() === true || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')))",
+          ".write": "auth !== null && (auth.uid === $uid || (root.child('users').child(auth.uid).child('banned').val() !== true && (root.child('admins').child(auth.uid).val() === true || root.child('headAdmin').child(auth.uid).val() === true || auth.token.email === 'dprogram057@gmail.com' || auth.token.email === 'stechnical121@gmail.com')))"
+        }
+      }
+    },
+
+    // ─── NOTIFICATION READ RECEIPTS ───────────────────────────────────────────
+    "notificationReads": {
+      "$uid": {
+        ".read": "auth !== null && auth.uid === $uid",
+        ".write": "auth !== null && auth.uid === $uid"
+      }
+    }
+  }
+}

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manage Resources | Admin Dashboard</title>
+  
+    <link rel="icon" type="image/png" href="../assets/logo/club_logo.png" />
+  <link rel="apple-touch-icon" href="../assets/logo/club_logo.png" />
+  <link rel="shortcut icon" href="../assets/logo/club_logo.png" />
+  <link rel="stylesheet" href="../css/global.css" />
+    <link rel="icon" type="image/png" href="../assets/logo/club_logo.png" />
+  <link rel="apple-touch-icon" href="../assets/logo/club_logo.png" />
+  <link rel="shortcut icon" href="../assets/logo/club_logo.png" />
+  <link rel="stylesheet" href="../css/admin.css" />
+  
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  
+  <script src="../js/firebase-config.js"></script>
+  <script src="../js/notifications.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="js/admin.js" defer></script>
+</head>
+<body class="admin-body">
+  <!-- Sidebar Overlay for Mobile -->
+  <div class="admin-sidebar-overlay" id="adminSidebarOverlay"></div>
+
+  <!-- Admin Sidebar -->
+  <aside class="admin-sidebar" id="adminSidebar">
+    <div class="admin-sidebar-brand">
+      <img src="../assets/logo/club_logo.png" alt="Logo" />
+      <span>Club Admin <small>v2.0</small></span>
+    </div>
+    <nav class="admin-nav">
+      <a href="index.html" class="admin-nav-item"><span class="nav-label">📊 Dashboard</span></a>
+      <a href="members.html" class="admin-nav-item"><span class="nav-label">👥 Members</span></a>
+      <a href="projects.html" class="admin-nav-item"><span class="nav-label">🔬 Projects</span></a>
+      <a href="events.html" class="admin-nav-item"><span class="nav-label">📅 Events</span></a>
+      <a href="moments.html" class="admin-nav-item"><span class="nav-label">📸 Moments</span></a>
+      <a href="voices.html" class="admin-nav-item"><span class="nav-label">💬 Testimonials</span></a>
+      <a href="ideas.html" class="admin-nav-item"><span class="nav-label">💡 Student Ideas</span></a>
+      <a href="notifications.html" class="admin-nav-item"><span class="nav-label">📢 Broadcasts</span></a>
+      <a href="messages.html" class="admin-nav-item"><span class="nav-label">✉️ Messages</span></a>
+      <a href="resources.html" class="admin-nav-item active"><span class="nav-label">📚 Resources</span></a>
+      <a href="settings.html" class="admin-nav-item"><span class="nav-label">⚙️ Settings</span></a>
+      <div style="border-top: 1px solid var(--border-subtle); margin: 0.75rem 0;"></div>
+      <a href="../index.html" class="admin-nav-item" style="color: var(--accent-cyan);"><span class="nav-label">🌐 View Live Site</span><span>↗</span></a>
+    </nav>
+    <div class="admin-sidebar-footer">
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <img id="adminCurrentUserAvatar" src="" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
+        <div>
+          <strong id="adminCurrentUserName" style="font-size: 0.85rem; display: block;">Admin</strong>
+          <span id="adminCurrentUserRole" class="badge badge-purple" style="font-size: 0.65rem;">ADMIN</span>
+        </div>
+      </div>
+      <button id="adminLogoutBtn" style="background: transparent; border: none; color: var(--accent-rose); cursor: pointer; font-size: 1.1rem;">⎋</button>
+    </div>
+  </aside>
+
+  <!-- Admin Main Layout -->
+  <div class="admin-main-wrapper">
+    <header class="admin-topbar">
+      <div class="admin-topbar-left">
+        <button id="adminSidebarToggle" class="hamburger-btn" style="color: var(--text-primary);">☰</button>
+        <h2 class="admin-page-title">Curate Learning Resources</h2>
+      </div>
+      <div class="admin-topbar-right">
+        <button class="btn btn-sm btn-primary" onclick="openCreateResourceModal()">+ Add Resource</button>
+      </div>
+    </header>
+
+    <main class="admin-content">
+      <div class="table-card">
+        <div class="table-header-bar">
+          <h4>Published Documentation & Roadmaps</h4>
+        </div>
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Description</th>
+                <th>URL</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="resourcesTableBody">
+              <tr><td colspan="5" style="text-align: center; padding: 2rem;">Loading resources...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Create/Edit Resource Modal -->
+  <div class="modal-overlay" id="resourceModal">
+    <div class="modal-content" style="max-width: 540px;">
+      <div class="modal-header">
+        <h3 id="resourceModalTitle">Add Learning Resource</h3>
+        <button class="modal-close" onclick="closeModal('resourceModal')">✕</button>
+      </div>
+      <form id="resourceEditorForm">
+        <input type="hidden" id="editResId" value="" />
+
+        <div class="form-group">
+          <label class="form-label">Resource Title</label>
+          <input type="text" id="modalResTitle" class="form-input" required placeholder="e.g. Modern Python & AI Roadmap" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select id="modalResCategory" class="form-select" required>
+            <option value="Programming">Programming</option>
+            <option value="Robotics & IoT">Robotics & IoT</option>
+            <option value="Artificial Intelligence">Artificial Intelligence</option>
+            <option value="General Science">General Science</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">External Resource / Documentation URL</label>
+          <input type="url" id="modalResUrl" class="form-input" required placeholder="https://..." />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Summary & Description</label>
+          <textarea id="modalResDesc" class="form-textarea" rows="3" required placeholder="Briefly describe what this guide covers..."></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Save Resource</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let allResources = {};
+
+    async function loadResources() {
+      const raw = (await ClubDB.get('resources')) || {};
+      allResources = {};
+      Object.entries(raw).forEach(([k, v]) => {
+        if (v && typeof v === 'object') {
+          allResources[k] = { ...v, id: v.id || k, _key: k };
+        }
+      });
+      renderTable();
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('resourcesTableBody');
+      const list = Object.values(allResources);
+
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 2rem;">No resources added yet.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = list.map(r => {
+        const key = r._key || r.id;
+        return `
+          <tr>
+            <td><strong>${r.title}</strong></td>
+            <td><span class="badge badge-purple">${r.category}</span></td>
+            <td style="max-width: 300px; font-size: 0.85rem;">${r.description}</td>
+            <td><a href="${r.url}" target="_blank" style="font-size: 0.82rem;">Link ↗</a></td>
+            <td>
+              <div class="action-btn-group">
+                <button class="btn btn-sm btn-secondary" onclick="editResource('${key}')">✏️</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteResource('${key}')">🗑️</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    window.openCreateResourceModal = function() {
+      document.getElementById('editResId').value = '';
+      document.getElementById('resourceModalTitle').textContent = 'Add Learning Resource';
+      document.getElementById('resourceEditorForm').reset();
+      openModal('resourceModal');
+    };
+
+    window.editResource = function(key) {
+      const r = allResources[key];
+      if (!r) return;
+      document.getElementById('editResId').value = key;
+      document.getElementById('resourceModalTitle').textContent = 'Edit Resource';
+      document.getElementById('modalResTitle').value = r.title || '';
+      document.getElementById('modalResCategory').value = r.category || 'Programming';
+      document.getElementById('modalResUrl').value = r.url || '';
+      document.getElementById('modalResDesc').value = r.description || '';
+      openModal('resourceModal');
+    };
+
+    window.deleteResource = async function(key) {
+      if (!confirm("Delete this learning resource?")) return;
+      await ClubDB.remove(`resources/${key}`);
+      delete allResources[key];
+      renderTable();
+      showToast("Resource removed.", "info");
+    };
+
+    document.getElementById('resourceEditorForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('editResId').value;
+      const title = document.getElementById('modalResTitle').value.trim();
+      const category = document.getElementById('modalResCategory').value;
+      const url = document.getElementById('modalResUrl').value.trim();
+      const description = document.getElementById('modalResDesc').value.trim();
+
+      if (id) {
+        const updated = { id, title, category, url, description };
+        await ClubDB.update(`resources/${id}`, updated);
+        allResources[id] = { ...allResources[id], ...updated, id, _key: id };
+        showToast("Resource updated.", "success");
+      } else {
+        const newRes = { title, category, url, description };
+        const created = await ClubDB.push('resources', newRes);
+        const newKey = (created && created.id) ? created.id : ('res_' + Date.now());
+        allResources[newKey] = { ...created, id: newKey, _key: newKey };
+        showToast("Resource created.", "success");
+        if (window.ClubNotifs && ClubNotifs.notifyAllMembers) {
+          ClubNotifs.notifyAllMembers(
+            `📚 New Resource: ${title}`,
+            `New learning material added: "${title}" (${category}). Check it out in the resources library!`,
+            'resources.html',
+            'normal'
+          ).catch(() => {});
+        }
+      }
+
+      closeModal('resourceModal');
+      renderTable();
+    };
+
+    loadResources();
+    window.addEventListener('club-db-updated', () => loadResources());
+  </script>
+</body>
+</html>

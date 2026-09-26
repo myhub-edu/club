@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="../assets/logo/club_logo.png" />
+  <link rel="apple-touch-icon" href="../assets/logo/club_logo.png" />
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Review Student Ideas | Admin Dashboard</title>
+  
+  <link rel="stylesheet" href="../css/global.css" />
+  <link rel="stylesheet" href="../css/admin.css" />
+  
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  
+  <script src="../js/firebase-config.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="js/admin.js" defer></script>
+</head>
+<body class="admin-body">
+  <!-- Sidebar Overlay for Mobile -->
+  <div class="admin-sidebar-overlay" id="adminSidebarOverlay"></div>
+
+  <!-- Admin Sidebar -->
+  <aside class="admin-sidebar" id="adminSidebar">
+    <div class="admin-sidebar-brand">
+      <img src="../assets/logo/club_logo.png" alt="Logo" />
+      <span>Club Admin <small>v2.0</small></span>
+    </div>
+    <nav class="admin-nav">
+      <a href="index.html" class="admin-nav-item"><span class="nav-label">📊 Dashboard</span></a>
+      <a href="members.html" class="admin-nav-item"><span class="nav-label">👥 Members</span></a>
+      <a href="projects.html" class="admin-nav-item"><span class="nav-label">🔬 Projects</span></a>
+      <a href="events.html" class="admin-nav-item"><span class="nav-label">📅 Events</span></a>
+      <a href="moments.html" class="admin-nav-item"><span class="nav-label">📸 Moments</span></a>
+      <a href="voices.html" class="admin-nav-item"><span class="nav-label">💬 Testimonials</span></a>
+      <a href="ideas.html" class="admin-nav-item active">
+        <span class="nav-label">💡 Student Ideas</span>
+        <span class="badge badge-amber" id="sidebarPendingIdeasBadge" style="display:none; font-size:0.7rem;">0</span>
+      </a>
+      <a href="notifications.html" class="admin-nav-item"><span class="nav-label">📢 Broadcasts</span></a>
+      <a href="messages.html" class="admin-nav-item"><span class="nav-label">✉️ Messages</span></a>
+      <a href="resources.html" class="admin-nav-item"><span class="nav-label">📚 Resources</span></a>
+      <a href="settings.html" class="admin-nav-item"><span class="nav-label">⚙️ Settings</span></a>
+      <div style="border-top: 1px solid var(--border-subtle); margin: 0.75rem 0;"></div>
+      <a href="../index.html" class="admin-nav-item" style="color: var(--accent-cyan);"><span class="nav-label">🌐 View Live Site</span><span>↗</span></a>
+    </nav>
+    <div class="admin-sidebar-footer">
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <img id="adminCurrentUserAvatar" src="" alt="Admin" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
+        <div>
+          <strong id="adminCurrentUserName" style="font-size: 0.85rem; display: block;">Admin</strong>
+          <span id="adminCurrentUserRole" class="badge badge-purple" style="font-size: 0.65rem;">ADMIN</span>
+        </div>
+      </div>
+      <button id="adminLogoutBtn" title="Logout" style="background: transparent; border: none; color: var(--accent-rose); cursor: pointer; font-size: 1.1rem;">⎋</button>
+    </div>
+  </aside>
+
+  <!-- Admin Main Layout -->
+  <div class="admin-main-wrapper">
+    <header class="admin-topbar">
+      <div class="admin-topbar-left">
+        <button id="adminSidebarToggle" class="hamburger-btn" style="color: var(--text-primary);" aria-label="Toggle sidebar">☰</button>
+        <h2 class="admin-page-title">Student Project Ideas</h2>
+      </div>
+    </header>
+
+    <main class="admin-content">
+      <div class="table-card">
+        <div class="table-header-bar">
+          <h4>Submitted Hardware &amp; Software Concepts</h4>
+          <input type="text" id="adminIdeaSearch" class="form-input" style="max-width: 250px; padding: 0.4rem 0.75rem; font-size: 0.85rem;" placeholder="🔍 Search ideas..." />
+        </div>
+        <div id="ideasPermissionWarning" style="display:none; margin-bottom: 1rem; padding: 0.85rem 1.1rem; background: rgba(245, 158, 11, 0.12); border: 1px solid #f59e0b; border-radius: var(--radius-sm); color: #fef3c7; font-size: 0.84rem; line-height: 1.5;">
+          ⚠️ <strong>Firebase Database Rules Notice:</strong> Firebase rejected read access to <code>/ideas</code> with <em>Permission Denied</em>. Please update your Firebase Realtime Database rules (see <code>firebase_keys.txt</code> or Settings) to allow admin reads on <code>ideas</code> so all student submissions appear.
+        </div>
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Student</th>
+                <th>Category</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="ideasTableBody">
+              <tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">Loading ideas...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Idea Review Modal -->
+  <div class="modal-overlay" id="ideaDetailModal">
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3 id="modalIdeaTitle">Project Proposal</h3>
+        <button class="modal-close" onclick="closeModal('ideaDetailModal')">✕</button>
+      </div>
+      <div style="margin-bottom: 1.25rem;">
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap;">
+          <span id="modalIdeaCategory" class="badge badge-cyan"></span>
+          <span id="modalIdeaStatus" class="status-pill"></span>
+        </div>
+        <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+          Proposed by: <strong id="modalIdeaAuthor" style="color: var(--text-primary);"></strong>
+        </div>
+        <h4 style="margin-bottom: 0.5rem;">Concept Description:</h4>
+        <p id="modalIdeaDescription" style="font-size: 0.95rem; line-height: 1.6; color: var(--text-secondary); margin-bottom: 1rem; word-break: break-word;"></p>
+        
+        <h4 style="margin-bottom: 0.5rem;">Requested Components / Hardware:</h4>
+        <p id="modalIdeaMaterials" style="font-size: 0.9rem; color: var(--accent-cyan); margin-bottom: 1.5rem;"></p>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+        <button id="modalAcceptIdeaBtn" class="btn btn-primary btn-sm">✓ Accept Idea</button>
+        <button id="modalConvertToProjectBtn" class="btn btn-secondary btn-sm">🚀 Convert to Project</button>
+        <button id="modalRejectIdeaBtn" class="btn btn-danger btn-sm">✕ Reject</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let allIdeas = {};
+    let activeModalIdeaId = null;
+
+    async function loadAdminIdeas() {
+      const raw = (await ClubDB.get('ideas')) || {};
+      allIdeas = {};
+      Object.entries(raw).forEach(([k, v]) => {
+        if (v && typeof v === 'object') {
+          allIdeas[k] = { ...v, id: v.id || k, _key: k };
+        }
+      });
+      renderTable();
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('ideasTableBody');
+      const search = (document.getElementById('adminIdeaSearch').value || '').toLowerCase().trim();
+      const list = Object.values(allIdeas).filter(i =>
+        !search ||
+        (i.title && i.title.toLowerCase().includes(search)) ||
+        (i.displayName && i.displayName.toLowerCase().includes(search)) ||
+        (i.category && i.category.toLowerCase().includes(search))
+      );
+
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 2.5rem; color: var(--text-muted);">
+          <div style="font-size:2rem; margin-bottom:0.5rem;">💡</div>
+          <strong>${search ? 'No ideas match your search.' : 'No student ideas submitted yet.'}</strong>
+        </td></tr>`;
+        return;
+      }
+
+      list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+      tbody.innerHTML = list.map(i => {
+        const key = i._key || i.id;
+        return `
+          <tr>
+            <td><strong>${i.title || '(Untitled)'}</strong></td>
+            <td>${i.displayName || 'Student'}<br><small style="color:var(--text-muted);">${i.section ? 'Sec ' + i.section : ''}</small></td>
+            <td><span class="badge badge-cyan">${i.category || '—'}</span></td>
+            <td style="font-size: 0.8rem; color: var(--text-muted); white-space: nowrap;">${i.createdAt ? new Date(i.createdAt).toLocaleDateString() : (i.date || '—')}</td>
+            <td><span class="status-pill ${i.status || 'pending'}">${i.status || 'pending'}</span></td>
+            <td>
+              <div class="action-btn-group">
+                <button class="btn btn-sm btn-secondary" onclick="openIdeaReview('${key}')">Inspect</button>
+                ${i.status === 'pending' ? `
+                  <button class="btn btn-sm btn-primary" onclick="quickAccept('${key}')" title="Accept">✓</button>
+                  <button class="btn btn-sm btn-danger" onclick="quickReject('${key}')" title="Reject">✕</button>
+                ` : ''}
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    window.openIdeaReview = function(id) {
+      const idea = allIdeas[id];
+      if (!idea) return;
+      activeModalIdeaId = id;
+      document.getElementById('modalIdeaTitle').textContent = idea.title || '(Untitled)';
+      document.getElementById('modalIdeaCategory').textContent = idea.category || '—';
+      document.getElementById('modalIdeaStatus').textContent = idea.status || 'pending';
+      document.getElementById('modalIdeaStatus').className = `status-pill ${idea.status || 'pending'}`;
+      document.getElementById('modalIdeaAuthor').textContent = idea.displayName || 'Student Member';
+      document.getElementById('modalIdeaDescription').textContent = idea.description || '(No description provided)';
+      document.getElementById('modalIdeaMaterials').textContent = idea.materials || 'No specific hardware specified.';
+      openModal('ideaDetailModal');
+    };
+
+    window.quickAccept = async function(id) {
+      try {
+        await ClubDB.update(`ideas/${id}`, { status: 'accepted' });
+        if (allIdeas[id]) allIdeas[id].status = 'accepted';
+
+        // Notify student via DB + OS push
+        if (allIdeas[id] && allIdeas[id].uid) {
+          await ClubDB.push(`notifications/users/${allIdeas[id].uid}`, {
+            title: "Project Idea Accepted! 🚀",
+            message: `Great news! Your proposal '${allIdeas[id].title}' has been approved by club advisors. Please check in during next lab session.`,
+            priority: "important",
+            createdAt: Date.now(),
+            createdBy: "Club Leadership",
+            url: 'submit-idea.html'
+          });
+          if (window.ClubWebPush) {
+            ClubWebPush.show('Your Idea Was Accepted! 🚀',
+              `"${allIdeas[id].title}" has been approved — tap to view your proposal!`,
+              { urgent: true, url: '/submit-idea.html', tag: 'idea_accept_' + id }
+            );
+          }
+        }
+
+        showToast("Idea accepted and student notified.", "success");
+      } catch(err) {
+        console.error(err);
+        showToast("Error updating idea.", "error");
+      }
+      renderTable();
+      if (window.AdminApp && window.AdminApp.refreshBadgeCounts) window.AdminApp.refreshBadgeCounts();
+    };
+
+    window.quickReject = async function(id) {
+      try {
+        await ClubDB.update(`ideas/${id}`, { status: 'rejected' });
+        if (allIdeas[id]) allIdeas[id].status = 'rejected';
+
+        // Notify student their idea wasn't selected this time
+        if (allIdeas[id] && allIdeas[id].uid) {
+          await ClubDB.push(`notifications/users/${allIdeas[id].uid}`, {
+            title: "Project Idea Update 📋",
+            message: `Your proposal '${allIdeas[id].title}' was not selected this round. Don't be discouraged — refine and resubmit anytime!`,
+            priority: "normal",
+            createdAt: Date.now(),
+            createdBy: "Club Leadership",
+            url: 'submit-idea.html'
+          });
+        }
+
+        showToast("Idea rejected and student notified.", "info");
+      } catch(err) {
+        showToast("Error updating idea.", "error");
+      }
+      renderTable();
+      if (window.AdminApp && window.AdminApp.refreshBadgeCounts) window.AdminApp.refreshBadgeCounts();
+    };
+
+    document.getElementById('modalAcceptIdeaBtn').onclick = () => {
+      if (activeModalIdeaId) { quickAccept(activeModalIdeaId); closeModal('ideaDetailModal'); }
+    };
+
+    document.getElementById('modalRejectIdeaBtn').onclick = () => {
+      if (activeModalIdeaId) { quickReject(activeModalIdeaId); closeModal('ideaDetailModal'); }
+    };
+
+    document.getElementById('modalConvertToProjectBtn').onclick = async () => {
+      if (!activeModalIdeaId) return;
+      const btn = document.getElementById('modalConvertToProjectBtn');
+      btn.disabled = true; btn.textContent = 'Converting...';
+      try {
+        const idea = allIdeas[activeModalIdeaId];
+        const newProj = {
+          title: idea.title,
+          slug: (idea.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+          category: idea.category || 'General',
+          status: 'in-progress',
+          coverImage: 'assets/projects/robotics-bot.jpg',
+          technology: idea.materials || 'Embedded, C++, Hardware',
+          team: idea.displayName || 'Student Team',
+          description: idea.description || '',
+          createdAt: Date.now()
+        };
+        await ClubDB.push('projects', newProj);
+        await quickAccept(activeModalIdeaId);
+        closeModal('ideaDetailModal');
+        showToast("Idea converted into active Club Project! Check Projects tab.", "success");
+      } catch(err) {
+        console.error(err);
+        showToast("Error converting idea to project.", "error");
+      } finally {
+        btn.disabled = false; btn.textContent = '🚀 Convert to Project';
+      }
+    };
+
+    document.getElementById('adminIdeaSearch').addEventListener('input', renderTable);
+    loadAdminIdeas();
+    // club-auth-changed: reload when admin authenticates
+    document.addEventListener('club-auth-changed', () => loadAdminIdeas());
+    // ClubDB.onValue: single real-time listener — no club-db-updated needed (avoids double fetch)
+    if (window.ClubDB && ClubDB.onValue) {
+      ClubDB.onValue('ideas', () => loadAdminIdeas());
+    }
+  </script>
+</body>
+</html>

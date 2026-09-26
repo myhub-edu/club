@@ -1,0 +1,490 @@
+/* ==========================================================================
+   SCIENCE & IT CLUB - ADMIN DASHBOARD DESIGN SYSTEM
+   Professional, Dark Cyber-Operations Theme
+   ========================================================================== */
+
+:root {
+  --admin-sidebar-width: 260px;
+  --admin-header-height: 64px;
+}
+
+body.admin-body {
+  display: flex;
+  min-height: 100vh;
+  background-color: #060911;
+  color: var(--text-primary);
+  padding-bottom: 0; /* No bottom nav in admin */
+}
+
+/* Admin Sidebar */
+.admin-sidebar {
+  width: var(--admin-sidebar-width);
+  background: #090e1a;
+  border-right: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 120;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (max-width: 991px) {
+  .admin-sidebar {
+    transform: translateX(-100%);
+  }
+  .admin-sidebar.active {
+    transform: translateX(0);
+  }
+}
+
+.admin-sidebar-brand {
+  height: var(--admin-header-height);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 1.25rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.admin-sidebar-brand img {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm);
+}
+
+.admin-sidebar-brand span {
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: var(--text-primary);
+}
+
+.admin-sidebar-brand small {
+  font-size: 0.65rem;
+  background: var(--accent-purple);
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+  margin-left: 4px;
+}
+
+.admin-nav {
+  flex: 1;
+  padding: 1.25rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  overflow-y: auto;
+}
+
+.admin-nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.7rem 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.9rem;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.admin-nav-item:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.admin-nav-item.active {
+  color: var(--accent-cyan);
+  background: rgba(0, 242, 254, 0.1);
+  border-left: 3px solid var(--accent-cyan);
+}
+
+.admin-nav-item .nav-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.admin-sidebar-footer {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* Admin Main Layout */
+.admin-main-wrapper {
+  flex: 1;
+  margin-left: var(--admin-sidebar-width);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+@media (max-width: 991px) {
+  .admin-main-wrapper {
+    margin-left: 0;
+  }
+}
+
+.admin-topbar {
+  height: var(--admin-header-height);
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: var(--backdrop-blur);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.admin-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.admin-page-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.admin-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.admin-content {
+  padding: 1.5rem;
+  flex: 1;
+  max-width: 1300px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* Stats Cards */
+.admin-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-glow);
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--gradient-primary);
+}
+
+.stat-card.cyan::before { background: var(--accent-cyan); }
+.stat-card.purple::before { background: var(--accent-purple); }
+.stat-card.emerald::before { background: var(--accent-emerald); }
+.stat-card.amber::before { background: var(--accent-amber); }
+.stat-card.rose::before { background: var(--accent-rose); }
+
+.stat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.1;
+}
+
+.stat-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+/* Table Cards */
+.table-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+
+.table-header-bar {
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.admin-table th {
+  background: rgba(0, 0, 0, 0.25);
+  padding: 0.85rem 1rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.admin-table td {
+  padding: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  color: var(--text-secondary);
+  vertical-align: middle;
+}
+
+.admin-table tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text-primary);
+}
+
+/* Status Pills */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.status-pill.approved, .status-pill.accepted, .status-pill.replied {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--accent-emerald);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.status-pill.pending, .status-pill.unread {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--accent-amber);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.status-pill.rejected {
+  background: rgba(244, 63, 94, 0.15);
+  color: var(--accent-rose);
+  border: 1px solid rgba(244, 63, 94, 0.3);
+}
+
+.action-btn-group {
+  display: flex;
+  gap: 0.4rem;
+}
+
+/* Quick Actions Card */
+.quick-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.quick-action-card {
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.quick-action-card:hover {
+  border-color: var(--accent-cyan);
+  transform: translateY(-2px);
+  background: rgba(30, 41, 59, 0.9);
+}
+
+.quick-action-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  background: rgba(0, 242, 254, 0.1);
+  color: var(--accent-cyan);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+}
+
+/* ==============================
+   Sidebar Mobile Overlay
+   ============================== */
+.admin-sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 119;
+  backdrop-filter: blur(2px);
+}
+
+@media (max-width: 991px) {
+  .admin-sidebar-overlay.active {
+    display: block;
+  }
+}
+
+/* btn-danger is defined in global.css — no duplicate needed here */
+
+/* ==============================
+   Mobile Responsive Improvements
+   ============================== */
+@media (max-width: 600px) {
+  .admin-page-title {
+    font-size: 1rem !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    /* Use available width minus hamburger btn + padding, not a fixed 200px */
+    max-width: calc(100vw - 120px);
+  }
+
+  .admin-content {
+    padding: 1rem 0.75rem;
+  }
+
+  .table-header-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .table-header-bar input {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 0.65rem 0.6rem;
+    font-size: 0.82rem;
+  }
+
+  .action-btn-group {
+    flex-wrap: wrap;
+    gap: 0.3rem;
+  }
+
+  .btn-sm {
+    padding: 0.3rem 0.55rem !important;
+    font-size: 0.78rem !important;
+  }
+
+  .admin-table td:last-child {
+    min-width: 80px;
+  }
+
+  .modal-content {
+    margin: 0.5rem !important;
+    padding: 1rem !important;
+  }
+
+  .broadcast-layout {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ==============================
+   Tablet dead zone fix (600px – 991px)
+   Sidebar hidden but full desktop padding — adjust layout
+   ============================== */
+@media (min-width: 600px) and (max-width: 991px) {
+  .admin-content {
+    padding: 1.25rem 1rem;
+  }
+
+  .admin-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .quick-actions-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .table-header-bar {
+    flex-wrap: wrap;
+  }
+
+  .table-header-bar input,
+  .table-header-bar select {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+}
+
+/* ==============================
+   Admin toast: no bottom-nav, so start lower
+   ============================== */
+body.admin-body .toast-container {
+  bottom: 1.25rem !important;
+}
+
+@media (max-width: 400px) {
+  .admin-sidebar-brand span {
+    font-size: 0.88rem;
+  }
+
+  .admin-nav-item {
+    font-size: 0.82rem;
+    padding: 0.6rem 0.7rem;
+  }
+}
+

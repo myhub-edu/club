@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="assets/logo/club_logo.png" />
+  <link rel="apple-touch-icon" href="assets/logo/club_logo.png" />
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact Head Admin & Advisory Board | Science & IT Club | Liverpool College</title>
+  <meta name="description" content="Send direct inquiries, lab requisition requests, and academic collaboration proposals to the Head Administrator and STEM advisory board at Liverpool International Secondary College." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="contact-admin.html" />
+  
+  <link rel="stylesheet" href="css/global.css" />
+  
+  <!-- Firebase Compat CDN -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  
+  <script src="js/firebase-config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/notifications.js" defer></script>
+  <script src="js/main.js" defer></script>
+</head>
+<body>
+  <div class="ambient-glow"></div>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="container header-container">
+      <a href="index.html" class="brand">
+        <img src="assets/logo/club_logo.png" alt="Club Logo" class="brand-logo" />
+        <span class="brand-text">Science & <span>IT Club</span></span>
+      </a>
+      <nav class="desktop-nav">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="about.html" class="nav-link">About</a>
+        <a href="projects.html" class="nav-link">Projects</a>
+        <a href="events.html" class="nav-link">Events</a>
+        <a href="moments.html" class="nav-link">Moments</a>
+        <a href="voices.html" class="nav-link">Voices</a>
+        <a href="resources.html" class="nav-link">Resources</a>
+      </nav>
+      <div class="header-actions">
+        <a href="login.html" class="btn btn-primary btn-sm">Member Login</a>
+        <button class="hamburger-btn" id="drawerToggleBtn" aria-label="Open Menu">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Drawer -->
+  <div class="mobile-drawer-overlay" id="mobileDrawerOverlay"></div>
+  <aside class="mobile-drawer" id="mobileDrawer">
+    <div class="mobile-drawer-header">
+      <div class="brand">
+        <img src="assets/logo/club_logo.png" alt="Club Logo" class="brand-logo" />
+        <span class="brand-text">Science & <span>IT Club</span></span>
+      </div>
+      <button class="hamburger-btn" id="drawerCloseBtn" aria-label="Close Menu">✕</button>
+    </div>
+    <nav class="drawer-links">
+      <a href="index.html" class="drawer-link">🏠 Home</a>
+      <a href="about.html" class="drawer-link">ℹ️ About the Club</a>
+      <a href="projects.html" class="drawer-link">🔬 Projects Showcase</a>
+      <a href="events.html" class="drawer-link">📅 Events & Workshops</a>
+      <a href="moments.html" class="drawer-link">📸 Captured Moments</a>
+      <a href="voices.html" class="drawer-link">💬 Student Voices</a>
+      <a href="resources.html" class="drawer-link">📚 Learning Resources</a>
+      <div style="border-top: 1px solid var(--border-subtle); margin: 0.75rem 0;"></div>
+      <a href="submit-idea.html" class="drawer-link">💡 Propose Project Idea</a>
+      <a href="submit-feedback.html" class="drawer-link">⭐ Share Feedback</a>
+      <a href="contact-admin.html" class="drawer-link active">✉️ Write to Head Admin</a>
+    </nav>
+  </aside>
+
+  <main style="padding: 3rem 0 5rem;">
+    <div class="container" style="max-width: 760px;">
+      <div style="text-align: center; margin-bottom: 2rem;">
+        <span class="badge badge-rose">Direct Advisory Channel</span>
+        <h1 style="margin-top: 0.5rem; margin-bottom: 0.75rem;">Write to Head Admin</h1>
+        <p>Send a direct inquiry to the club leadership and head administration regarding lab equipment access, permissions, or project mentoring.</p>
+      </div>
+
+      <!-- Message Composer -->
+      <div class="card" style="margin-bottom: 2.5rem; border-top: 4px solid var(--accent-rose);">
+        <form id="messageForm">
+          <div class="form-group">
+            <label class="form-label">Subject</label>
+            <input type="text" id="msgSubject" class="form-input" required placeholder="e.g. Lab 2 Access for 3D Printing Calibration" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Message Details</label>
+            <textarea id="msgBody" class="form-textarea" rows="4" required placeholder="Describe what you need, your team members, date/time needed, or specific questions..."></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%;">
+            ✉️ Send Message to Head Admin
+          </button>
+        </form>
+      </div>
+
+      <!-- Thread / Previous Conversations -->
+      <div>
+        <h3 style="margin-bottom: 1rem;">Your Previous Communications & Replies</h3>
+        <div id="messageThreadsList" style="display: flex; flex-direction: column; gap: 1rem;">
+          <p style="color: var(--text-muted); font-size: 0.9rem;">Loading messages...</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Mobile Bottom Nav -->
+  <nav class="bottom-nav">
+    <a href="index.html" class="bottom-nav-item"><span class="icon">🏠</span><span>Home</span></a>
+    <a href="projects.html" class="bottom-nav-item"><span class="icon">🔬</span><span>Projects</span></a>
+    <a href="events.html" class="bottom-nav-item"><span class="icon">📅</span><span>Events</span></a>
+    <a href="voices.html" class="bottom-nav-item"><span class="icon">💬</span><span>Voices</span></a>
+    <a href="profile.html" class="bottom-nav-item"><span class="icon">👤</span><span>Profile</span></a>
+  </nav>
+
+  <footer class="site-footer">
+    <div class="container" style="text-align: center;">
+      <p>© 2026 Liverpool International Secondary College – Science & IT Club</p>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const form = document.getElementById('messageForm');
+      const threadsContainer = document.getElementById('messageThreadsList');
+      const submitBtn = form ? form.querySelector('button[type=submit]') : null;
+
+      async function loadThreads() {
+        if (!ClubAuth.currentUser) {
+          threadsContainer.innerHTML = `
+            <div class="card" style="text-align: center; padding: 2rem;">
+              <div style="font-size:2rem; margin-bottom:0.75rem;">🔒</div>
+              <p>Please <a href="login.html" style="color:var(--accent-cyan);">sign in</a> to view your messages and send inquiries to the Head Admin.</p>
+            </div>`;
+          return;
+        }
+
+        const user = ClubAuth.currentUser;
+        const allMsgs = (await ClubDB.get('messages')) || {};
+        const myMsgs = Object.values(allMsgs).filter(m => m.fromUid === user.uid);
+
+        if (myMsgs.length === 0) {
+          threadsContainer.innerHTML = `
+            <div class="card" style="text-align:center; padding:2.5rem 1.5rem; color:var(--text-muted);">
+              <div style="font-size:2rem; margin-bottom:0.75rem;">✉️</div>
+              <h4>No Messages Yet</h4>
+              <p style="font-size:0.88rem; margin-top:0.5rem;">Your sent messages and admin replies will appear here.</p>
+            </div>`;
+          return;
+        }
+
+        myMsgs.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+        threadsContainer.innerHTML = myMsgs.map(m => {
+          const replies = m.replies ? Object.values(m.replies) : [];
+          return `
+            <div class="card" style="border-left: 3px solid ${m.status === 'replied' ? 'var(--accent-emerald)' : 'var(--accent-amber)'};">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.5rem; gap:1rem; flex-wrap:wrap;">
+                <h4 style="font-size:1rem;">${m.subject || '(No Subject)'}</h4>
+                <span class="status-pill ${m.status || 'unread'}">${m.status || 'unread'}</span>
+              </div>
+              <p style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:0.75rem; line-height:1.55;">${m.message || ''}</p>
+              <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.75rem;">
+                Sent ${m.createdAt ? new Date(m.createdAt).toLocaleString() : ''}
+              </div>
+              ${replies.length > 0 ? `
+                <div style="background:rgba(16,185,129,0.06); border:1px solid rgba(16,185,129,0.2); border-radius:var(--radius-sm); padding:1rem; margin-top:0.5rem;">
+                  <strong style="font-size:0.82rem; color:var(--accent-emerald); display:block; margin-bottom:0.5rem;">💬 Advisor Reply${replies.length > 1 ? 's' : ''}:</strong>
+                  ${replies.sort((a,b) => (a.createdAt||0)-(b.createdAt||0)).map(r => `
+                    <div style="margin-bottom:0.5rem;">
+                      <p style="font-size:0.9rem; color:var(--text-primary);">"${r.message || ''}"</p>
+                      <small style="color:var(--text-muted);">${r.createdAt ? new Date(r.createdAt).toLocaleString() : ''} — ${r.fromName || 'Advisor'}</small>
+                    </div>
+                  `).join('')}
+                </div>
+              ` : `<div style="font-size:0.82rem; color:var(--text-muted); font-style:italic;">⏳ Awaiting advisor response...</div>`}
+            </div>
+          `;
+        }).join('');
+      }
+
+      if (form) {
+        form.onsubmit = async (e) => {
+          e.preventDefault();
+
+          if (!ClubAuth.currentUser) {
+            showToast("Please sign in to send messages.", "error");
+            window.location.href = 'login.html?redirect=contact-admin.html';
+            return;
+          }
+
+          if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Sending...'; }
+
+          try {
+            const user = ClubAuth.currentUser;
+            const subject = document.getElementById('msgSubject').value.trim();
+            const body = document.getElementById('msgBody').value.trim();
+
+            if (!subject || !body) {
+              showToast("Subject and message are required.", "error");
+              return;
+            }
+
+            const newMsg = {
+              fromUid: user.uid,
+              fromName: user.displayName || 'Student',
+              fromEmail: user.email || '',
+              subject,
+              message: body,
+              status: 'unread',
+              date: window.ClubDates ? ClubDates.getTodayFormatted() : new Date().toLocaleDateString('en-US'),
+              createdAt: Date.now(),
+              replies: {}
+            };
+
+            await ClubDB.push('messages', newMsg);
+
+            // ✅ Notify all admins about new message
+            if (window.ClubNotifs && ClubNotifs.notifyAllAdmins) {
+              await ClubNotifs.notifyAllAdmins(
+                `📨 New Message from ${user.displayName || 'Student'}`,
+                `Subject: "${subject}" — Awaiting your reply in the Messages inbox.`,
+                'messages.html',
+                'important'
+              );
+            }
+
+            form.reset();
+            showToast("Message sent to Head Admin! You'll be notified when they reply. ✓", "success");
+            await loadThreads();
+          } catch (err) {
+            console.error('Message send error:', err);
+            showToast("Error sending message. Please try again.", "error");
+          } finally {
+            if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = '✉️ Send Message to Head Admin'; }
+          }
+        };
+      }
+
+      // Load threads after auth is ready
+      const tryLoad = () => {
+        if (window.ClubAuth && window.ClubAuth.currentUser !== undefined) {
+          loadThreads();
+        } else {
+          setTimeout(tryLoad, 150);
+        }
+      };
+      setTimeout(tryLoad, 200);
+
+      // Re-load when DB updates (live replies)
+      window.addEventListener('club-db-updated', loadThreads);
+      document.addEventListener('club-auth-changed', loadThreads);
+    });
+  </script>
+</body>
+</html>

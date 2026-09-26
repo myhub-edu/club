@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="assets/logo/club_logo.png" />
+  <link rel="apple-touch-icon" href="assets/logo/club_logo.png" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Account | Science &amp; IT Club | Liverpool College</title>
+  <meta name="description" content="Register for the Science &amp; IT Club member portal at Liverpool International Secondary College." />
+  <meta name="robots" content="index, follow" />
+  <link rel="stylesheet" href="css/global.css" />
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/notifications.js" defer></script>
+  <script src="js/main.js" defer></script>
+  <style>
+    #regError {
+      display: none;
+      background: rgba(244,63,94,0.1);
+      border: 1px solid rgba(244,63,94,0.35);
+      border-radius: var(--radius-sm);
+      color: var(--accent-rose);
+      font-size: 0.85rem;
+      padding: 0.7rem 1rem;
+      margin-bottom: 1rem;
+      text-align: left;
+    }
+    #regSuccess {
+      display: none;
+      background: rgba(16,185,129,0.1);
+      border: 1px solid rgba(16,185,129,0.35);
+      border-radius: var(--radius-sm);
+      color: var(--accent-emerald);
+      font-size: 0.85rem;
+      padding: 0.7rem 1rem;
+      margin-bottom: 1rem;
+      text-align: left;
+    }
+    .pw-strength { height: 4px; border-radius: 2px; margin-top: 6px; transition: all 0.3s; background: var(--border-subtle); }
+    .pw-strength.weak { background: var(--accent-rose); width: 33%; }
+    .pw-strength.medium { background: var(--accent-amber); width: 66%; }
+    .pw-strength.strong { background: var(--accent-emerald); width: 100%; }
+  </style>
+</head>
+<body>
+  <div class="ambient-glow"></div>
+
+  <header class="site-header">
+    <div class="container header-container">
+      <a href="index.html" class="brand">
+        <img src="assets/logo/club_logo.png" alt="Club Logo" class="brand-logo" />
+        <span class="brand-text">Science &amp; <span>IT Club</span></span>
+      </a>
+      <div class="header-actions">
+        <a href="login.html" class="btn btn-outline btn-sm">← Sign In</a>
+      </div>
+    </div>
+  </header>
+
+  <main style="display: flex; align-items: flex-start; justify-content: center; padding: 3rem 1rem 5rem; min-height: 80vh;">
+    <div class="card" style="width: 100%; max-width: 480px; padding: 2.5rem 2rem; border: 1px solid var(--border-glow); box-shadow: var(--shadow-glow);">
+      <img src="assets/logo/club_logo.png" alt="Logo" style="width: 54px; height: 54px; margin: 0 auto 1rem; border-radius: var(--radius-sm);" />
+      <h1 style="font-size: 1.65rem; text-align: center; margin-bottom: 0.35rem;">Create Your Account</h1>
+      <p style="font-size: 0.88rem; text-align: center; color: var(--text-secondary); margin-bottom: 1.75rem;">
+        Join Liverpool International Secondary College – Science &amp; IT Club
+      </p>
+
+      <!-- Google Sign-Up (Recommended) -->
+      <button id="googleRegBtn" class="btn btn-secondary" style="width: 100%; display: flex; gap: 0.75rem; align-items: center; justify-content: center; padding: 0.9rem; font-size: 0.95rem; border-color: rgba(255,255,255,0.2); margin-bottom: 1rem;">
+        <svg width="20" height="20" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+        </svg>
+        <span id="googleRegText">Sign Up with Google (Recommended)</span>
+      </button>
+
+      <!-- Divider -->
+      <div style="position: relative; margin: 1.25rem 0; text-align: center;">
+        <hr style="border: 0; border-top: 1px solid var(--border-subtle);" />
+        <span style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--bg-card); padding: 0 0.75rem; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; white-space: nowrap;">or register with email</span>
+      </div>
+
+      <div id="regError"></div>
+      <div id="regSuccess"></div>
+
+      <form id="registerForm" autocomplete="off" style="display: flex; flex-direction: column; gap: 0.75rem;">
+        <div>
+          <label class="form-label" style="font-size: 0.8rem;">Full Name <span style="color:var(--accent-rose);">*</span></label>
+          <input type="text" id="regName" class="form-input" placeholder="e.g. Khushi Patel" autocomplete="name" required />
+        </div>
+        <div>
+          <label class="form-label" style="font-size: 0.8rem;">Email Address <span style="color:var(--accent-rose);">*</span></label>
+          <input type="email" id="regEmail" class="form-input" placeholder="your.name@school.edu" autocomplete="email" required />
+        </div>
+        <div>
+          <label class="form-label" style="font-size: 0.8rem;">Section <span style="color:var(--accent-rose);">*</span></label>
+          <input type="text" id="regSection" class="form-input" placeholder="e.g. S8, S9, L4, T2…" required maxlength="10" />
+          <small style="font-size:0.73rem;color:var(--text-muted);margin-top:3px;display:block;">Your class section code (ask your teacher if unsure)</small>
+        </div>
+        <div>
+          <label class="form-label" style="font-size: 0.8rem;">Password <span style="color:var(--accent-rose);">*</span></label>
+          <input type="password" id="regPassword" class="form-input" placeholder="Minimum 6 characters" autocomplete="new-password" required minlength="6" />
+          <div class="pw-strength" id="pwStrengthBar"></div>
+          <small id="pwStrengthLabel" style="font-size:0.72rem;color:var(--text-muted);margin-top:2px;display:block;"></small>
+        </div>
+        <div>
+          <label class="form-label" style="font-size: 0.8rem;">Confirm Password <span style="color:var(--accent-rose);">*</span></label>
+          <input type="password" id="regPasswordConfirm" class="form-input" placeholder="Re-enter your password" autocomplete="new-password" required />
+        </div>
+        <button type="submit" id="regSubmitBtn" class="btn btn-primary" style="width: 100%; padding: 0.75rem; margin-top: 0.25rem;">
+          Create Account →
+        </button>
+      </form>
+
+      <p style="margin-top: 1.25rem; font-size: 0.82rem; text-align: center; color: var(--text-muted);">
+        Already have an account? <a href="login.html" style="color: var(--accent-cyan);">Sign in →</a>
+      </p>
+
+      <div style="margin-top: 1.25rem; padding: 0.75rem; background: rgba(0,0,0,0.2); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); font-size: 0.78rem; color: var(--text-muted); line-height: 1.5;">
+        🔒 <strong>Secure.</strong> Your account is stored securely via Firebase Authentication. Only Liverpool International Secondary College students and staff may register.
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container" style="text-align: center;">
+      <p>© 2026 Liverpool International Secondary College – Science &amp; IT Club</p>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const errorBox = document.getElementById('regError');
+      const successBox = document.getElementById('regSuccess');
+
+      function showError(msg) {
+        errorBox.textContent = '⚠️ ' + msg;
+        errorBox.style.display = 'block';
+        successBox.style.display = 'none';
+      }
+      function showSuccess(msg) {
+        successBox.innerHTML = msg;
+        successBox.style.display = 'block';
+        errorBox.style.display = 'none';
+      }
+
+      // Password strength indicator
+      const pwInput = document.getElementById('regPassword');
+      const pwBar = document.getElementById('pwStrengthBar');
+      const pwLabel = document.getElementById('pwStrengthLabel');
+      pwInput.addEventListener('input', () => {
+        const v = pwInput.value;
+        pwBar.className = 'pw-strength';
+        if (!v) { pwLabel.textContent = ''; return; }
+        const strong = v.length >= 10 && /[A-Z]/.test(v) && /[0-9]/.test(v);
+        const medium = v.length >= 6;
+        if (strong) { pwBar.classList.add('strong'); pwLabel.textContent = '✅ Strong password'; pwLabel.style.color = 'var(--accent-emerald)'; }
+        else if (medium) { pwBar.classList.add('medium'); pwLabel.textContent = '⚠️ Medium — add numbers or uppercase'; pwLabel.style.color = 'var(--accent-amber)'; }
+        else { pwBar.classList.add('weak'); pwLabel.textContent = '❌ Too short (min. 6 characters)'; pwLabel.style.color = 'var(--accent-rose)'; }
+      });
+
+      // Google Sign-Up
+      const googleBtn = document.getElementById('googleRegBtn');
+      googleBtn.addEventListener('click', async () => {
+        errorBox.style.display = 'none';
+        googleBtn.disabled = true;
+        document.getElementById('googleRegText').textContent = 'Opening Google Sign-Up...';
+        try {
+          await ClubAuth.loginWithGoogle(false);
+        } catch (err) {
+          showError(err.message || 'Google sign-up failed. Please try redirect mode or email registration.');
+        } finally {
+          googleBtn.disabled = false;
+          document.getElementById('googleRegText').textContent = 'Sign Up with Google (Recommended)';
+        }
+      });
+
+      // Email Registration Form
+      const form = document.getElementById('registerForm');
+      const submitBtn = document.getElementById('regSubmitBtn');
+
+      form.onsubmit = async (e) => {
+        e.preventDefault();
+        errorBox.style.display = 'none';
+        successBox.style.display = 'none';
+
+        const name = document.getElementById('regName').value.trim();
+        const email = document.getElementById('regEmail').value.trim().toLowerCase();
+        const section = document.getElementById('regSection').value.trim().toUpperCase();
+        const pw = document.getElementById('regPassword').value;
+        const pwConfirm = document.getElementById('regPasswordConfirm').value;
+
+        // Validation
+        if (!name) { showError('Please enter your full name.'); return; }
+        if (!email || !email.includes('@')) { showError('Please enter a valid email address.'); return; }
+        if (!section) { showError('Please enter your class section (e.g. S8, L4).'); return; }
+        if (pw.length < 6) { showError('Password must be at least 6 characters.'); return; }
+        if (pw !== pwConfirm) { showError('Passwords do not match.'); return; }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Creating account...';
+
+        try {
+          if (typeof firebase !== 'undefined' && firebase.auth) {
+            // Dismiss onboarding modal upfront since we are collecting name and section here
+            sessionStorage.setItem('onboarding_dismissed', 'true');
+
+            // Create Firebase Auth account
+            const result = await firebase.auth().createUserWithEmailAndPassword(email, pw);
+            const fbUser = result.user;
+
+            // Update display name
+            await fbUser.updateProfile({ displayName: name });
+
+            // Create user profile in DB
+            const profile = {
+              uid: fbUser.uid,
+              displayName: name,
+              email: fbUser.email,
+              photoURL: fbUser.photoURL || '',
+              section: section,
+              bio: '',
+              role: 'member',
+              createdAt: Date.now(),
+              lastLoginAt: Date.now()
+            };
+            await ClubDB.set(`users/${fbUser.uid}`, profile);
+
+            // Send email verification
+            try { await fbUser.sendEmailVerification(); } catch (_) {}
+
+            // Welcome notification
+            if (window.ClubNotifs) {
+              ClubNotifs._pushPersonal(fbUser.uid, {
+                title: '🎉 Welcome to Science & IT Club!',
+                message: `Hi ${name}! Your account is ready. Complete your profile to get started.`,
+                priority: 'normal'
+              }).catch(() => {});
+            }
+
+            // Notify admins (exclude registering user)
+            if (window.ClubNotifs && ClubNotifs.notifyAllAdmins) {
+              ClubNotifs.notifyAllAdmins(
+                `New Member Registered: ${name}`,
+                `${name} (${section}) has created an account. Email: ${email}`,
+                'members.html',
+                'normal',
+                fbUser.uid
+              ).catch(() => {});
+            }
+
+            showSuccess(`<strong>✅ Account created!</strong><br>Welcome, ${name}! Redirecting to homepage...`);
+
+            // Mark onboarding as done (name+section already collected)
+            sessionStorage.setItem('onboarding_dismissed', 'true');
+
+            // Set the session so user is logged in on redirect
+            if (window.ClubAuth) {
+              ClubAuth.currentUser = profile;
+              ClubAuth.userRole = 'member';
+              localStorage.setItem('CLUB_CURRENT_USER_SESSION', JSON.stringify(profile));
+            }
+
+            // Fast redirect to destination or homepage (250ms)
+            const params = new URLSearchParams(window.location.search);
+            const redirectUrl = params.get('redirect');
+            setTimeout(() => {
+              window.location.href = redirectUrl || 'index.html';
+            }, 250);
+
+
+          } else {
+            showError('Firebase is not available. Please check your internet connection and try again.');
+          }
+        } catch (err) {
+          let msg = 'Registration failed. ';
+          if (err.code === 'auth/email-already-in-use') msg += 'This email is already registered. Try signing in instead.';
+          else if (err.code === 'auth/invalid-email') msg += 'Invalid email address format.';
+          else if (err.code === 'auth/weak-password') msg += 'Password is too weak. Choose at least 6 characters.';
+          else if (err.code === 'auth/operation-not-allowed') msg += 'Email registration is not enabled. Please use Google Sign-Up.';
+          else msg += (err.message || 'Please try again.');
+          showError(msg);
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Create Account →';
+        }
+      };
+    });
+  </script>
+</body>
+</html>

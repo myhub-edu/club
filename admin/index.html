@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard | Science & IT Club</title>
+  
+    <link rel="icon" type="image/png" href="../assets/logo/club_logo.png" />
+  <link rel="apple-touch-icon" href="../assets/logo/club_logo.png" />
+  <link rel="shortcut icon" href="../assets/logo/club_logo.png" />
+  <link rel="stylesheet" href="../css/global.css" />
+    <link rel="icon" type="image/png" href="../assets/logo/club_logo.png" />
+  <link rel="apple-touch-icon" href="../assets/logo/club_logo.png" />
+  <link rel="shortcut icon" href="../assets/logo/club_logo.png" />
+  <link rel="stylesheet" href="../css/admin.css" />
+  
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  
+  <script src="../js/firebase-config.js"></script>
+  <script src="../js/notifications.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="js/admin.js" defer></script>
+</head>
+<body class="admin-body">
+  <!-- Sidebar Overlay for Mobile -->
+  <div class="admin-sidebar-overlay" id="adminSidebarOverlay"></div>
+
+  <!-- Admin Sidebar -->
+  <aside class="admin-sidebar" id="adminSidebar">
+    <div class="admin-sidebar-brand">
+      <img src="../assets/logo/club_logo.png" alt="Logo" />
+      <span>Club Admin <small>v2.0</small></span>
+    </div>
+
+    <nav class="admin-nav">
+      <a href="index.html" class="admin-nav-item active">
+        <span class="nav-label">📊 Dashboard</span>
+      </a>
+      <a href="members.html" class="admin-nav-item">
+        <span class="nav-label">👥 Members</span>
+      </a>
+      <a href="projects.html" class="admin-nav-item">
+        <span class="nav-label">🔬 Projects</span>
+      </a>
+      <a href="events.html" class="admin-nav-item">
+        <span class="nav-label">📅 Events</span>
+      </a>
+      <a href="moments.html" class="admin-nav-item"><span class="nav-label">📸 Moments</span></a>
+      <a href="voices.html" class="admin-nav-item">
+        <span class="nav-label">💬 Testimonials</span>
+        <span class="badge badge-amber" id="sidebarPendingVoicesBadge" style="display:none; font-size:0.7rem;">0</span>
+      </a>
+      <a href="ideas.html" class="admin-nav-item">
+        <span class="nav-label">💡 Student Ideas</span>
+        <span class="badge badge-amber" id="sidebarPendingIdeasBadge" style="display:none; font-size:0.7rem;">0</span>
+      </a>
+      <a href="notifications.html" class="admin-nav-item">
+        <span class="nav-label">📢 Broadcasts</span>
+      </a>
+      <a href="messages.html" class="admin-nav-item">
+        <span class="nav-label">✉️ Messages</span>
+        <span class="badge badge-rose" id="sidebarUnreadMsgsBadge" style="display:none; font-size:0.7rem;">0</span>
+      </a>
+      <a href="resources.html" class="admin-nav-item">
+        <span class="nav-label">📚 Resources</span>
+      </a>
+      <a href="settings.html" class="admin-nav-item">
+        <span class="nav-label">⚙️ Settings</span>
+      </a>
+      <div style="border-top: 1px solid var(--border-subtle); margin: 0.75rem 0;"></div>
+      <a href="../index.html" class="admin-nav-item" style="color: var(--accent-cyan);">
+        <span class="nav-label">🌐 View Live Site</span>
+        <span>↗</span>
+      </a>
+    </nav>
+
+    <div class="admin-sidebar-footer">
+      <div style="display: flex; align-items: center; gap: 0.5rem; overflow: hidden;">
+        <img id="adminCurrentUserAvatar" src="" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: var(--accent-blue);" />
+        <div style="line-height: 1.2;">
+          <strong id="adminCurrentUserName" style="font-size: 0.85rem; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Admin</strong>
+          <span id="adminCurrentUserRole" class="badge badge-purple" style="font-size: 0.65rem;">ADMIN</span>
+        </div>
+      </div>
+      <button id="adminLogoutBtn" style="background: transparent; border: none; color: var(--accent-rose); cursor: pointer; font-size: 1.1rem;" title="Logout">⎋</button>
+    </div>
+  </aside>
+
+  <!-- Admin Main Layout -->
+  <div class="admin-main-wrapper">
+    <header class="admin-topbar">
+      <div class="admin-topbar-left">
+        <button id="adminSidebarToggle" class="hamburger-btn" style="color: var(--text-primary);">☰</button>
+        <h2 class="admin-page-title">Executive Operations Center</h2>
+      </div>
+      <div class="admin-topbar-right">
+        <span class="badge badge-cyan" id="liveStatusBadge">● System Active</span>
+        <a href="../index.html" class="btn btn-sm btn-outline">Live Site ↗</a>
+      </div>
+    </header>
+
+    <main class="admin-content">
+      <!-- Top Metrics Cards -->
+      <div class="admin-stats-grid">
+        <div class="stat-card cyan">
+          <div class="stat-header">
+            <span>TOTAL MEMBERS</span>
+            <span>👥</span>
+          </div>
+          <div class="stat-value" id="statMembersCount">0</div>
+          <div class="stat-desc">Enrolled student accounts</div>
+        </div>
+
+        <div class="stat-card purple">
+          <div class="stat-header">
+            <span>ACTIVE PROJECTS</span>
+            <span>🔬</span>
+          </div>
+          <div class="stat-value" id="statProjectsCount">0</div>
+          <div class="stat-desc">Showcase & ongoing prototypes</div>
+        </div>
+
+        <div class="stat-card amber">
+          <div class="stat-header">
+            <span>PENDING IDEAS</span>
+            <span>💡</span>
+          </div>
+          <div class="stat-value" id="statPendingIdeasCount">0</div>
+          <div class="stat-desc">Awaiting committee review</div>
+        </div>
+
+        <div class="stat-card emerald">
+          <div class="stat-header">
+            <span>TESTIMONIALS</span>
+            <span>⭐</span>
+          </div>
+          <div class="stat-value" id="statVoicesCount">0</div>
+          <div class="stat-desc">Moderation queue items</div>
+        </div>
+
+        <div class="stat-card rose">
+          <div class="stat-header">
+            <span>INQUIRIES</span>
+            <span>✉️</span>
+          </div>
+          <div class="stat-value" id="statInquiriesCount">0</div>
+          <div class="stat-desc">Unread head admin messages</div>
+        </div>
+      </div>
+
+      <!-- Quick Shortcuts -->
+      <h3 style="margin-bottom: 1rem;">Administrative Command Actions</h3>
+      <div class="quick-actions-grid">
+        <a href="projects.html" class="quick-action-card">
+          <div class="quick-action-icon">🚀</div>
+          <div>
+            <strong>Create Project</strong>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">Add new prototype blueprint</div>
+          </div>
+        </a>
+
+        <a href="events.html" class="quick-action-card">
+          <div class="quick-action-icon" style="color: var(--accent-purple); background: rgba(139, 92, 246, 0.1);">📅</div>
+          <div>
+            <strong>Schedule Event</strong>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">Publish workshop or hackathon</div>
+          </div>
+        </a>
+
+        <a href="ideas.html" class="quick-action-card">
+          <div class="quick-action-icon" style="color: var(--accent-amber); background: rgba(245, 158, 11, 0.1);">💡</div>
+          <div>
+            <strong>Review Ideas</strong>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">Evaluate student proposals</div>
+          </div>
+        </a>
+
+        <a href="notifications.html" class="quick-action-card">
+          <div class="quick-action-icon" style="color: var(--accent-emerald); background: rgba(16, 185, 129, 0.1);">📢</div>
+          <div>
+            <strong>Send Broadcast</strong>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">Dispatch notice to members</div>
+          </div>
+        </a>
+
+        <a href="messages.html" class="quick-action-card">
+          <div class="quick-action-icon" style="color: var(--accent-rose); background: rgba(244, 63, 94, 0.1);">✉️</div>
+          <div>
+            <strong>Reply to Students</strong>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">Head admin inquiry inbox</div>
+          </div>
+        </a>
+      </div>
+
+      <!-- Recent Submissions Overview -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 1.5rem;">
+        <!-- Ideas Queue Preview -->
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h4>Pending Student Ideas</h4>
+            <a href="ideas.html" class="btn btn-sm btn-outline">View All →</a>
+          </div>
+          <div id="recentIdeasQueue" style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Loading ideas queue...</p>
+          </div>
+        </div>
+
+        <!-- Student Voices Moderation Preview -->
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h4>Testimonials Moderation</h4>
+            <a href="voices.html" class="btn btn-sm btn-outline">View All →</a>
+          </div>
+          <div id="recentVoicesQueue" style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Loading reviews...</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    async function refreshDashboardStats() {
+      try {
+        // Load counts
+        const users = (await ClubDB.get('users')) || {};
+        const memberCountEl = document.getElementById('statMembersCount');
+        if (memberCountEl) memberCountEl.textContent = Object.keys(users).length;
+
+        const projects = (await ClubDB.get('projects')) || {};
+        const projCountEl = document.getElementById('statProjectsCount');
+        if (projCountEl) projCountEl.textContent = Object.keys(projects).length;
+
+        const ideas = (await ClubDB.get('ideas')) || {};
+        const pendingIdeas = Object.values(ideas).filter(i => i && i.status === 'pending');
+        const ideaCountEl = document.getElementById('statPendingIdeasCount');
+        if (ideaCountEl) ideaCountEl.textContent = pendingIdeas.length;
+
+        const [feedback, voices] = await Promise.all([
+          ClubDB.get('feedback').catch(() => ({})),
+          ClubDB.get('voices').catch(() => ({}))
+        ]);
+        const combinedVoices = [];
+        const seenVKeys = new Set();
+        Object.entries(feedback || {}).forEach(([k, f]) => {
+          if (f && f.status === 'pending') { seenVKeys.add(k); combinedVoices.push(f); }
+        });
+        Object.entries(voices || {}).forEach(([k, v]) => {
+          if (v && v.status === 'pending' && !seenVKeys.has(k)) { combinedVoices.push(v); }
+        });
+        const voiceCountEl = document.getElementById('statVoicesCount');
+        if (voiceCountEl) voiceCountEl.textContent = combinedVoices.length;
+
+        const messages = (await ClubDB.get('messages')) || {};
+        const unreadMsgs = Object.values(messages).filter(m => m && m.status === 'unread');
+        const inqCountEl = document.getElementById('statInquiriesCount');
+        if (inqCountEl) inqCountEl.textContent = unreadMsgs.length;
+
+        // Render Recent Ideas Queue
+        const ideasContainer = document.getElementById('recentIdeasQueue');
+        if (ideasContainer) {
+          if (pendingIdeas.length === 0) {
+            ideasContainer.innerHTML = `<p style="font-size: 0.85rem; color: var(--text-muted);">No ideas pending review! 🎉</p>`;
+          } else {
+            ideasContainer.innerHTML = pendingIdeas.slice(0, 3).map(i => `
+              <div style="background: rgba(0,0,0,0.2); padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <strong style="font-size: 0.9rem; display: block;">${i.title || 'Untitled'}</strong>
+                  <small style="color: var(--text-muted);">By ${i.displayName || 'Student'} • ${i.category || 'Idea'}</small>
+                </div>
+                <a href="ideas.html" class="btn btn-sm btn-primary" style="padding: 2px 8px; font-size: 0.75rem;">Review</a>
+              </div>
+            `).join('');
+          }
+        }
+
+        // Render Recent Voices Queue
+        const voicesContainer = document.getElementById('recentVoicesQueue');
+        if (voicesContainer) {
+          if (combinedVoices.length === 0) {
+            voicesContainer.innerHTML = `<p style="font-size: 0.85rem; color: var(--text-muted);">No reviews awaiting moderation! 🎉</p>`;
+          } else {
+            voicesContainer.innerHTML = combinedVoices.slice(0, 3).map(f => `
+              <div style="background: rgba(0,0,0,0.2); padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <div style="color: var(--accent-amber); font-size: 0.8rem;">${'★'.repeat(f.rating || 5)}</div>
+                  <strong style="font-size: 0.88rem;">${f.displayName || 'Student'}</strong>
+                  <small style="color: var(--text-muted); display: block;">"${(f.message || '').substring(0, 45)}..."</small>
+                </div>
+                <a href="voices.html" class="btn btn-sm btn-secondary" style="padding: 2px 8px; font-size: 0.75rem;">Moderate</a>
+              </div>
+            `).join('');
+          }
+        }
+      } catch (err) {
+        console.warn('refreshDashboardStats error:', err);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      refreshDashboardStats();
+      window.addEventListener('club-db-updated', () => refreshDashboardStats());
+      document.addEventListener('club-auth-changed', () => refreshDashboardStats());
+    });
+  </script>
+</body>
+</html>

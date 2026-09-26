@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Members Management | Admin Dashboard</title>
+  <link rel="icon" type="image/png" href="../assets/logo/club_logo.png" />
+  <link rel="apple-touch-icon" href="../assets/logo/club_logo.png" />
+  <link rel="shortcut icon" href="../assets/logo/club_logo.png" />
+  <link rel="stylesheet" href="../css/global.css" />
+  <link rel="stylesheet" href="../css/admin.css" />
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <script src="../js/firebase-config.js"></script>
+  <script src="../js/notifications.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="js/admin.js" defer></script>
+</head>
+<body class="admin-body">
+  <div class="admin-sidebar-overlay" id="adminSidebarOverlay"></div>
+
+  <aside class="admin-sidebar" id="adminSidebar">
+    <div class="admin-sidebar-brand">
+      <img src="../assets/logo/club_logo.png" alt="Logo" />
+      <span>Club Admin <small>v2.0</small></span>
+    </div>
+    <nav class="admin-nav">
+      <a href="index.html" class="admin-nav-item"><span class="nav-label">📊 Dashboard</span></a>
+      <a href="members.html" class="admin-nav-item active"><span class="nav-label">👥 Members</span></a>
+      <a href="projects.html" class="admin-nav-item"><span class="nav-label">🔬 Projects</span></a>
+      <a href="events.html" class="admin-nav-item"><span class="nav-label">📅 Events</span></a>
+      <a href="moments.html" class="admin-nav-item"><span class="nav-label">📸 Moments</span></a>
+      <a href="voices.html" class="admin-nav-item"><span class="nav-label">💬 Testimonials</span></a>
+      <a href="ideas.html" class="admin-nav-item"><span class="nav-label">💡 Student Ideas</span></a>
+      <a href="notifications.html" class="admin-nav-item"><span class="nav-label">📢 Broadcasts</span></a>
+      <a href="messages.html" class="admin-nav-item"><span class="nav-label">✉️ Messages</span></a>
+      <a href="resources.html" class="admin-nav-item"><span class="nav-label">📚 Resources</span></a>
+      <a href="settings.html" class="admin-nav-item"><span class="nav-label">⚙️ Settings</span></a>
+      <div style="border-top: 1px solid var(--border-subtle); margin: 0.75rem 0;"></div>
+      <a href="../index.html" class="admin-nav-item" style="color: var(--accent-cyan);"><span class="nav-label">🌐 View Live Site</span><span>↗</span></a>
+    </nav>
+    <div class="admin-sidebar-footer">
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <img id="adminCurrentUserAvatar" src="" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
+        <div>
+          <strong id="adminCurrentUserName" style="font-size: 0.85rem; display: block;">Admin</strong>
+          <span id="adminCurrentUserRole" class="badge badge-purple" style="font-size: 0.65rem;">ADMIN</span>
+        </div>
+      </div>
+      <button id="adminLogoutBtn" style="background: transparent; border: none; color: var(--accent-rose); cursor: pointer; font-size: 1.1rem;">⎋</button>
+    </div>
+  </aside>
+
+  <div class="admin-main-wrapper">
+    <header class="admin-topbar">
+      <div class="admin-topbar-left">
+        <button id="adminSidebarToggle" class="hamburger-btn" style="color: var(--text-primary);">☰</button>
+        <h2 class="admin-page-title">Enrolled Club Members &amp; Roles</h2>
+      </div>
+      <div class="admin-topbar-right">
+        <span id="memberCountBadge" class="badge badge-cyan" style="font-size: 0.78rem;">Loading...</span>
+      </div>
+    </header>
+
+    <main class="admin-content">
+      <div class="table-card">
+        <div class="table-header-bar">
+          <h4>Student Roster</h4>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+            <select id="roleFilter" class="form-select" style="max-width: 140px; padding: 0.4rem 0.6rem; font-size: 0.82rem;">
+              <option value="">All Roles</option>
+              <option value="member">Members</option>
+              <option value="admin">Admins</option>
+              <option value="headAdmin">Head Admins</option>
+            </select>
+            <input type="text" id="adminMemberSearch" class="form-input" style="max-width: 240px; padding: 0.4rem 0.75rem; font-size: 0.85rem;" placeholder="Search by name or email..." />
+          </div>
+        </div>
+        <div id="membersPermissionWarning" style="display:none; margin-bottom: 1rem; padding: 0.85rem 1.1rem; background: rgba(245, 158, 11, 0.12); border: 1px solid #f59e0b; border-radius: var(--radius-sm); color: #fef3c7; font-size: 0.84rem; line-height: 1.5;">
+          ⚠️ <strong>Firebase Database Rules Notice:</strong> Firebase rejected read access to <code>/users</code> with <em>Permission Denied</em>. Showing locally cached session only. Please update your Firebase Realtime Database rules (see <code>firebase_keys.txt</code> or Settings) to allow admin reads on <code>users</code> so all registered members appear.
+        </div>
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Member</th>
+                <th>Email</th>
+                <th>Section</th>
+                <th>Role</th>
+                <th>Joined</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="membersTableBody">
+              <tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">Loading members...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Student Detail Modal -->
+  <div id="studentDetailModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 520px; padding: 0; overflow: hidden;">
+      <div style="background: linear-gradient(135deg, rgba(0,242,254,0.12), rgba(79,70,229,0.08)); padding: 1.5rem 1.5rem 1rem;">
+        <div style="display:flex; align-items:center; gap:1rem; margin-bottom:0.75rem;">
+          <img id="modalAvatar" src="" style="width:60px; height:60px; border-radius:50%; object-fit:cover; border:2px solid var(--accent-cyan);" />
+          <div style="flex:1;">
+            <h3 id="modalName" style="margin:0 0 0.25rem; font-size:1.15rem;"></h3>
+            <span id="modalRole" class="badge badge-cyan" style="font-size:0.7rem;"></span>
+          </div>
+          <button class="modal-close" onclick="document.getElementById('studentDetailModal').classList.remove('active')">✕</button>
+        </div>
+      </div>
+      <div style="padding: 1.25rem 1.5rem;">
+        <table style="width:100%; font-size:0.88rem; border-collapse:collapse;">
+          <tr><td style="color:var(--text-muted); padding:0.4rem 0; width:90px;">Email</td><td id="modalEmail" style="font-weight:500;word-break:break-all;"></td></tr>
+          <tr><td style="color:var(--text-muted); padding:0.4rem 0;">Section</td><td id="modalSection" style="font-weight:500;"></td></tr>
+          <tr><td style="color:var(--text-muted); padding:0.4rem 0;">Grade</td><td style="color:var(--accent-cyan); font-size:0.82rem;">Grade 11 (LISC)</td></tr>
+          <tr><td style="color:var(--text-muted); padding:0.4rem 0;">Joined</td><td id="modalJoined"></td></tr>
+          <tr><td style="color:var(--text-muted); padding:0.4rem 0;">Last Login</td><td id="modalLastLogin"></td></tr>
+        </table>
+        <div style="margin-top:1rem; padding-top:1rem; border-top: 1px solid var(--border-subtle);">
+          <div style="font-size:0.78rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:.06em; margin-bottom:0.4rem;">Bio</div>
+          <p id="modalBio" style="font-size:0.88rem; color:var(--text-secondary); font-style:italic; min-height:2.5rem;"></p>
+        </div>
+        <div id="modalActions" style="display:flex; gap:0.5rem; margin-top:1rem; flex-wrap:wrap;">
+          <!-- Dynamically populated -->
+        </div>
+        <div style="text-align:right; margin-top:0.75rem;">
+          <button class="btn btn-sm btn-outline" onclick="document.getElementById('studentDetailModal').classList.remove('active')">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let allUsers = {};
+    let adminsList = {};
+    let headAdminList = {};
+    let currentViewedUid = null;
+
+    async function loadMembers() {
+      try {
+        allUsers = (await ClubDB.get('users')) || {};
+        adminsList = (await ClubDB.get('admins')) || {};
+        headAdminList = (await ClubDB.get('headAdmin')) || {};
+        renderTable();
+        const count = Object.keys(allUsers).length;
+        const badge = document.getElementById('memberCountBadge');
+        if (badge) badge.textContent = count + ' Member' + (count !== 1 ? 's' : '');
+      } catch (err) {
+        console.error('loadMembers error:', err);
+        document.getElementById('membersTableBody').innerHTML =
+          `<tr><td colspan="6" style="text-align:center;color:var(--accent-rose);padding:2rem;">Error loading members. Please refresh.</td></tr>`;
+      }
+    }
+
+    const HARDCODED_HEAD_EMAILS = ['dprogram057@gmail.com', 'stechnical121@gmail.com'];
+    function isMasterHeadAdmin(u) {
+      if (!u) return false;
+      return u.uid === 'Hmv08XzSqDSvVmYQuijqaEYg0MX2' || HARDCODED_HEAD_EMAILS.includes((u.email || '').toLowerCase().trim());
+    }
+
+    function getUserRole(u) {
+      if (!u) return 'member';
+      if (isMasterHeadAdmin(u)) return 'headAdmin';
+      if (u.role === 'headAdmin' || headAdminList[u.uid]) return 'headAdmin';
+      if (u.role === 'admin' || adminsList[u.uid]) return 'admin';
+      return 'member';
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('membersTableBody');
+      const search = document.getElementById('adminMemberSearch').value.toLowerCase().trim();
+      const roleFilter = document.getElementById('roleFilter').value;
+
+      let list = Object.entries(allUsers).map(([uid, u]) => ({
+        uid: (u && u.uid) || uid,
+        ...(u && typeof u === 'object' ? u : {})
+      })).filter(u => u && u.uid);
+
+      // Apply search
+      if (search) {
+        list = list.filter(u =>
+          (u.displayName && u.displayName.toLowerCase().includes(search)) ||
+          (u.email && u.email.toLowerCase().includes(search)) ||
+          (u.section && u.section.toLowerCase().includes(search))
+        );
+      }
+
+      // Apply role filter
+      if (roleFilter) {
+        list = list.filter(u => getUserRole(u) === roleFilter);
+      }
+
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 2rem; color:var(--text-muted);">No members match your search.</td></tr>`;
+        return;
+      }
+
+      // Sort: headAdmin first, then admin, then member
+      const roleOrder = { headAdmin: 0, admin: 1, member: 2 };
+      list.sort((a, b) => (roleOrder[getUserRole(a)] || 2) - (roleOrder[getUserRole(b)] || 2));
+
+      tbody.innerHTML = list.map(u => {
+        const role = getUserRole(u);
+        const section = u.section || '—';
+        const badgeClass = role === 'headAdmin' ? 'badge-rose' : role === 'admin' ? 'badge-purple' : 'badge-cyan';
+        const roleLabel = role === 'headAdmin' ? '⭐ Head Admin' : role === 'admin' ? '🔑 Admin' : '👤 Member';
+
+        const myRole = ClubAuth.userRole;
+        const isSelf = ClubAuth.currentUser && ClubAuth.currentUser.uid === u.uid;
+        const isHead = myRole === 'headAdmin';
+        const isAdmin = myRole === 'admin';
+        const isProtected = isMasterHeadAdmin(u);
+
+        let actionBtns = [];
+        if (isSelf) {
+          actionBtns.push(`<span style="color:var(--text-muted);font-size:0.75rem;">(You)</span>`);
+        } else if (isProtected) {
+          actionBtns.push(`<span class="badge badge-rose" style="font-size:0.7rem;" title="Master Administrator">⭐ Master Head</span>`);
+        } else {
+          if (role === 'member') {
+            if (isAdmin || isHead) {
+              actionBtns.push(`<button class="btn btn-sm btn-secondary" onclick="changeRole('${u.uid}', 'admin')" style="padding:2px 8px;font-size:0.72rem;">Promote</button>`);
+            }
+          } else if (role === 'admin') {
+            if (isAdmin || isHead) {
+              actionBtns.push(`<button class="btn btn-sm btn-danger" onclick="changeRole('${u.uid}', 'member')" style="padding:2px 8px;font-size:0.72rem;">Demote</button>`);
+            }
+            if (isHead) {
+              actionBtns.push(`<button class="btn btn-sm btn-primary" onclick="changeRole('${u.uid}', 'headAdmin')" style="padding:2px 8px;font-size:0.72rem;">⭐ Head Admin</button>`);
+            }
+          } else if (role === 'headAdmin') {
+            if (isHead) {
+              actionBtns.push(`<button class="btn btn-sm btn-danger" onclick="changeRole('${u.uid}', 'admin')" style="padding:2px 8px;font-size:0.72rem;">Demote to Admin</button>`);
+            } else {
+              actionBtns.push(`<span style="color:var(--text-muted);font-size:0.75rem;">Protected</span>`);
+            }
+          }
+        }
+
+        return `
+          <tr>
+            <td>
+              <div style="display:flex; align-items:center; gap:0.65rem;">
+                <img src="${u.photoURL || '../assets/logo/club_logo.png'}" style="width:34px;height:34px;border-radius:50%;object-fit:cover;" onerror="this.src='../assets/logo/club_logo.png'" />
+                <strong style="font-size:0.9rem;">${u.displayName || 'Member'}</strong>
+              </div>
+            </td>
+            <td style="font-size:0.82rem;word-break:break-all;">${u.email || '—'}</td>
+            <td><span class="badge badge-cyan" style="font-size:0.72rem;">${section}</span></td>
+            <td><span class="badge ${badgeClass}" style="font-size:0.72rem;">${roleLabel}</span></td>
+            <td style="font-size:0.78rem;color:var(--text-muted);">${u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-GB', {day:'2-digit',month:'short',year:'numeric'}) : '—'}</td>
+            <td>
+              <div style="display:flex;gap:0.35rem;align-items:center;flex-wrap:wrap;">
+                <button class="btn btn-sm btn-outline" onclick="viewStudent('${u.uid}')" style="padding:2px 8px;font-size:0.72rem;">View</button>
+                ${actionBtns.join(' ')}
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    window.viewStudent = function(uid) {
+      const u = allUsers[uid];
+      if (!u) return;
+      currentViewedUid = uid;
+      const role = getUserRole(u);
+      const myRole = ClubAuth.userRole;
+      const isSelf = ClubAuth.currentUser && ClubAuth.currentUser.uid === uid;
+      const isHead = myRole === 'headAdmin';
+      const isAdmin = myRole === 'admin';
+      const isProtected = isMasterHeadAdmin(u);
+
+      document.getElementById('modalAvatar').src = u.photoURL || '../assets/logo/club_logo.png';
+      document.getElementById('modalName').textContent = u.displayName || 'Member';
+      const roleEl = document.getElementById('modalRole');
+      roleEl.textContent = role === 'headAdmin' ? 'HEAD ADMIN' : role === 'admin' ? 'ADMIN' : 'MEMBER';
+      roleEl.className = `badge ${role === 'headAdmin' ? 'badge-rose' : role === 'admin' ? 'badge-purple' : 'badge-cyan'}`;
+      document.getElementById('modalEmail').textContent = u.email || '—';
+      document.getElementById('modalSection').textContent = u.section || 'Not set';
+      document.getElementById('modalJoined').textContent = u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'}) : '—';
+      document.getElementById('modalLastLogin').textContent = u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'}) : '—';
+      document.getElementById('modalBio').textContent = u.bio || 'This member hasn\'t written a bio yet.';
+
+      // Action buttons in modal
+      const actionsDiv = document.getElementById('modalActions');
+      let modalBtns = [];
+      if (!isSelf) {
+        if (isProtected) {
+          modalBtns.push(`<span class="badge badge-rose" style="font-size:0.75rem;">⭐ Permanent Head Admin</span>`);
+        } else if (role === 'member' && (isAdmin || isHead)) {
+          modalBtns.push(`<button class="btn btn-sm btn-secondary" onclick="changeRole('${uid}', 'admin'); document.getElementById('studentDetailModal').classList.remove('active');">⬆ Promote to Admin</button>`);
+        } else if (role === 'admin') {
+          if (isAdmin || isHead) {
+            modalBtns.push(`<button class="btn btn-sm btn-danger" onclick="changeRole('${uid}', 'member'); document.getElementById('studentDetailModal').classList.remove('active');">⬇ Demote to Member</button>`);
+          }
+          if (isHead) {
+            modalBtns.push(`<button class="btn btn-sm btn-primary" onclick="changeRole('${uid}', 'headAdmin'); document.getElementById('studentDetailModal').classList.remove('active');">⭐ Make Head Admin</button>`);
+          }
+        } else if (role === 'headAdmin' && isHead) {
+          modalBtns.push(`<button class="btn btn-sm btn-danger" onclick="changeRole('${uid}', 'admin'); document.getElementById('studentDetailModal').classList.remove('active');">⬇ Demote to Admin</button>`);
+        }
+      }
+      actionsDiv.innerHTML = modalBtns.join(' ');
+
+      document.getElementById('studentDetailModal').classList.add('active');
+    };
+
+    window.changeRole = async function(uid, newRole) {
+      const u = allUsers[uid];
+      if (!u) return;
+
+      if (isMasterHeadAdmin(u)) {
+        showToast('This account is a permanent Master Head Admin and cannot be modified.', 'warning');
+        return;
+      }
+
+      const myRole = ClubAuth.userRole;
+      if (myRole !== 'headAdmin' && myRole !== 'admin') {
+        showToast('You do not have permission to change roles.', 'error');
+        return;
+      }
+
+      if (newRole === 'headAdmin' && myRole !== 'headAdmin') {
+        showToast('Only existing Head Admins can grant Head Admin privileges.', 'error');
+        return;
+      }
+
+      if (getUserRole(u) === 'headAdmin' && myRole !== 'headAdmin') {
+        showToast('Only Head Admins can modify Head Admin accounts.', 'error');
+        return;
+      }
+
+      try {
+        if (newRole === 'headAdmin') {
+          await ClubDB.set(`headAdmin/${uid}`, true);
+          await ClubDB.set(`admins/${uid}`, true);
+          await ClubDB.update(`users/${uid}`, { role: 'headAdmin' });
+          headAdminList[uid] = true;
+          adminsList[uid] = true;
+          allUsers[uid].role = 'headAdmin';
+          showToast(`${u.displayName || 'User'} promoted to Head Admin ⭐`, 'success');
+          if (window.ClubNotifs) {
+            ClubNotifs._pushPersonal(uid, {
+              title: '⭐ Promoted to Head Admin!',
+              message: `You have been appointed Head Administrator by ${ClubAuth.currentUser.displayName || 'Head Admin'}.`,
+              priority: 'important'
+            }).catch(() => {});
+          }
+        } else if (newRole === 'admin') {
+          await ClubDB.remove(`headAdmin/${uid}`);
+          await ClubDB.set(`admins/${uid}`, true);
+          await ClubDB.update(`users/${uid}`, { role: 'admin' });
+          delete headAdminList[uid];
+          adminsList[uid] = true;
+          allUsers[uid].role = 'admin';
+          showToast(`${u.displayName || 'User'} role set to Admin 🔑`, 'success');
+          if (window.ClubNotifs) {
+            ClubNotifs._pushPersonal(uid, {
+              title: '🎉 You have been promoted!',
+              message: `You have been granted Admin access. You can now manage club operations.`,
+              priority: 'important'
+            }).catch(() => {});
+          }
+        } else {
+          await ClubDB.remove(`headAdmin/${uid}`);
+          await ClubDB.remove(`admins/${uid}`);
+          await ClubDB.update(`users/${uid}`, { role: 'member' });
+          delete headAdminList[uid];
+          delete adminsList[uid];
+          allUsers[uid].role = 'member';
+          showToast(`${u.displayName || 'User'} role set to Member.`, 'info');
+          if (window.ClubNotifs) {
+            ClubNotifs._pushPersonal(uid, {
+              title: 'Role Updated',
+              message: `Your account role has been updated to Member.`,
+              priority: 'normal'
+            }).catch(() => {});
+          }
+        }
+        renderTable();
+      } catch (err) {
+        console.error('changeRole error:', err);
+        showToast('Error changing role: ' + err.message, 'error');
+      }
+    };
+
+    // Search and filter listeners
+    document.getElementById('adminMemberSearch').addEventListener('input', renderTable);
+    document.getElementById('roleFilter').addEventListener('change', renderTable);
+
+    // Close modal on overlay click
+    document.getElementById('studentDetailModal').addEventListener('click', function(e) {
+      if (e.target === this) this.classList.remove('active');
+    });
+
+    loadMembers();
+
+    // club-auth-changed: reload when admin authenticates
+    document.addEventListener('club-auth-changed', () => loadMembers());
+
+    window.addEventListener('club-permission-denied', (e) => {
+      if (e.detail && e.detail.path && e.detail.path.startsWith('users')) {
+        const warn = document.getElementById('membersPermissionWarning');
+        if (warn) warn.style.display = 'block';
+      }
+    });
+
+    // ClubDB.onValue: single real-time listener — no club-db-updated needed (avoids triple fetch)
+    if (window.ClubDB && ClubDB.onValue) {
+      ClubDB.onValue('users', () => loadMembers());
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="assets/logo/club_logo.png" />
+  <link rel="apple-touch-icon" href="assets/logo/club_logo.png" />
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Share Your Experience & Feedback | Science & IT Club | Liverpool College</title>
+  <meta name="description" content="Share your workshop reviews and testimonials for the Science & IT Club at Liverpool International Secondary College. Help shape upcoming STEM activities." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="submit-feedback.html" />
+  
+  <link rel="stylesheet" href="css/global.css" />
+  
+  <!-- Firebase Compat CDN -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  
+  <script src="js/firebase-config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/notifications.js" defer></script>
+  <script src="js/main.js" defer></script>
+</head>
+<body>
+  <div class="ambient-glow"></div>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="container header-container">
+      <a href="index.html" class="brand">
+        <img src="assets/logo/club_logo.png" alt="Club Logo" class="brand-logo" />
+        <span class="brand-text">Science & <span>IT Club</span></span>
+      </a>
+      <nav class="desktop-nav">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="about.html" class="nav-link">About</a>
+        <a href="projects.html" class="nav-link">Projects</a>
+        <a href="events.html" class="nav-link">Events</a>
+        <a href="moments.html" class="nav-link">Moments</a>
+        <a href="voices.html" class="nav-link">Voices</a>
+        <a href="resources.html" class="nav-link">Resources</a>
+      </nav>
+      <div class="header-actions">
+        <a href="login.html" class="btn btn-primary btn-sm">Member Login</a>
+        <button class="hamburger-btn" id="drawerToggleBtn" aria-label="Open Menu">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Drawer -->
+  <div class="mobile-drawer-overlay" id="mobileDrawerOverlay"></div>
+  <aside class="mobile-drawer" id="mobileDrawer">
+    <div class="mobile-drawer-header">
+      <div class="brand">
+        <img src="assets/logo/club_logo.png" alt="Club Logo" class="brand-logo" />
+        <span class="brand-text">Science & <span>IT Club</span></span>
+      </div>
+      <button class="hamburger-btn" id="drawerCloseBtn" aria-label="Close Menu">✕</button>
+    </div>
+    <nav class="drawer-links">
+      <a href="index.html" class="drawer-link">🏠 Home</a>
+      <a href="about.html" class="drawer-link">ℹ️ About the Club</a>
+      <a href="projects.html" class="drawer-link">🔬 Projects Showcase</a>
+      <a href="events.html" class="drawer-link">📅 Events & Workshops</a>
+      <a href="moments.html" class="drawer-link">📸 Captured Moments</a>
+      <a href="voices.html" class="drawer-link">💬 Student Voices</a>
+      <a href="resources.html" class="drawer-link">📚 Learning Resources</a>
+      <div style="border-top: 1px solid var(--border-subtle); margin: 0.75rem 0;"></div>
+      <a href="submit-idea.html" class="drawer-link">💡 Propose Project Idea</a>
+      <a href="submit-feedback.html" class="drawer-link active">⭐ Share Feedback</a>
+      <a href="contact-admin.html" class="drawer-link">✉️ Write to Head Admin</a>
+    </nav>
+  </aside>
+
+  <main style="padding: 3rem 0 5rem;">
+    <div class="container" style="max-width: 640px;">
+      <div style="text-align: center; margin-bottom: 2rem;">
+        <span class="badge badge-purple">Student Voices</span>
+        <h1 style="margin-top: 0.5rem; margin-bottom: 0.75rem;">Share Your Experience</h1>
+        <p>Your feedback shapes future workshops, lab investments, and club competitions.</p>
+      </div>
+
+      <div class="card" style="border-top: 4px solid var(--accent-purple);">
+        <form id="feedbackForm">
+          <div class="form-group" style="text-align: center;">
+            <label class="form-label" style="margin-bottom: 0.75rem;">Overall Rating</label>
+            <div id="starRatingSelector" style="font-size: 2.25rem; color: var(--accent-amber); cursor: pointer; display: inline-flex; gap: 0.25rem;">
+              <span data-val="1">★</span>
+              <span data-val="2">★</span>
+              <span data-val="3">★</span>
+              <span data-val="4">★</span>
+              <span data-val="5">★</span>
+            </div>
+            <input type="hidden" id="ratingValue" value="5" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Your Review / Testimonial</label>
+            <textarea id="feedbackMessage" class="form-textarea" rows="4" required placeholder="What did you learn? How did mentors or peers support your project? Share your genuine thoughts..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label style="display: flex; gap: 0.5rem; align-items: center; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
+              <input type="checkbox" id="publicConsent" checked style="accent-color: var(--accent-cyan);" />
+              <span>I agree to have my testimonial displayed on the public Student Voices wall after advisor approval.</span>
+            </label>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%;">
+            ⭐ Submit Experience for Moderation
+          </button>
+        </form>
+
+        <div id="feedbackSuccessBox" style="display: none; text-align: center; padding: 2rem 1rem;">
+          <div style="font-size: 3rem; margin-bottom: 0.75rem;">✨</div>
+          <h3>Thank You for Your Feedback!</h3>
+          <p style="margin: 0.75rem 0 1.5rem; color: var(--text-secondary);">
+            Your review is now saved and marked as <strong>Pending Approval</strong>. Once our advisors review it, it will appear on the Student Voices wall!
+          </p>
+          <a href="voices.html" class="btn btn-primary btn-sm">View Student Voices</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Mobile Bottom Nav -->
+  <nav class="bottom-nav">
+    <a href="index.html" class="bottom-nav-item"><span class="icon">🏠</span><span>Home</span></a>
+    <a href="projects.html" class="bottom-nav-item"><span class="icon">🔬</span><span>Projects</span></a>
+    <a href="events.html" class="bottom-nav-item"><span class="icon">📅</span><span>Events</span></a>
+    <a href="voices.html" class="bottom-nav-item"><span class="icon">💬</span><span>Voices</span></a>
+    <a href="profile.html" class="bottom-nav-item"><span class="icon">👤</span><span>Profile</span></a>
+  </nav>
+
+  <footer class="site-footer">
+    <div class="container" style="text-align: center;">
+      <p>© 2026 Liverpool International Secondary College – Science & IT Club</p>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      let rating = 5;
+      const stars = document.querySelectorAll('#starRatingSelector span');
+      const ratingInput = document.getElementById('ratingValue');
+
+      function updateStars(val) {
+        stars.forEach(s => {
+          const sVal = parseInt(s.dataset.val);
+          s.style.color = sVal <= val ? 'var(--accent-amber)' : 'rgba(255,255,255,0.2)';
+        });
+      }
+      updateStars(rating);
+
+      stars.forEach(s => {
+        s.addEventListener('click', () => {
+          rating = parseInt(s.dataset.val);
+          if (ratingInput) ratingInput.value = rating;
+          updateStars(rating);
+        });
+        s.addEventListener('mouseover', () => updateStars(parseInt(s.dataset.val)));
+        s.addEventListener('mouseout', () => updateStars(rating));
+      });
+
+      const form = document.getElementById('feedbackForm');
+      const successBox = document.getElementById('feedbackSuccessBox');
+      const submitBtn = form ? form.querySelector('button[type=submit]') : null;
+
+      if (!form) return;
+
+      form.onsubmit = async (e) => {
+        e.preventDefault();
+
+        if (!ClubAuth.currentUser) {
+          showToast("Please sign in to submit a review.", "error");
+          window.location.href = 'login.html?redirect=submit-feedback.html';
+          return;
+        }
+
+        if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Submitting...'; }
+
+        try {
+          const user = ClubAuth.currentUser;
+          const message = document.getElementById('feedbackMessage').value.trim();
+
+          if (!message) {
+            showToast("Please write your experience before submitting.", "error");
+            return;
+          }
+
+          const newFeedback = {
+            uid: user.uid,
+            displayName: user.displayName || 'Student',
+            section: user.section || '',
+            grade: user.section ? 'Grade 11 – ' + user.section : 'Grade 11',
+            rating: rating,
+            message: message,
+            status: 'pending',
+            date: window.ClubDates ? ClubDates.getTodayFormatted() : new Date().toLocaleDateString('en-US'),
+            createdAt: Date.now()
+          };
+
+          await ClubDB.push('feedback', newFeedback);
+
+          // ✅ Notify all admins about new testimonial
+          if (window.ClubNotifs && ClubNotifs.notifyAllAdmins) {
+            await ClubNotifs.notifyAllAdmins(
+              `⭐ New Testimonial from ${user.displayName || 'Student'}`,
+              `${rating}/5 stars — "${message.substring(0, 80)}${message.length > 80 ? '...' : ''}" — Needs moderation in Testimonials panel.`,
+              'voices.html',
+              'normal'
+            );
+          }
+
+          form.style.display = 'none';
+          if (successBox) successBox.style.display = 'block';
+          showToast("Review submitted! Admin will approve soon.", "success");
+        } catch (err) {
+          console.error('Feedback submit error:', err);
+          showToast("Error submitting. Please try again.", "error");
+        } finally {
+          if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Submit My Experience ⭐'; }
+        }
+      };
+    });
+  </script>
+</body>
+</html>

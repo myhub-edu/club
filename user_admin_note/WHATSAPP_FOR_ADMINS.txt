@@ -1,0 +1,24 @@
+*🛡️ Science & IT Club — Admin Access*
+
+Hey! You've been added as an *Admin* on the club website.
+
+🌐 Admin Panel: *[YOUR SITE LINK]/admin/*
+
+📌 How to log in:
+Register on the website using your Google account (same email you use normally). The developer has already given your account admin access — just sign in and go to /admin/
+
+*What you can do as Admin:*
+
+📁 Add / edit / delete Projects, Events, Moments & Resources
+👥 View all registered members
+⬆️ Promote members to Admin
+💡 Review & accept or reject student ideas
+📨 Read & reply to student messages
+🔔 Send notifications to all members or specific students
+🗣️ Approve student testimonials
+
+*Head Admin also gets:*
+⚙️ Update club Settings
+👑 Promote Admins to Head Admin
+
+Any issues? Contact the developer.

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manage Moments | Admin Dashboard</title>
+  
+  <link rel="icon" type="image/png" href="../assets/logo/club_logo.png" />
+  <link rel="apple-touch-icon" href="../assets/logo/club_logo.png" />
+  <link rel="shortcut icon" href="../assets/logo/club_logo.png" />
+  <link rel="stylesheet" href="../css/global.css" />
+  <link rel="stylesheet" href="../css/admin.css" />
+  
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  
+  <script src="../js/firebase-config.js"></script>
+  <script src="../js/notifications.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="js/admin.js" defer></script>
+</head>
+<body class="admin-body">
+  <!-- Sidebar Overlay for Mobile -->
+  <div class="admin-sidebar-overlay" id="adminSidebarOverlay"></div>
+
+  <!-- Admin Sidebar -->
+  <aside class="admin-sidebar" id="adminSidebar">
+    <div class="admin-sidebar-brand">
+      <img src="../assets/logo/club_logo.png" alt="Logo" />
+      <span>Club Admin <small>v2.0</small></span>
+    </div>
+    <nav class="admin-nav">
+      <a href="index.html" class="admin-nav-item"><span class="nav-label">📊 Dashboard</span></a>
+      <a href="members.html" class="admin-nav-item"><span class="nav-label">👥 Members</span></a>
+      <a href="projects.html" class="admin-nav-item"><span class="nav-label">🔬 Projects</span></a>
+      <a href="events.html" class="admin-nav-item"><span class="nav-label">📅 Events</span></a>
+      <a href="moments.html" class="admin-nav-item active"><span class="nav-label">📸 Moments</span></a>
+      <a href="voices.html" class="admin-nav-item"><span class="nav-label">💬 Testimonials</span></a>
+      <a href="ideas.html" class="admin-nav-item"><span class="nav-label">💡 Student Ideas</span></a>
+      <a href="notifications.html" class="admin-nav-item"><span class="nav-label">📢 Broadcasts</span></a>
+      <a href="messages.html" class="admin-nav-item"><span class="nav-label">✉️ Messages</span></a>
+      <a href="resources.html" class="admin-nav-item"><span class="nav-label">📚 Resources</span></a>
+      <a href="settings.html" class="admin-nav-item"><span class="nav-label">⚙️ Settings</span></a>
+      <div style="border-top: 1px solid var(--border-subtle); margin: 0.75rem 0;"></div>
+      <a href="../index.html" class="admin-nav-item" style="color: var(--accent-cyan);"><span class="nav-label">🌐 View Live Site</span><span>↗</span></a>
+    </nav>
+    <div class="admin-sidebar-footer">
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <img id="adminCurrentUserAvatar" src="../assets/logo/club_logo.png" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
+        <div>
+          <strong id="adminCurrentUserName" style="font-size: 0.85rem; display: block;">Admin</strong>
+          <span id="adminCurrentUserRole" class="badge badge-purple" style="font-size: 0.65rem;">ADMIN</span>
+        </div>
+      </div>
+      <button id="adminLogoutBtn" style="background: transparent; border: none; color: var(--accent-rose); cursor: pointer; font-size: 1.1rem;">⎋</button>
+    </div>
+  </aside>
+
+  <!-- Admin Main Layout -->
+  <div class="admin-main-wrapper">
+    <header class="admin-topbar">
+      <div class="admin-topbar-left">
+        <button id="adminSidebarToggle" class="hamburger-btn" style="color: var(--text-primary);">☰</button>
+        <h2 class="admin-page-title">Manage Captured Moments</h2>
+      </div>
+      <div class="admin-topbar-right">
+        <button class="btn btn-sm btn-primary" onclick="openCreateMomentModal()">+ Add New Moment</button>
+      </div>
+    </header>
+
+    <main class="admin-content">
+      <div class="table-card">
+        <div class="table-header-bar">
+          <h4>Visual Archive & Memories (/moments)</h4>
+          <input type="text" id="adminMomentSearch" class="form-input" style="max-width: 250px; padding: 0.4rem 0.75rem; font-size: 0.85rem;" placeholder="Search moments..." />
+        </div>
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Photo</th>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Date</th>
+                <th>Caption</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="momentsTableBody">
+              <tr><td colspan="6" style="text-align: center; padding: 2rem;">Loading moments...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Create/Edit Moment Modal -->
+  <div class="modal-overlay" id="momentModal">
+    <div class="modal-content" style="max-width: 580px;">
+      <div class="modal-header">
+        <h3 id="momentModalTitle">Add Captured Moment</h3>
+        <button class="modal-close" onclick="closeModal('momentModal')">✕</button>
+      </div>
+      <form id="momentEditorForm">
+        <input type="hidden" id="editMomentId" value="" />
+
+        <div class="form-group">
+          <label class="form-label">Moment Title</label>
+          <input type="text" id="modalMomentTitle" class="form-input" required placeholder="e.g. Soldering Circuit Boards in Lab 204" />
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <select id="modalMomentCategory" class="form-select" required>
+              <option value="Lab Session">Lab Session</option>
+              <option value="Hackathon">Hackathon</option>
+              <option value="Expo Showcase">Expo Showcase</option>
+              <option value="Workshop">Workshop</option>
+              <option value="Field Visit">Field Visit</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Date <small style="color:var(--text-muted);">(Writable text)</small></label>
+            <input type="text" id="modalMomentDate" class="form-input" required placeholder="e.g. 07/15/2026" />
+            <small style="font-size: 0.72rem; color: var(--text-muted);">Format: MM/DD/YYYY</small>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Moment Photo (Upload Base64 or Select Preset)</label>
+          <div style="display: flex; gap: 0.75rem; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap;">
+            <img id="momentPhotoPreview" src="../assets/moments/robotics-lab.jpg" alt="Preview" style="width: 72px; height: 50px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);" />
+            <label class="btn btn-sm btn-outline" style="cursor: pointer;">
+              📁 Upload New Image
+              <input type="file" id="momentPhotoFileInput" accept="image/*" style="display: none;" />
+            </label>
+            <span id="momentUploadStatus" style="font-size: 0.75rem; color: var(--text-muted);">or pick a preset:</span>
+          </div>
+          <select id="modalMomentImage" class="form-select">
+            <option value="assets/moments/robotics-lab.jpg">assets/moments/robotics-lab.jpg (Robotics Lab)</option>
+          </select>
+          <input type="hidden" id="customMomentImageData" value="" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Caption & Highlights</label>
+          <textarea id="modalMomentCaption" class="form-textarea" rows="3" required placeholder="A brief description of this moment..."></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Save Captured Moment</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let allMoments = {};
+
+    async function loadAdminMoments() {
+      const raw = (await ClubDB.get('moments')) || {};
+      allMoments = {};
+      Object.entries(raw).forEach(([k, v]) => {
+        if (v && typeof v === 'object') {
+          allMoments[k] = { ...v, id: v.id || k, _key: k };
+        }
+      });
+      renderTable();
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('momentsTableBody');
+      const search = document.getElementById('adminMomentSearch').value.toLowerCase().trim();
+      const list = Object.values(allMoments).filter(m =>
+        !search ||
+        (m.title && m.title.toLowerCase().includes(search)) ||
+        (m.caption && m.caption.toLowerCase().includes(search))
+      );
+
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 2rem;">No captured moments found.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = list.map(m => {
+        const key = m._key || m.id;
+        const img = m.image || 'assets/moments/robotics-lab.jpg';
+        const imgSrc = (img.startsWith('data:') || img.startsWith('http')) ? img : ('../' + img);
+        return `
+          <tr>
+            <td><img src="${imgSrc}" alt="Thumbnail" style="width: 54px; height: 38px; object-fit: cover; border-radius: 4px;" /></td>
+            <td><strong>${m.title || 'Untitled'}</strong></td>
+            <td><span class="badge badge-amber">${m.category || 'Lab Session'}</span></td>
+            <td style="font-size: 0.85rem;">${m.date || '-'}</td>
+            <td style="font-size: 0.82rem; color: var(--text-secondary); max-width: 250px;">${(m.caption || '').substring(0, 75)}...</td>
+            <td>
+              <div class="action-btn-group">
+                <button class="btn btn-sm btn-secondary" onclick="editMoment('${key}')">✏️</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteMoment('${key}')">🗑️</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    window.openCreateMomentModal = function() {
+      document.getElementById('editMomentId').value = '';
+      document.getElementById('momentModalTitle').textContent = 'Add Captured Moment';
+      document.getElementById('momentEditorForm').reset();
+      document.getElementById('customMomentImageData').value = '';
+      document.getElementById('momentPhotoPreview').src = '../assets/moments/robotics-lab.jpg';
+      document.getElementById('modalMomentDate').value = window.ClubDates ? ClubDates.getTodayFormatted() : '07/15/2026';
+      openModal('momentModal');
+    };
+
+    window.editMoment = function(key) {
+      const m = allMoments[key];
+      if (!m) return;
+      document.getElementById('editMomentId').value = key;
+      document.getElementById('momentModalTitle').textContent = 'Edit Moment: ' + (m.title || '');
+      document.getElementById('modalMomentTitle').value = m.title || '';
+      document.getElementById('modalMomentCategory').value = m.category || 'Lab Session';
+      document.getElementById('modalMomentDate').value = m.date || '';
+      document.getElementById('modalMomentCaption').value = m.caption || '';
+
+      const img = m.image || 'assets/moments/robotics-lab.jpg';
+      const isCustom = img.startsWith('data:') || img.startsWith('http');
+      if (isCustom) {
+        document.getElementById('customMomentImageData').value = img;
+        document.getElementById('momentPhotoPreview').src = img;
+      } else {
+        document.getElementById('customMomentImageData').value = '';
+        document.getElementById('modalMomentImage').value = img;
+        document.getElementById('momentPhotoPreview').src = '../' + img;
+      }
+      openModal('momentModal');
+    };
+
+    window.deleteMoment = async function(key) {
+      if (!confirm("Are you sure you want to delete this moment?")) return;
+      await ClubDB.remove(`moments/${key}`);
+      delete allMoments[key];
+      renderTable();
+      showToast("Moment deleted.", "info");
+    };
+
+    // Moment file upload
+    const momentFileInput = document.getElementById('momentPhotoFileInput');
+    if (momentFileInput) {
+      momentFileInput.addEventListener('change', async (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        try {
+          document.getElementById('momentUploadStatus').textContent = 'Optimizing...';
+          const base64 = await window.compressImageToBase64(file, 800, 600, 0.8);
+          document.getElementById('customMomentImageData').value = base64;
+          document.getElementById('momentPhotoPreview').src = base64;
+          document.getElementById('momentUploadStatus').textContent = '✓ Uploaded';
+          showToast('Photo compressed & ready!', 'success');
+        } catch (err) {
+          console.error(err);
+          showToast('Upload failed: ' + err.message, 'error');
+        }
+      });
+    }
+
+    document.getElementById('modalMomentImage').addEventListener('change', (e) => {
+      document.getElementById('customMomentImageData').value = '';
+      const val = e.target.value;
+      document.getElementById('momentPhotoPreview').src = val.startsWith('http') ? val : ('../' + val);
+      document.getElementById('momentUploadStatus').textContent = 'Preset selected';
+    });
+
+    document.getElementById('momentEditorForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('editMomentId').value;
+      const title = document.getElementById('modalMomentTitle').value.trim();
+      const category = document.getElementById('modalMomentCategory').value;
+      const date = document.getElementById('modalMomentDate').value.trim();
+      const customImg = document.getElementById('customMomentImageData').value;
+      const image = customImg || document.getElementById('modalMomentImage').value;
+      const caption = document.getElementById('modalMomentCaption').value.trim();
+
+      if (id) {
+        const updated = { id, title, category, date, image, caption };
+        await ClubDB.update(`moments/${id}`, updated);
+        allMoments[id] = { ...allMoments[id], ...updated, id, _key: id };
+        showToast("Moment updated successfully!", "success");
+      } else {
+        const newMoment = { title, category, date, image, caption, createdAt: Date.now() };
+        const created = await ClubDB.push('moments', newMoment);
+        const newKey = (created && created.id) ? created.id : ('mom_' + Date.now());
+        allMoments[newKey] = { ...created, id: newKey, _key: newKey };
+        showToast("New moment added to archive!", "success");
+        if (window.ClubNotifs && ClubNotifs.notifyAllMembers) {
+          ClubNotifs.notifyAllMembers(
+            `📸 New Moment: ${title}`,
+            `New photo added to the club gallery: "${title}". Tap to view the moments archive!`,
+            'moments.html',
+            'normal'
+          ).catch(() => {});
+        }
+      }
+
+      closeModal('momentModal');
+      renderTable();
+    };
+
+    document.getElementById('adminMomentSearch').addEventListener('input', renderTable);
+    loadAdminMoments();
+    window.addEventListener('club-db-updated', () => loadAdminMoments());
+  </script>
+</body>
+</html>

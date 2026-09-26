@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="../assets/logo/club_logo.png" />
+  <link rel="apple-touch-icon" href="../assets/logo/club_logo.png" />
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Head Admin Inbox | Admin Dashboard</title>
+  
+  <link rel="stylesheet" href="../css/global.css" />
+  <link rel="stylesheet" href="../css/admin.css" />
+  
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  
+  <script src="../js/firebase-config.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="js/admin.js" defer></script>
+</head>
+<body class="admin-body">
+  <!-- Sidebar Overlay for Mobile -->
+  <div class="admin-sidebar-overlay" id="adminSidebarOverlay"></div>
+
+  <!-- Admin Sidebar -->
+  <aside class="admin-sidebar" id="adminSidebar">
+    <div class="admin-sidebar-brand">
+      <img src="../assets/logo/club_logo.png" alt="Logo" />
+      <span>Club Admin <small>v2.0</small></span>
+    </div>
+    <nav class="admin-nav">
+      <a href="index.html" class="admin-nav-item"><span class="nav-label">📊 Dashboard</span></a>
+      <a href="members.html" class="admin-nav-item"><span class="nav-label">👥 Members</span></a>
+      <a href="projects.html" class="admin-nav-item"><span class="nav-label">🔬 Projects</span></a>
+      <a href="events.html" class="admin-nav-item"><span class="nav-label">📅 Events</span></a>
+      <a href="moments.html" class="admin-nav-item"><span class="nav-label">📸 Moments</span></a>
+      <a href="voices.html" class="admin-nav-item"><span class="nav-label">💬 Testimonials</span></a>
+      <a href="ideas.html" class="admin-nav-item"><span class="nav-label">💡 Student Ideas</span></a>
+      <a href="notifications.html" class="admin-nav-item"><span class="nav-label">📢 Broadcasts</span></a>
+      <a href="messages.html" class="admin-nav-item active">
+        <span class="nav-label">✉️ Messages</span>
+        <span class="badge badge-rose" id="sidebarUnreadMsgsBadge" style="display:none; font-size:0.7rem;">0</span>
+      </a>
+      <a href="resources.html" class="admin-nav-item"><span class="nav-label">📚 Resources</span></a>
+      <a href="settings.html" class="admin-nav-item"><span class="nav-label">⚙️ Settings</span></a>
+      <div style="border-top: 1px solid var(--border-subtle); margin: 0.75rem 0;"></div>
+      <a href="../index.html" class="admin-nav-item" style="color: var(--accent-cyan);"><span class="nav-label">🌐 View Live Site</span><span>↗</span></a>
+    </nav>
+    <div class="admin-sidebar-footer">
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <img id="adminCurrentUserAvatar" src="" alt="Admin" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
+        <div>
+          <strong id="adminCurrentUserName" style="font-size: 0.85rem; display: block;">Admin</strong>
+          <span id="adminCurrentUserRole" class="badge badge-purple" style="font-size: 0.65rem;">ADMIN</span>
+        </div>
+      </div>
+      <button id="adminLogoutBtn" title="Logout" style="background: transparent; border: none; color: var(--accent-rose); cursor: pointer; font-size: 1.1rem;">⎋</button>
+    </div>
+  </aside>
+
+  <!-- Admin Main Layout -->
+  <div class="admin-main-wrapper">
+    <header class="admin-topbar">
+      <div class="admin-topbar-left">
+        <button id="adminSidebarToggle" class="hamburger-btn" style="color: var(--text-primary);" aria-label="Toggle sidebar">☰</button>
+        <h2 class="admin-page-title">Messages Inbox</h2>
+      </div>
+    </header>
+
+    <main class="admin-content">
+      <div class="table-card">
+        <div class="table-header-bar">
+          <h4>Student Messages &amp; Inquiries</h4>
+          <input type="text" id="adminMsgSearch" class="form-input" style="max-width: 250px; padding: 0.4rem 0.75rem; font-size: 0.85rem;" placeholder="🔍 Search messages..." />
+        </div>
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Status</th>
+                <th>Sender</th>
+                <th>Subject</th>
+                <th>Sent At</th>
+                <th>Replies</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="messagesTableBody">
+              <tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">Loading inquiries...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Message & Reply Modal -->
+  <div class="modal-overlay" id="messageModal">
+    <div class="modal-content" style="max-width: 640px;">
+      <div class="modal-header">
+        <h3 id="modalMsgSubject">Message Subject</h3>
+        <button class="modal-close" onclick="closeModal('messageModal')">✕</button>
+      </div>
+
+      <div style="background: rgba(0,0,0,0.2); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1.25rem;">
+        <div style="display: flex; justify-content: space-between; flex-wrap: wrap; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; gap: 0.5rem;">
+          <span>From: <strong id="modalMsgSender" style="color: var(--text-primary);"></strong></span>
+          <span id="modalMsgTime"></span>
+        </div>
+        <p id="modalMsgBody" style="font-size: 0.95rem; line-height: 1.6; color: var(--text-secondary); word-break: break-word;"></p>
+      </div>
+
+      <!-- Thread History -->
+      <div id="modalRepliesContainer" style="margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
+      </div>
+
+      <!-- Reply Composer -->
+      <form id="replyForm">
+        <div class="form-group">
+          <label class="form-label">Compose Advisor Response</label>
+          <textarea id="replyText" class="form-textarea" rows="3" required placeholder="Type your reply to the student here..."></textarea>
+        </div>
+        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+          <button type="submit" class="btn btn-primary btn-sm">💬 Send Reply &amp; Mark Replied</button>
+          <button type="button" class="btn btn-outline btn-sm" onclick="closeModal('messageModal')">Close</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let allMessages = {};
+    let activeMsgId = null;
+
+    async function loadMessages() {
+      allMessages = (await ClubDB.get('messages')) || {};
+      renderTable();
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('messagesTableBody');
+      const search = (document.getElementById('adminMsgSearch').value || '').toLowerCase().trim();
+      const list = Object.values(allMessages).filter(m =>
+        !search ||
+        (m.subject && m.subject.toLowerCase().includes(search)) ||
+        (m.fromName && m.fromName.toLowerCase().includes(search))
+      );
+
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 2.5rem; color: var(--text-muted);">
+          <div style="font-size:2rem; margin-bottom:0.5rem;">✉️</div>
+          <strong>No messages in inbox</strong><br>
+          <small>Student messages will appear here when submitted.</small>
+        </td></tr>`;
+        return;
+      }
+
+      list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+      tbody.innerHTML = list.map(m => {
+        const replyCount = m.replies ? Object.keys(m.replies).length : 0;
+        const preview = m.message ? m.message.substring(0, 45) + (m.message.length > 45 ? '...' : '') : '';
+        return `
+          <tr style="${m.status === 'unread' ? 'background: rgba(0, 242, 254, 0.03);' : ''}">
+            <td><span class="status-pill ${m.status || 'unread'}">${m.status || 'unread'}</span></td>
+            <td>
+              <strong>${m.fromName || 'Student'}</strong>
+              <br><small style="color:var(--text-muted);">${m.fromEmail || ''}</small>
+            </td>
+            <td>
+              <strong>${m.subject || '(No Subject)'}</strong>
+              <br><small style="color:var(--text-muted);">${preview}</small>
+            </td>
+            <td style="font-size: 0.8rem; color: var(--text-muted); white-space: nowrap;">${m.createdAt ? new Date(m.createdAt).toLocaleDateString() : '—'}</td>
+            <td><span class="badge ${replyCount > 0 ? 'badge-emerald' : 'badge-amber'}">${replyCount} repl${replyCount === 1 ? 'y' : 'ies'}</span></td>
+            <td>
+              <button class="btn btn-sm btn-secondary" onclick="openThread('${m.id}')">Open &amp; Reply</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    window.openThread = function(id) {
+      const m = allMessages[id];
+      if (!m) return;
+      activeMsgId = id;
+
+      document.getElementById('modalMsgSubject').textContent = m.subject || '(No Subject)';
+      document.getElementById('modalMsgSender').textContent = `${m.fromName || 'Student'} (${m.fromEmail || ''})`;
+      document.getElementById('modalMsgTime').textContent = m.createdAt ? new Date(m.createdAt).toLocaleString() : '';
+      document.getElementById('modalMsgBody').textContent = m.message || '';
+
+      // Mark as read
+      if (m.status === 'unread') {
+        allMessages[id].status = 'read';
+        ClubDB.update(`messages/${id}`, { status: 'read' }).catch(() => {});
+      }
+
+      const repliesContainer = document.getElementById('modalRepliesContainer');
+      const replies = m.replies ? Object.values(m.replies) : [];
+
+      if (replies.length === 0) {
+        repliesContainer.innerHTML = `<small style="color:var(--text-muted);">No responses posted yet.</small>`;
+      } else {
+        // Escape helper to prevent XSS from reply content
+        const esc = (s) => { const d = document.createElement('div'); d.textContent = String(s || ''); return d.innerHTML; };
+        repliesContainer.innerHTML = `
+          <strong style="font-size:0.85rem; color:var(--text-primary); margin-bottom:0.25rem;">Prior Replies:</strong>
+          ${replies.map(r => `
+            <div style="background: rgba(16, 185, 129, 0.08); border-left: 3px solid var(--accent-emerald); padding: 0.6rem 0.85rem; border-radius: 4px;">
+              <p style="font-size:0.88rem; margin-bottom:0.2rem; word-break: break-word;">${esc(r.message)}</p>
+              <small style="color:var(--text-muted); font-size:0.75rem;">${r.createdAt ? new Date(r.createdAt).toLocaleString() : ''}</small>
+            </div>
+          `).join('')}
+        `;
+      }
+
+      document.getElementById('replyText').value = '';
+      openModal('messageModal');
+    };
+
+    document.getElementById('replyForm').onsubmit = async (e) => {
+      e.preventDefault();
+      if (!activeMsgId) return;
+
+      const btn = e.target.querySelector('[type=submit]');
+      btn.disabled = true;
+      btn.textContent = 'Sending...';
+
+      try {
+        const text = document.getElementById('replyText').value.trim();
+        if (!text) { btn.disabled = false; btn.textContent = '💬 Send Reply & Mark Replied'; return; }
+
+        const adminUser = ClubAuth.currentUser;
+        const adminName = adminUser ? (adminUser.displayName || 'Advisor') : 'Advisor';
+
+        const replyObj = {
+          fromUid: adminUser ? adminUser.uid : 'admin',
+          fromName: adminName,
+          message: text,
+          createdAt: Date.now()
+        };
+
+        const targetMsg = allMessages[activeMsgId];
+        if (!targetMsg.replies) targetMsg.replies = {};
+        const replyId = 'rep_' + Date.now();
+        targetMsg.replies[replyId] = replyObj;
+        targetMsg.status = 'replied';
+
+        await ClubDB.set(`messages/${activeMsgId}`, targetMsg);
+
+        // Notify student via DB + OS push
+        if (targetMsg.fromUid) {
+          const notifPayload = {
+            title: "New Reply from Head Admin ✉️",
+            message: `Advisor replied to your message '${targetMsg.subject}'. Check your message thread.`,
+            priority: "important",
+            createdAt: Date.now(),
+            createdBy: adminName,
+            url: 'contact-admin.html'
+          };
+          await ClubDB.push(`notifications/users/${targetMsg.fromUid}`, notifPayload);
+          // OS push if the student has permission granted
+          if (window.ClubWebPush) {
+            ClubWebPush.show('New Reply from Head Admin ✉️',
+              `Re: "${targetMsg.subject}" — Tap to read the reply.`,
+              { urgent: true, url: '/contact-admin.html', tag: 'reply_' + activeMsgId }
+            );
+          }
+        }
+
+        showToast("Reply delivered and student notified.", "success");
+        closeModal('messageModal');
+        renderTable();
+        if (window.AdminApp && window.AdminApp.refreshBadgeCounts) window.AdminApp.refreshBadgeCounts();
+      } catch (err) {
+        console.error('Reply error:', err);
+        showToast("Error sending reply. Please try again.", "error");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '💬 Send Reply & Mark Replied';
+      }
+    };
+
+    document.getElementById('adminMsgSearch').addEventListener('input', renderTable);
+    loadMessages();
+
+    // Real-time listener: auto-refresh inbox when new messages arrive
+    if (window.ClubDB && ClubDB.onValue) {
+      ClubDB.onValue('messages', () => loadMessages());
+    }
+
+    // club-db-updated: reload from DB (not just re-render stale cache)
+    window.addEventListener('club-db-updated', () => loadMessages());
+  </script>
+</body>
+</html>

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="assets/logo/club_logo.png" />
+  <link rel="apple-touch-icon" href="assets/logo/club_logo.png" />
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Captured Moments & Gallery | Science & IT Club | Liverpool College</title>
+  <meta name="description" content="Explore photographic highlights and memories from club build sprints, robotics testing, hackathon late nights, and science demonstrations at Liverpool International Secondary College." />
+  <meta name="keywords" content="STEM Gallery, Robotics Photos, High School Maker Lab, Science Exhibition Moments, Liverpool International Secondary College" />
+  <meta name="author" content="Liverpool International Secondary College - Science & IT Club" />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#070b14" />
+  <link rel="canonical" href="moments.html" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="moments.html" />
+  <meta property="og:title" content="Captured Moments & Gallery | Science & IT Club" />
+  <meta property="og:description" content="Photographic highlights from our student robotics builds, hackathons, and science exhibitions." />
+  <meta property="og:image" content="assets/moments/moment-1.jpg" />
+  <meta property="og:site_name" content="Science & IT Club" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Captured Moments & Gallery | Science & IT Club" />
+  <meta name="twitter:description" content="Photographic highlights from our student robotics builds, hackathons, and science exhibitions." />
+  <meta name="twitter:image" content="assets/moments/moment-1.jpg" />
+
+  <!-- Schema.org JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ImageGallery",
+    "name": "Science & IT Club Photo Archive",
+    "description": "Photographic collection of robotics testing, lab experiments, and student hackathons.",
+    "publisher": {
+      "@type": "EducationalOrganization",
+      "name": "Liverpool International Secondary College"
+    }
+  }
+  </script>
+  
+  <link rel="stylesheet" href="css/global.css" />
+  
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  
+  <script src="js/firebase-config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/notifications.js" defer></script>
+  <script src="js/main.js" defer></script>
+</head>
+<body>
+  <div class="ambient-glow"></div>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="container header-container">
+      <a href="index.html" class="brand">
+        <img src="assets/logo/club_logo.png" alt="Club Logo" class="brand-logo" />
+        <span class="brand-text">Science & <span>IT Club</span></span>
+      </a>
+      <nav class="desktop-nav">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="about.html" class="nav-link">About</a>
+        <a href="projects.html" class="nav-link">Projects</a>
+        <a href="events.html" class="nav-link">Events</a>
+        <a href="moments.html" class="nav-link active">Moments</a>
+        <a href="voices.html" class="nav-link">Voices</a>
+        <a href="resources.html" class="nav-link">Resources</a>
+      </nav>
+      <div class="header-actions">
+        <a href="login.html" class="btn btn-primary btn-sm">Member Login</a>
+        <button class="hamburger-btn" id="drawerToggleBtn" aria-label="Open Menu">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Drawer -->
+  <div class="mobile-drawer-overlay" id="mobileDrawerOverlay"></div>
+  <aside class="mobile-drawer" id="mobileDrawer">
+    <div class="mobile-drawer-header">
+      <div class="brand">
+        <img src="assets/logo/club_logo.png" alt="Club Logo" class="brand-logo" />
+        <span class="brand-text">Science & <span>IT Club</span></span>
+      </div>
+      <button class="hamburger-btn" id="drawerCloseBtn" aria-label="Close Menu">✕</button>
+    </div>
+    <nav class="drawer-links">
+      <a href="index.html" class="drawer-link">🏠 Home</a>
+      <a href="about.html" class="drawer-link">ℹ️ About the Club</a>
+      <a href="projects.html" class="drawer-link">🔬 Projects Showcase</a>
+      <a href="events.html" class="drawer-link">📅 Events & Workshops</a>
+      <a href="moments.html" class="drawer-link active">📸 Captured Moments</a>
+      <a href="voices.html" class="drawer-link">💬 Student Voices</a>
+      <a href="resources.html" class="drawer-link">📚 Learning Resources</a>
+    </nav>
+  </aside>
+
+  <main style="padding: 3rem 0 4rem;">
+    <div class="container">
+      <div style="text-align: center; margin-bottom: 2.5rem;">
+        <span class="badge badge-amber">Visual Archive</span>
+        <h1 style="margin-top: 0.5rem; margin-bottom: 0.75rem;">Captured Moments & Lab Memories</h1>
+        <p style="max-width: 620px; margin: 0 auto;">Snapshots from our hands-on engineering sprints, hackathons, and science demonstrations. Tap any photo to enlarge.</p>
+      </div>
+
+      <!-- Moments Grid: 2 per row on mobile, 3-4 on larger screens -->
+      <div id="momentsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.25rem;">
+        <!-- Populated via JavaScript -->
+      </div>
+    </div>
+  </main>
+
+  <!-- Lightbox Modal -->
+  <div class="modal-overlay" id="lightboxModal">
+    <div class="modal-content" style="max-width: 800px; padding: 1.25rem; background: #0b0f19;">
+      <div style="display: flex; justify-content: flex-end; margin-bottom: 0.5rem;">
+        <button class="modal-close" onclick="closeModal('lightboxModal')">✕</button>
+      </div>
+      <div style="text-align: center;">
+        <img id="lightboxImage" src="" alt="Enlarged moment" style="max-width: 100%; max-height: 65vh; object-fit: contain; border-radius: var(--radius-sm); margin-bottom: 1rem;" />
+        <h3 id="lightboxTitle" style="margin-bottom: 0.5rem; font-size: 1.25rem;"></h3>
+        <p id="lightboxCaption" style="color: var(--text-secondary); font-size: 0.95rem;"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Bottom Nav -->
+  <nav class="bottom-nav">
+    <a href="index.html" class="bottom-nav-item"><span class="icon">🏠</span><span>Home</span></a>
+    <a href="projects.html" class="bottom-nav-item"><span class="icon">🔬</span><span>Projects</span></a>
+    <a href="events.html" class="bottom-nav-item"><span class="icon">📅</span><span>Events</span></a>
+    <a href="moments.html" class="bottom-nav-item active"><span class="icon">📸</span><span>Moments</span></a>
+    <a href="profile.html" class="bottom-nav-item"><span class="icon">👤</span><span>Profile</span></a>
+  </nav>
+
+  <footer class="site-footer">
+    <div class="container" style="text-align: center;">
+      <p>© 2026 Liverpool International Secondary College – Science & IT Club</p>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const grid = document.getElementById('momentsGrid');
+      const moments = (await ClubDB.get('moments')) || {};
+      const momentList = Object.values(moments);
+
+      if (momentList.length === 0) {
+        grid.innerHTML = `
+          <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 3.5rem 2rem; border: 1px solid var(--border-subtle); background: rgba(15, 23, 42, 0.6);">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">📸</div>
+            <span class="badge badge-amber" style="margin-bottom: 0.75rem; display: inline-block;">Gallery Archive</span>
+            <h3 style="margin-bottom: 0.75rem; font-size: 1.35rem;">Moments Gallery Coming Soon</h3>
+            <p style="color: var(--text-secondary); max-width: 500px; margin: 0 auto 1.5rem; line-height: 1.6;">
+              Photos from our hands-on engineering lab sessions, robot obstacle tests, and STEM expos will appear here once published.
+            </p>
+            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+              <a href="projects.html" class="btn btn-primary btn-sm">Explore Club Projects 🔬</a>
+              <a href="events.html" class="btn btn-outline btn-sm">View Upcoming Events 📅</a>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = momentList.map((m, idx) => `
+        <div class="card" style="padding: 0.5rem; cursor: pointer; border: 1px solid var(--border-subtle);" onclick="openLightbox(${idx})">
+          <div style="overflow: hidden; border-radius: var(--radius-sm); aspect-ratio: 4/3; margin-bottom: 0.75rem;">
+            <img src="${m.image}" alt="${m.title}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" />
+          </div>
+          <div style="padding: 0.25rem 0.5rem 0.5rem;">
+            <h4 style="font-size: 1rem; margin-bottom: 0.25rem;">${m.title}</h4>
+            <p style="font-size: 0.8rem; color: var(--text-muted);">${m.caption}</p>
+          </div>
+        </div>
+      `).join('');
+
+      window.openLightbox = function(index) {
+        const item = momentList[index];
+        if (!item) return;
+        document.getElementById('lightboxImage').src = item.image;
+        document.getElementById('lightboxTitle').textContent = item.title;
+        document.getElementById('lightboxCaption').textContent = item.caption;
+        openModal('lightboxModal');
+      };
+    });
+  </script>
+</body>
+</html>

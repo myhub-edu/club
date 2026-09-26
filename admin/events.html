@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manage Events | Admin Dashboard</title>
+  <link rel="icon" type="image/png" href="../assets/logo/club_logo.png" />
+  <link rel="apple-touch-icon" href="../assets/logo/club_logo.png" />
+  <link rel="shortcut icon" href="../assets/logo/club_logo.png" />
+  <link rel="stylesheet" href="../css/global.css" />
+  <link rel="stylesheet" href="../css/admin.css" />
+  
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  
+  <script src="../js/firebase-config.js"></script>
+  <script src="../js/notifications.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="js/admin.js" defer></script>
+</head>
+<body class="admin-body">
+  <!-- Sidebar Overlay for Mobile -->
+  <div class="admin-sidebar-overlay" id="adminSidebarOverlay"></div>
+
+  <!-- Admin Sidebar -->
+  <aside class="admin-sidebar" id="adminSidebar">
+    <div class="admin-sidebar-brand">
+      <img src="../assets/logo/club_logo.png" alt="Logo" />
+      <span>Club Admin <small>v2.0</small></span>
+    </div>
+    <nav class="admin-nav">
+      <a href="index.html" class="admin-nav-item"><span class="nav-label">📊 Dashboard</span></a>
+      <a href="members.html" class="admin-nav-item"><span class="nav-label">👥 Members</span></a>
+      <a href="projects.html" class="admin-nav-item"><span class="nav-label">🔬 Projects</span></a>
+      <a href="events.html" class="admin-nav-item active"><span class="nav-label">📅 Events</span></a>
+      <a href="moments.html" class="admin-nav-item"><span class="nav-label">📸 Moments</span></a>
+      <a href="voices.html" class="admin-nav-item"><span class="nav-label">💬 Testimonials</span></a>
+      <a href="ideas.html" class="admin-nav-item"><span class="nav-label">💡 Student Ideas</span></a>
+      <a href="notifications.html" class="admin-nav-item"><span class="nav-label">📢 Broadcasts</span></a>
+      <a href="messages.html" class="admin-nav-item"><span class="nav-label">✉️ Messages</span></a>
+      <a href="resources.html" class="admin-nav-item"><span class="nav-label">📚 Resources</span></a>
+      <a href="settings.html" class="admin-nav-item"><span class="nav-label">⚙️ Settings</span></a>
+      <div style="border-top: 1px solid var(--border-subtle); margin: 0.75rem 0;"></div>
+      <a href="../index.html" class="admin-nav-item" style="color: var(--accent-cyan);"><span class="nav-label">🌐 View Live Site</span><span>↗</span></a>
+    </nav>
+    <div class="admin-sidebar-footer">
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <img id="adminCurrentUserAvatar" src="" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" />
+        <div>
+          <strong id="adminCurrentUserName" style="font-size: 0.85rem; display: block;">Admin</strong>
+          <span id="adminCurrentUserRole" class="badge badge-purple" style="font-size: 0.65rem;">ADMIN</span>
+        </div>
+      </div>
+      <button id="adminLogoutBtn" style="background: transparent; border: none; color: var(--accent-rose); cursor: pointer; font-size: 1.1rem;">⎋</button>
+    </div>
+  </aside>
+
+  <!-- Admin Main Layout -->
+  <div class="admin-main-wrapper">
+    <header class="admin-topbar">
+      <div class="admin-topbar-left">
+        <button id="adminSidebarToggle" class="hamburger-btn" style="color: var(--text-primary);">☰</button>
+        <h2 class="admin-page-title">Manage Events & Calendar</h2>
+      </div>
+      <div class="admin-topbar-right">
+        <button class="btn btn-sm btn-primary" onclick="openCreateEventModal()">+ Schedule New Event</button>
+      </div>
+    </header>
+
+    <main class="admin-content">
+      <div class="table-card">
+        <div class="table-header-bar">
+          <h4>Scheduled Workshops & Exhibitions</h4>
+          <input type="text" id="adminEventSearch" class="form-input" style="max-width: 250px; padding: 0.4rem 0.75rem; font-size: 0.85rem;" placeholder="Search events..." />
+        </div>
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Cover</th>
+                <th>Title</th>
+                <th>Date & Time</th>
+                <th>Location</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="eventsTableBody">
+              <tr><td colspan="6" style="text-align: center; padding: 2rem;">Loading events...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Create/Edit Event Modal -->
+  <div class="modal-overlay" id="eventModal">
+    <div class="modal-content" style="max-width: 580px;">
+      <div class="modal-header">
+        <h3 id="eventModalTitle">Schedule Event</h3>
+        <button class="modal-close" onclick="closeModal('eventModal')">✕</button>
+      </div>
+      <form id="eventEditorForm">
+        <input type="hidden" id="editEventId" value="" />
+
+        <div class="form-group">
+          <label class="form-label">Event Title</label>
+          <input type="text" id="modalEventTitle" class="form-input" required placeholder="e.g. Science & IT Hackathon 2026" />
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label class="form-label">Date <small style="color:var(--text-muted);">(Writable text)</small></label>
+            <input type="text" id="modalEventDate" class="form-input" required placeholder="e.g. 07/15/2026" />
+            <small style="font-size: 0.72rem; color: var(--text-muted);">Format: MM/DD/YYYY (e.g. 07/15/2026)</small>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Time</label>
+            <input type="text" id="modalEventTime" class="form-input" required placeholder="e.g. 10:00 AM - 4:00 PM" />
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label class="form-label">Location / Venue</label>
+            <input type="text" id="modalEventLocation" class="form-input" required placeholder="e.g. Tech Lab Hall & Auditorium" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <select id="modalEventStatus" class="form-select" required>
+              <option value="upcoming">Upcoming</option>
+              <option value="completed">Completed</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Banner Image (Upload Base64 or Select Preset)</label>
+          <div style="display: flex; gap: 0.75rem; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap;">
+            <img id="eventCoverPreview" src="../assets/events/science-expo.jpg" alt="Preview" style="width: 72px; height: 46px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);" />
+            <label class="btn btn-sm btn-outline" style="cursor: pointer;">
+              📁 Upload New Image
+              <input type="file" id="eventCoverFileInput" accept="image/*" style="display: none;" />
+            </label>
+            <span id="eventUploadStatus" style="font-size: 0.75rem; color: var(--text-muted);">or pick a preset:</span>
+          </div>
+          <select id="modalEventCover" class="form-select">
+            <option value="assets/events/science-expo.jpg">assets/events/science-expo.jpg (Expo Hall)</option>
+            <option value="assets/events/hackathon.jpg">assets/events/hackathon.jpg (Hackathon Coding)</option>
+          </select>
+          <input type="hidden" id="customEventCoverData" value="" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Description & Summary</label>
+          <textarea id="modalEventDesc" class="form-textarea" rows="3" required placeholder="Outline event purpose, registration criteria, and requirements..."></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Save Event Schedule</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let allEvents = {}; // keyed by DB key
+
+    async function loadAdminEvents() {
+      const raw = (await ClubDB.get('events')) || {};
+      // Normalize: ensure each event entry has an _key property equal to its DB key
+      allEvents = {};
+      Object.entries(raw).forEach(([k, v]) => {
+        if (v && typeof v === 'object') {
+          allEvents[k] = { ...v, _key: k };
+        }
+      });
+      renderTable();
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('eventsTableBody');
+      const search = document.getElementById('adminEventSearch').value.toLowerCase().trim();
+      const list = Object.values(allEvents).filter(e =>
+        !search || (e.title && e.title.toLowerCase().includes(search))
+      );
+
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 2rem; color:var(--text-muted);">No events found. Click "+ Schedule New Event" to add one.</td></tr>`;
+        return;
+      }
+
+      // Sort: upcoming first, then by date
+      list.sort((a, b) => {
+        if (a.status === 'upcoming' && b.status !== 'upcoming') return -1;
+        if (b.status === 'upcoming' && a.status !== 'upcoming') return 1;
+        return 0;
+      });
+
+      tbody.innerHTML = list.map(e => {
+        const dbKey = e._key;
+        const cover = e.coverImage || 'assets/events/science-expo.jpg';
+        const imgSrc = (cover.startsWith('data:') || cover.startsWith('http')) ? cover : ('../' + cover);
+        const statusClass = e.status === 'upcoming' ? 'badge-emerald' : 'badge-amber';
+        return `
+          <tr id="event-row-${dbKey}">
+            <td><img src="${imgSrc}" alt="Cover" style="width: 52px; height: 34px; object-fit: cover; border-radius: 4px;" onerror="this.src='../assets/logo/club_logo.png'" /></td>
+            <td><strong>${e.title || '—'}</strong></td>
+            <td style="font-size: 0.82rem;">${e.date || '—'} &bull; ${e.time || '—'}</td>
+            <td style="font-size: 0.82rem; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${e.location || '—'}</td>
+            <td><span class="badge ${statusClass}" style="font-size:0.72rem;">${e.status || 'upcoming'}</span></td>
+            <td>
+              <div class="action-btn-group">
+                <button class="btn btn-sm btn-secondary" onclick="editEvent('${dbKey}')" title="Edit">✏️</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteEvent('${dbKey}')" title="Delete">🗑️</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    window.openCreateEventModal = function() {
+      document.getElementById('editEventId').value = '';
+      document.getElementById('eventModalTitle').textContent = 'Schedule New Event';
+      document.getElementById('eventEditorForm').reset();
+      document.getElementById('customEventCoverData').value = '';
+      document.getElementById('eventCoverPreview').src = '../assets/events/science-expo.jpg';
+      document.getElementById('modalEventDate').value = window.ClubDates ? ClubDates.getTodayFormatted() : '07/15/2026';
+      openModal('eventModal');
+    };
+
+    window.editEvent = function(dbKey) {
+      const e = allEvents[dbKey];
+      if (!e) { showToast('Event not found.', 'error'); return; }
+      document.getElementById('editEventId').value = dbKey;
+      document.getElementById('eventModalTitle').textContent = 'Edit Event: ' + e.title;
+      document.getElementById('modalEventTitle').value = e.title || '';
+      document.getElementById('modalEventDate').value = e.date || '';
+      document.getElementById('modalEventTime').value = e.time || '';
+      document.getElementById('modalEventLocation').value = e.location || '';
+      document.getElementById('modalEventStatus').value = e.status || 'upcoming';
+      document.getElementById('modalEventDesc').value = e.description || '';
+
+      const cover = e.coverImage || 'assets/events/science-expo.jpg';
+      const isCustom = cover.startsWith('data:') || cover.startsWith('http');
+      if (isCustom) {
+        document.getElementById('customEventCoverData').value = cover;
+        document.getElementById('eventCoverPreview').src = cover;
+      } else {
+        document.getElementById('customEventCoverData').value = '';
+        const sel = document.getElementById('modalEventCover');
+        if ([...sel.options].some(o => o.value === cover)) sel.value = cover;
+        document.getElementById('eventCoverPreview').src = '../' + cover;
+      }
+      openModal('eventModal');
+    };
+
+    window.deleteEvent = async function(dbKey) {
+      const ev = allEvents[dbKey];
+      const title = ev ? ev.title : 'this event';
+      if (!confirm(`Remove "${title}"? Members will be notified.`)) return;
+
+      // Optimistic: remove from table immediately
+      const row = document.getElementById('event-row-' + dbKey);
+      if (row) { row.style.opacity = '0.4'; row.style.pointerEvents = 'none'; }
+
+      try {
+        await ClubDB.remove(`events/${dbKey}`);
+        delete allEvents[dbKey];
+        renderTable();
+        if (typeof showToast === 'function') showToast('Event removed.', 'info');
+        // Notify all members the event was removed
+        if (window.ClubNotifs && ClubNotifs.notifyAllMembers) {
+          ClubNotifs.notifyAllMembers(
+            `Event Cancelled: ${title}`,
+            `The club event "${title}" has been cancelled. Check the events page for the current schedule.`,
+            '/events.html',
+            'important'
+          ).catch(() => {});
+        }
+      } catch (err) {
+        console.error('deleteEvent error:', err);
+        if (row) { row.style.opacity = '1'; row.style.pointerEvents = ''; }
+        if (typeof showToast === 'function') showToast('Delete failed: ' + err.message, 'error');
+      }
+    };
+
+    // Event cover file upload handler
+    const coverFileInput = document.getElementById('eventCoverFileInput');
+    if (coverFileInput) {
+      coverFileInput.addEventListener('change', async (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        try {
+          document.getElementById('eventUploadStatus').textContent = 'Optimizing...';
+          const base64 = await window.compressImageToBase64(file, 800, 500, 0.8);
+          document.getElementById('customEventCoverData').value = base64;
+          document.getElementById('eventCoverPreview').src = base64;
+          document.getElementById('eventUploadStatus').textContent = '✓ Uploaded';
+          showToast('Image compressed & ready!', 'success');
+        } catch (err) {
+          console.error(err);
+          showToast('Upload failed: ' + err.message, 'error');
+        }
+      });
+    }
+
+    document.getElementById('modalEventCover').addEventListener('change', (e) => {
+      document.getElementById('customEventCoverData').value = '';
+      document.getElementById('eventCoverPreview').src = '../' + e.target.value;
+      document.getElementById('eventUploadStatus').textContent = 'Preset selected';
+    });
+
+    document.getElementById('eventEditorForm').onsubmit = async (ev) => {
+      ev.preventDefault();
+      const id = document.getElementById('editEventId').value;
+      const title = document.getElementById('modalEventTitle').value.trim();
+      const date = document.getElementById('modalEventDate').value.trim();
+      const time = document.getElementById('modalEventTime').value.trim();
+      const location = document.getElementById('modalEventLocation').value.trim();
+      const status = document.getElementById('modalEventStatus').value;
+      const customCover = document.getElementById('customEventCoverData').value;
+      const coverImage = customCover || document.getElementById('modalEventCover').value;
+      const description = document.getElementById('modalEventDesc').value.trim();
+
+      if (id) {
+        // Update existing event
+        const updated = { id, title, date, time, location, status, coverImage, description };
+        try {
+          await ClubDB.update(`events/${id}`, updated);
+          allEvents[id] = { ...allEvents[id], ...updated, _key: id };
+          if (typeof showToast === 'function') showToast('Event updated successfully! ✅', 'success');
+          if (window.ClubNotifs && ClubNotifs.notifyAllMembers) {
+            ClubNotifs.notifyAllMembers(
+              `📅 Event Updated: ${title}`,
+              `"${title}" has been updated. Date: ${date}${location ? ' @ ' + location : ''}. Tap to view event details.`,
+              `event.html?id=${id}`, 'important'
+            ).catch(() => {});
+          }
+        } catch (err) {
+          if (typeof showToast === 'function') showToast('Update failed: ' + err.message, 'error');
+          return;
+        }
+      } else {
+        // Create new event
+        const newEv = { title, date, time, location, status, coverImage, description, createdAt: Date.now() };
+        try {
+          const created = await ClubDB.push('events', newEv);
+          const dbKey = (created && created.id) ? created.id : ('ev_' + Date.now());
+          allEvents[dbKey] = { ...newEv, id: dbKey, _key: dbKey };
+          if (typeof showToast === 'function') showToast('New event published! 🎉', 'success');
+          if (window.ClubNotifs && ClubNotifs.notifyAllMembers) {
+            ClubNotifs.notifyAllMembers(
+              `📅 New Event: ${title}`,
+              `A new event: "${title}" on ${date}${location ? ' @ ' + location : ''}. Tap to view details and RSVP.`,
+              `event.html?id=${dbKey}`, 'important'
+            ).catch(() => {});
+          }
+        } catch (err) {
+          if (typeof showToast === 'function') showToast('Save failed: ' + err.message, 'error');
+          return;
+        }
+      }
+
+      closeModal('eventModal');
+      renderTable();
+    };
+
+    document.getElementById('adminEventSearch').addEventListener('input', renderTable);
+    loadAdminEvents();
+    window.addEventListener('club-db-updated', () => { if (Object.keys(allEvents).length > 0) renderTable(); });
+  </script>
+</body>
+</html>
