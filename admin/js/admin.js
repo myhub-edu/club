@@ -106,6 +106,11 @@ window.AdminApp = {
     this.bindSidebar();
     this.refreshBadgeCounts();
     document.dispatchEvent(new CustomEvent('club-auth-changed', { detail: { user, role } }));
+
+    // Ask admins to enable notifications if not yet granted
+    if (window.ClubWebPush && ClubWebPush.promptOnce) {
+      ClubWebPush.promptOnce(true, 1000);
+    }
   },
 
   /** Wait for live Firebase Auth to confirm session with server (max 2.5s) */
