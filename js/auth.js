@@ -192,9 +192,23 @@ window.ClubAuth = {
     }
 
     // Role resolution and push notification prompt in background
-    this.resolveRole().then(() => this.syncNavbarUI()).catch(() => {});
-    if (window.ClubWebPush && ClubWebPush.promptOnce) {
-      ClubWebPush.promptOnce();
+    this.resolveRole().then((r) => {
+      this.syncNavbarUI();
+      // Prompt admins too if notifications are still default
+      if ((r === 'admin' || r === 'headAdmin') && window.ClubWebPush && ClubWebPush.promptOnce) {
+        ClubWebPush.promptOnce(true, 1000);
+      }
+    }).catch(() => {});
+
+    // Check if user just completed details: ask again immediately
+    if (sessionStorage.getItem('just_completed_details') === 'true') {
+      sessionStorage.removeItem('just_completed_details');
+      if (window.ClubWebPush && ClubWebPush.promptOnce) {
+        ClubWebPush.promptOnce(true, 1000);
+      }
+    } else if (!needsOnboarding && window.ClubWebPush && ClubWebPush.promptOnce) {
+      // Ask after login (bypassing pre-login snooze for users who didn't allow earlier)
+      ClubWebPush.promptOnce(true, 1500);
     }
   },
 
@@ -683,6 +697,7 @@ window.ClubAuth = {
             ClubAuth.syncNavbarUI();
             modal.classList.remove('active');
             sessionStorage.setItem('onboarding_dismissed', 'true');
+            sessionStorage.setItem('just_completed_details', 'true');
 
             // Send single welcome notification if not yet sent
             try {
