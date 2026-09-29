@@ -1,54 +1,78 @@
 /* ==========================================================================
    SCIENCE & IT CLUB — ATTENDANCE INTELLIGENCE & REVIEW PANEL
-   Independent, Self-Contained Stylesheet
-   Theme: Obsidian Dark + Cyber Cyan & Neon Emerald / Crimson Accents
+   Theme: EXACT MATCH of Official Site — Deep Forest Green + Teal + Crimson
    ========================================================================== */
 
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
 :root {
-  --bg-primary: #070a13;
-  --bg-secondary: #0d1222;
-  --bg-card: rgba(16, 22, 40, 0.75);
-  --bg-card-hover: rgba(22, 31, 56, 0.9);
-  --bg-glass: rgba(13, 18, 34, 0.7);
-  
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-hover: rgba(0, 242, 254, 0.35);
-  --border-glow: rgba(0, 242, 254, 0.2);
-  
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  
-  --accent-cyan: #00f2fe;
-  --accent-blue: #3b82f6;
-  --accent-purple: #8b5cf6;
-  
-  /* Present = Green, Absent = Red */
-  --present-green: #10b981;
-  --present-green-glow: rgba(16, 185, 129, 0.3);
-  --present-bg: rgba(16, 185, 129, 0.12);
-  --present-border: rgba(16, 185, 129, 0.35);
-  
-  --absent-red: #ef4444;
-  --absent-red-glow: rgba(239, 68, 68, 0.3);
-  --absent-bg: rgba(239, 68, 68, 0.12);
-  --absent-border: rgba(239, 68, 68, 0.35);
-  
-  --morning-amber: #f59e0b;
-  --morning-bg: rgba(245, 158, 11, 0.12);
-  --night-indigo: #818cf8;
-  --night-bg: rgba(129, 140, 248, 0.12);
-  
+  /* ── Backgrounds — identical to global.css ── */
+  --bg-primary:          #1B2E27;
+  --bg-secondary:        #223A30;
+  --bg-surface-elevated: #2C4D40;
+  --bg-card:             rgba(34, 58, 48, 0.94);
+  --bg-card-hover:       rgba(44, 77, 64, 0.98);
+  --bg-glass:            rgba(27, 46, 39, 0.85);
+  --bg-deepest:          #111F19;
+
+  /* ── Borders ── */
+  --border-subtle:  rgba(255, 255, 255, 0.09);
+  --border-medium:  rgba(255, 255, 255, 0.16);
+  --border-hover:   rgba(31, 184, 150, 0.38);
+  --border-glow:    rgba(31, 184, 150, 0.25);
+  --border-crimson: rgba(196, 43, 43, 0.38);
+
+  /* ── Typography ── */
+  --text-primary:   #E2F2EE;
+  --text-secondary: #8EC8BB;
+  --text-muted:     #527A6E;
+  --text-link:      #38CDAA;
+
+  /* ── Teal (Primary Accent) ── */
+  --accent-teal:    #1FB896;
+  --accent-cyan:    #1FB896;   /* alias kept for JS compatibility */
+  --accent-teal-lt: #38CDAA;
+  --accent-teal-dk: #0E7D65;
+  --accent-blue:    #0E7D65;
+
+  /* ── 🟢 PRESENT = Emerald Green ── */
+  --present-green:      #22B87A;
+  --present-green-glow: rgba(34, 184, 122, 0.32);
+  --present-bg:         rgba(34, 184, 122, 0.13);
+  --present-border:     rgba(34, 184, 122, 0.42);
+
+  /* ── 🔴 ABSENT = Crimson Red ── */
+  --absent-red:      #C42B2B;
+  --absent-red-glow: rgba(196, 43, 43, 0.35);
+  --absent-bg:       rgba(196, 43, 43, 0.13);
+  --absent-border:   rgba(196, 43, 43, 0.42);
+
+  /* ── Morning = Gold, Night = Soft Teal-Silver ── */
+  --morning-amber: #D4A017;
+  --morning-bg:    rgba(212, 160, 23, 0.13);
+  --night-indigo:  #A8C4BC;
+  --night-bg:      rgba(168, 196, 188, 0.13);
+
+  /* ── Gradients ── */
+  --gradient-primary: linear-gradient(135deg, #1FB896 0%, #0E7D65 100%);
+  --gradient-crimson: linear-gradient(135deg, #C42B2B 0%, #7A0C0C 100%);
+  --gradient-gold:    linear-gradient(135deg, #D4A017 0%, #8A6010 100%);
+  --gradient-hero:    linear-gradient(135deg, #0E7D65 0%, #1B2E27 45%, #8B1010 100%);
+
+  /* ── Radii ── */
   --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
-  
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.5);
-  --shadow-glow: 0 0 25px rgba(0, 242, 254, 0.18);
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+
+  /* ── Shadows ── */
+  --shadow-sm:   0 2px 10px rgba(0,0,0,0.28);
+  --shadow-md:   0 8px 28px rgba(0,0,0,0.38);
+  --shadow-lg:   0 16px 48px rgba(0,0,0,0.50);
+  --shadow-teal: 0 4px 20px rgba(31,184,150,0.28), 0 0 0 1px rgba(31,184,150,0.15);
+  --shadow-glow: 0 0 28px rgba(31,184,150,0.20);
 }
+
 
 * {
   box-sizing: border-box;
@@ -57,17 +81,17 @@
 }
 
 body {
-  font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background-color: var(--bg-primary);
   color: var(--text-primary);
   line-height: 1.5;
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
-  background-image: 
-    radial-gradient(circle at 15% 10%, rgba(0, 242, 254, 0.08) 0%, transparent 40%),
-    radial-gradient(circle at 85% 90%, rgba(139, 92, 246, 0.08) 0%, transparent 40%),
-    radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.04) 0%, transparent 50%);
+  background-image:
+    radial-gradient(circle at 15% 10%, rgba(31, 184, 150, 0.10) 0%, transparent 40%),
+    radial-gradient(circle at 85% 90%, rgba(196, 43, 43, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(34, 184, 122, 0.05) 0%, transparent 50%);
   background-attachment: fixed;
 }
 
@@ -78,7 +102,7 @@ body {
   right: -100px;
   width: 500px;
   height: 500px;
-  background: radial-gradient(circle, rgba(0, 242, 254, 0.12) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(31, 184, 150, 0.14) 0%, transparent 70%);
   filter: blur(80px);
   pointer-events: none;
   z-index: 0;
@@ -127,9 +151,9 @@ body {
 
 .brand-titles h1 {
   font-size: 1.35rem;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: -0.02em;
-  background: linear-gradient(135deg, #ffffff 40%, var(--accent-cyan) 100%);
+  background: linear-gradient(135deg, #E2F2EE 30%, #1FB896 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -202,14 +226,16 @@ body {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
-  color: #070a13;
-  box-shadow: 0 4px 14px rgba(0, 242, 254, 0.25);
+  background: var(--gradient-primary);
+  color: #091F18;
+  box-shadow: var(--shadow-teal);
+  font-weight: 700;
 }
 
 .btn-primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(0, 242, 254, 0.4);
+  box-shadow: 0 8px 24px rgba(31,184,150,0.45);
+  background: linear-gradient(135deg, #38CDAA 0%, #1FB896 100%);
 }
 
 .btn-secondary {
@@ -224,13 +250,13 @@ body {
 }
 
 .btn-success {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: linear-gradient(135deg, #22B87A 0%, #0E7D65 100%);
   color: #ffffff;
-  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);
+  box-shadow: 0 4px 14px rgba(34,184,122,0.30);
 }
 
 .btn-success:hover {
-  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+  box-shadow: 0 6px 20px rgba(34,184,122,0.45);
 }
 
 .btn-outline {
@@ -240,9 +266,9 @@ body {
 }
 
 .btn-outline:hover {
-  border-color: var(--accent-cyan);
-  color: var(--accent-cyan);
-  background: rgba(0, 242, 254, 0.05);
+  border-color: var(--accent-teal);
+  color: var(--accent-teal);
+  background: rgba(31, 184, 150, 0.08);
 }
 
 .btn-sm {
@@ -450,22 +476,22 @@ body {
 }
 
 .tab-btn.active {
-  background: rgba(0, 242, 254, 0.12);
-  color: var(--accent-cyan);
-  border-color: rgba(0, 242, 254, 0.35);
-  box-shadow: 0 0 15px rgba(0, 242, 254, 0.1);
+  background: rgba(31, 184, 150, 0.15);
+  color: var(--accent-teal);
+  border-color: rgba(31, 184, 150, 0.42);
+  box-shadow: 0 0 16px rgba(31, 184, 150, 0.12);
 }
 
 .tab-count {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.10);
   padding: 1px 7px;
   border-radius: 9999px;
   font-size: 0.72rem;
 }
 
 .tab-btn.active .tab-count {
-  background: var(--accent-cyan);
-  color: #070a13;
+  background: var(--accent-teal);
+  color: #091F18;
 }
 
 .toolbar-controls {
@@ -507,8 +533,8 @@ body {
 }
 
 .search-input:focus {
-  border-color: var(--accent-cyan);
-  box-shadow: 0 0 0 3px rgba(0, 242, 254, 0.15);
+  border-color: var(--accent-teal);
+  box-shadow: 0 0 0 3px rgba(31, 184, 150, 0.18);
 }
 
 .filter-group {
@@ -532,7 +558,7 @@ body {
 }
 
 .custom-select:focus {
-  border-color: var(--accent-cyan);
+  border-color: var(--accent-teal);
 }
 
 .custom-select option {
@@ -561,8 +587,8 @@ body {
 }
 
 .view-toggle-btn.active {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--accent-cyan);
+  background: rgba(31, 184, 150, 0.15);
+  color: var(--accent-teal);
 }
 
 /* ── Students Cards Grid ─────────────────────────────────────────────────── */
@@ -622,11 +648,12 @@ body {
 
 .student-card.is-present .student-avatar {
   border-color: var(--present-green);
-  box-shadow: 0 0 12px var(--present-green-glow);
+  box-shadow: 0 0 14px var(--present-green-glow);
 }
 
 .student-card.is-absent .student-avatar {
   border-color: var(--absent-red);
+  box-shadow: 0 0 10px var(--absent-red-glow);
 }
 
 .student-info {
@@ -654,21 +681,21 @@ body {
 }
 
 .role-headAdmin {
-  background: rgba(244, 63, 94, 0.15);
-  color: #f43f5e;
-  border: 1px solid rgba(244, 63, 94, 0.35);
+  background: rgba(196, 43, 43, 0.18);
+  color: #E04444;
+  border: 1px solid rgba(196, 43, 43, 0.42);
 }
 
 .role-admin {
-  background: rgba(139, 92, 246, 0.15);
-  color: #a78bfa;
-  border: 1px solid rgba(139, 92, 246, 0.35);
+  background: rgba(212, 160, 23, 0.15);
+  color: #D4A017;
+  border: 1px solid rgba(212, 160, 23, 0.38);
 }
 
 .role-member {
-  background: rgba(0, 242, 254, 0.12);
-  color: var(--accent-cyan);
-  border: 1px solid rgba(0, 242, 254, 0.25);
+  background: rgba(31, 184, 150, 0.14);
+  color: var(--accent-teal);
+  border: 1px solid rgba(31, 184, 150, 0.32);
 }
 
 .today-status-badge {
@@ -713,7 +740,7 @@ body {
 }
 
 .wa-link {
-  color: var(--accent-cyan);
+  color: var(--accent-teal);
   text-decoration: none;
   display: inline-flex;
   align-items: center;
@@ -721,6 +748,7 @@ body {
 }
 
 .wa-link:hover {
+  color: var(--accent-teal-lt);
   text-decoration: underline;
 }
 
@@ -813,7 +841,7 @@ body {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(3, 6, 15, 0.85);
+  background: rgba(3, 6, 15, 0.88);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   z-index: 1000;
@@ -824,6 +852,8 @@ body {
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.25s ease, visibility 0.25s ease;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 .modal-overlay.active {
@@ -840,6 +870,8 @@ body {
   max-width: 880px;
   max-height: 90vh;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   position: relative;
   transform: translateY(20px);
   transition: transform 0.25s ease;
@@ -850,7 +882,7 @@ body {
 }
 
 .modal-header-banner {
-  background: linear-gradient(135deg, rgba(0, 242, 254, 0.12), rgba(139, 92, 246, 0.15));
+  background: linear-gradient(135deg, rgba(31, 184, 150, 0.15), rgba(196, 43, 43, 0.10));
   padding: 1.75rem 2rem;
   border-bottom: 1px solid var(--border-subtle);
   display: flex;
@@ -870,8 +902,8 @@ body {
   height: 72px;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid var(--accent-cyan);
-  box-shadow: 0 0 20px rgba(0, 242, 254, 0.3);
+  border: 3px solid var(--accent-teal);
+  box-shadow: 0 0 22px rgba(31, 184, 150, 0.35);
 }
 
 .modal-name {
@@ -953,7 +985,7 @@ body {
 .calendar-month-title {
   font-size: 1.15rem;
   font-weight: 700;
-  color: var(--accent-cyan);
+  color: var(--accent-teal);
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -1004,13 +1036,14 @@ body {
 .calendar-days-header {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 6px;
+  gap: 4px;
   text-align: center;
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   font-weight: 700;
-  color: var(--text-muted);
-  text-transform: uppercase;
+  color: var(--accent-teal);
+  text-transform: none; /* Devanagari, no uppercase */
   margin-bottom: 6px;
+  letter-spacing: 0;
 }
 
 .calendar-grid {
@@ -1021,21 +1054,24 @@ body {
 
 .cal-cell {
   aspect-ratio: 1;
-  min-height: 60px;
+  min-height: 52px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-subtle);
   background: rgba(255, 255, 255, 0.02);
   display: flex;
   flex-direction: column;
-  padding: 6px;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 2px;
   position: relative;
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .cal-cell:hover {
-  transform: scale(1.04);
+  transform: scale(1.05);
   z-index: 2;
+  border-color: var(--border-hover);
 }
 
 .cal-cell.empty {
@@ -1059,34 +1095,33 @@ body {
 .cal-cell.is-present {
   background: var(--present-bg);
   border: 1.5px solid var(--present-green);
-  box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+  box-shadow: 0 0 10px rgba(34, 184, 122, 0.22);
 }
 
 /* 🔴 ABSENT: RED */
 .cal-cell.is-absent {
   background: var(--absent-bg);
   border: 1.5px solid var(--absent-red);
-  box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
+  box-shadow: 0 0 10px rgba(196, 43, 43, 0.22);
 }
 
+/* Primary number = BS Devanagari (big) */
 .cal-day-num {
-  font-size: 0.85rem;
-  font-weight: 700;
-  line-height: 1;
-  margin-bottom: 2px;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--text-primary);
 }
 
-.cal-cell.is-present .cal-day-num {
-  color: var(--present-green);
-}
+.cal-cell.is-present .cal-day-num { color: var(--present-green); }
+.cal-cell.is-absent  .cal-day-num { color: var(--absent-red); }
 
-.cal-cell.is-absent .cal-day-num {
-  color: var(--absent-red);
-}
-
+/* Secondary number = AD English (small/muted) */
 .cal-bs-num {
-  font-size: 0.65rem;
+  font-size: 0.58rem;
   color: var(--text-muted);
+  line-height: 1;
+  margin-top: 1px;
 }
 
 .cal-cell-badges {
@@ -1174,36 +1209,336 @@ body {
   background: var(--accent-cyan);
 }
 
-/* Responsive tweaks */
+/* ══════════════════════════════════════════════════════════════════════
+   RESPONSIVE — MOBILE-FIRST COMPREHENSIVE OVERHAUL
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ── Tablet landscape (≤1024px) ───────────────────────────────────── */
+@media (max-width: 1024px) {
+  .students-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+  .stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+}
+
+/* ── Tablet portrait / large phone landscape (≤768px) ────────────── */
 @media (max-width: 768px) {
   .panel-container {
-    padding: 1rem;
+    padding: 0.65rem 0.75rem 3rem;
   }
+
+  /* Header: stack vertically, compact */
   .panel-header {
     flex-direction: column;
     align-items: stretch;
+    gap: 0.65rem;
+    padding: 0.85rem 1rem;
+    margin-bottom: 1rem;
+    border-radius: var(--radius-lg);
   }
+
+  .brand-section {
+    gap: 0.65rem;
+  }
+
+  .brand-logo {
+    width: 38px;
+    height: 38px;
+  }
+
+  .brand-titles h1 { font-size: 1.05rem; font-weight: 800; }
+
+  .brand-titles p {
+    font-size: 0.72rem;
+  }
+
+  /* Clock + date picker side by side */
   .header-clock-section {
     justify-content: space-between;
+    gap: 0.5rem;
   }
+
+  .nepal-time-card {
+    padding: 0.4rem 0.7rem;
+    gap: 0.5rem;
+    flex: 1;
+  }
+
+  .time-flag { font-size: 1.1rem; }
+  .time-clock { font-size: 0.9rem; }
+  .nepali-bs-date { font-size: 0.7rem; }
+
+  .date-picker-wrap {
+    padding: 0.3rem 0.6rem;
+  }
+
+  .date-input { font-size: 0.78rem; }
+
+  /* Action buttons row */
+  .header-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+  .header-actions .btn {
+    width: 100%;
+    justify-content: center;
+    font-size: 0.76rem;
+    padding: 0.45rem 0.5rem;
+  }
+
+  /* ── Stats: 2×2 grid on phones ── */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.65rem;
+    margin-bottom: 1rem;
+  }
+
+  .stat-card {
+    padding: 0.85rem 1rem;
+    border-radius: var(--radius-md);
+  }
+
+  .stat-value {
+    font-size: 1.55rem;
+    margin-bottom: 0.2rem;
+  }
+
+  .stat-label { font-size: 0.72rem; }
+  .stat-sub   { font-size: 0.7rem; }
+  .stat-icon  { font-size: 1rem; padding: 4px; }
+
+  /* ── Toolbar ── */
+  .toolbar-card {
+    padding: 0.85rem 0.9rem;
+    border-radius: var(--radius-md);
+    margin-bottom: 1rem;
+  }
+
+  .toolbar-tabs {
+    padding-bottom: 0.75rem;
+    margin-bottom: 0.85rem;
+    gap: 0.3rem;
+  }
+
+  .tab-btn {
+    padding: 0.35rem 0.65rem;
+    font-size: 0.76rem;
+  }
+
   .toolbar-controls {
     flex-direction: column;
     align-items: stretch;
+    gap: 0.6rem;
   }
+
   .search-box-wrap {
     max-width: 100%;
+    min-width: unset;
   }
+
   .filter-group {
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
   }
+
   .custom-select {
-    flex: 1;
+    width: 100%;
+    padding: 0.48rem 0.6rem;
+    font-size: 0.78rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
   }
+
+  .view-toggle-btns { align-self: flex-end; }
+
+  /* ── Student cards: single column, compact ── */
+  .students-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .student-card {
+    padding: 0.9rem 1rem;
+    border-radius: var(--radius-md);
+  }
+
+  .student-avatar {
+    width: 44px;
+    height: 44px;
+  }
+
+  .student-name { font-size: 0.92rem; }
+
+  .student-meta-list {
+    font-size: 0.75rem;
+    gap: 0.25rem;
+    margin-bottom: 0.65rem;
+    padding-bottom: 0.65rem;
+  }
+
+  .today-status-badge {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.6rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .lifetime-progress-wrap { margin-bottom: 0.65rem; }
+  .progress-labels { font-size: 0.7rem; }
+  .progress-track { height: 6px; }
+
+  .student-card-actions .btn {
+    font-size: 0.76rem;
+    padding: 0.38rem 0.5rem;
+  }
+
+  /* ── Table view: horizontal scroll is fine, just keep header compact ── */
+  .table-card {
+    border-radius: var(--radius-md);
+    margin-bottom: 1rem;
+  }
+
+  .roster-table th,
+  .roster-table td {
+    padding: 0.6rem 0.85rem;
+    font-size: 0.78rem;
+  }
+
+  /* ── Calendar cells: smaller but still readable ── */
   .cal-cell {
-    min-height: 45px;
-    padding: 3px;
+    min-height: 42px;
+    padding: 2px;
+    border-radius: 5px;
   }
-  .cal-cell-badges {
-    display: none;
+
+  .cal-day-num  { font-size: 0.85rem; }
+  .cal-bs-num   { font-size: 0.52rem; }
+  .cal-cell-badges { display: none; } /* hide pill text on small */
+
+  .calendar-grid { gap: 4px; }
+  .calendar-days-header { gap: 4px; font-size: 0.68rem; }
+
+  /* Modal: full-screen bottom sheet on mobile — scroll isolated */
+  .modal-overlay {
+    padding: 0;
+    align-items: flex-end;
   }
+
+  .modal-content {
+    max-width: 100%;
+    max-height: 92vh;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    transform: translateY(100%);
+    overscroll-behavior: contain;
+  }
+
+  .modal-overlay.active .modal-content {
+    transform: translateY(0);
+  }
+
+  .modal-header-banner {
+    padding: 1.1rem 1.25rem;
+    gap: 1rem;
+  }
+
+  .modal-avatar { width: 54px; height: 54px; }
+  .modal-name   { font-size: 1.1rem; }
+
+  .modal-body {
+    padding: 1.1rem 1.25rem;
+  }
+
+  .modal-stats-bar {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.6rem;
+    padding: 0.75rem;
+  }
+
+  .m-stat-box .m-val   { font-size: 1.1rem; }
+  .m-stat-box .m-label { font-size: 0.67rem; }
+
+  .calendar-section {
+    padding: 0.9rem;
+    border-radius: var(--radius-md);
+  }
+
+  .calendar-top-bar {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.85rem;
+  }
+
+  .calendar-month-title { font-size: 0.95rem; }
+  .cal-legend { font-size: 0.7rem; gap: 0.75rem; margin-bottom: 0.85rem; }
+
+  /* Day inspection card compact */
+  .day-inspection-card {
+    padding: 0.75rem 0.9rem;
+    margin-top: 0.65rem;
+  }
+}
+
+/* ── Small phones (≤480px) ────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .panel-container { padding: 0.5rem 0.5rem 3rem; }
+
+  .brand-titles h1 { font-size: 0.95rem; }
+
+  /* Stack clock and date vertically on tiny screens */
+  .header-clock-section { flex-direction: column; }
+  .nepal-time-card { width: 100%; }
+
+  /* stats 2-col stays but even smaller */
+  .stat-value { font-size: 1.35rem; }
+  .stat-card  { padding: 0.7rem 0.8rem; }
+
+  /* Tabs: scrollable row, no wrap */
+  .toolbar-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tab-btn { padding: 0.3rem 0.55rem; font-size: 0.72rem; flex-shrink: 0; }
+
+  /* Filter dropdowns single col */
+  .filter-group { grid-template-columns: 1fr; }
+
+  /* Cal cells even smaller */
+  .cal-cell { min-height: 36px; padding: 1px; }
+  .cal-day-num { font-size: 0.75rem; }
+  .cal-bs-num  { display: none; }
+
+  /* Modal stats 2×3 */
+  .modal-stats-bar { grid-template-columns: repeat(2, 1fr); }
+
+  .modal-body { padding: 0.9rem 1rem; }
+  .modal-header-banner { padding: 0.9rem 1rem; }
+  .modal-avatar { width: 46px; height: 46px; }
+  .modal-name   { font-size: 1rem; }
+
+  /* Student card trimmed */
+  .student-avatar { width: 38px; height: 38px; }
+  .student-meta-list { font-size: 0.72rem; }
+}
+
+/* ── Tiny phones (≤360px) ───────────────────────────────────────────── */
+@media (max-width: 360px) {
+  .brand-titles h1 { font-size: 0.85rem; }
+  .header-actions { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 0.45rem; }
+  .stat-value { font-size: 1.2rem; }
+  .tab-btn    { font-size: 0.68rem; padding: 0.25rem 0.45rem; }
+  .cal-cell   { min-height: 28px; }
+  .cal-day-num { font-size: 0.68rem; }
+  .modal-stats-bar { grid-template-columns: 1fr 1fr; }
+  /* Toolbar tabs hidden scrollbar on tiny screens */
+  .toolbar-tabs::-webkit-scrollbar { display: none; }
+  .toolbar-tabs { -ms-overflow-style: none; scrollbar-width: none; }
 }
