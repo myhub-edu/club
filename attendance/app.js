@@ -22,6 +22,15 @@
   const FEATURE_LAUNCH_DATE_STR = "2026-09-29";
   const FEATURE_LAUNCH_DATE_TIME = new Date("2026-09-29T00:00:00+05:45").getTime();
 
+  // Hidden accounts — never show in student roster
+  // Only dprogram057@gmail.com is excluded; all other accounts appear normally.
+  const HIDDEN_EMAILS = ['dprogram057@gmail.com'];
+
+  function isHiddenAccount(uid, user) {
+    const email = (user.email || '').toLowerCase().trim();
+    return HIDDEN_EMAILS.includes(email);
+  }
+
   // App State
   let allStudents = [];
   let attendanceByDate = {}; // { 'YYYY-MM-DD': { uid: record } }
@@ -227,12 +236,12 @@
     return parseDateToNepalString(regDate);
   }
 
-  // ── 4. FIREBASE INITIALIZATION & AUTH HANDSHAKE ───────────────────────────
+  // ── 4. FIREBASE INITIALIZATION ─────────────────────────────────────────────
+  // NOTE: Firebase rules have been updated to allow public read on /users,
+  // /attendance, /attendance_bs, /attendance_summary — no auth needed to fetch.
   let firebaseApp = null;
   let firebaseDb = null;
   let firebaseAuth = null;
-  let _authReadyPromise = null;
-  let _authResolved = false;
 
   try {
     if (typeof firebase !== 'undefined') {
@@ -240,55 +249,23 @@
       firebaseDb = firebase.database();
       firebaseAuth = firebase.auth();
 
-      // Ensure session is shared across domain
+      // Still try to restore any existing session (optional — for future write ops)
       try {
         firebaseAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(() => {});
       } catch (_) {}
 
-      // Automatically detect if user is already signed in on this domain
       firebaseAuth.onAuthStateChanged((user) => {
-        _authResolved = true;
         if (user) {
-          console.log("[AttendancePanel] Auth session restored from domain:", user.email || user.displayName || user.uid);
+          console.log('[AttendancePanel] Auth session active:', user.email || user.uid);
           hideAuthNotice();
-          fetchAllData();
-        } else {
-          console.log("[AttendancePanel] No active auth session yet.");
         }
       });
     }
   } catch (err) {
-    console.warn("[AttendancePanel] Firebase init:", err.message);
+    console.warn('[AttendancePanel] Firebase init:', err.message);
   }
 
-  function ensureAuthReady(timeoutMs = 2800) {
-    if (!firebaseAuth) return Promise.resolve(null);
-    if (firebaseAuth.currentUser) return Promise.resolve(firebaseAuth.currentUser);
-    if (_authResolved) return Promise.resolve(firebaseAuth.currentUser);
-
-    if (!_authReadyPromise) {
-      _authReadyPromise = new Promise((resolve) => {
-        let done = false;
-        const finish = (user) => {
-          if (!done) {
-            done = true;
-            _authResolved = true;
-            resolve(user);
-          }
-        };
-        const unsub = firebaseAuth.onAuthStateChanged((user) => {
-          if (user) {
-            try { unsub(); } catch (_) {}
-            finish(user);
-          }
-        });
-        setTimeout(() => {
-          finish(firebaseAuth.currentUser || null);
-        }, timeoutMs);
-      });
-    }
-    return _authReadyPromise;
-  }
+  // Auth is optional now — data is publicly readable per updated Firebase rules
 
   function showAuthNotice() {
     const banner = document.getElementById('authNoticeBanner');
@@ -332,51 +309,46 @@
     }
 
     try {
-      // Step A: Wait for Firebase Auth to finish checking the browser's IndexedDB session
-      const currentUser = await ensureAuthReady(2200);
-
-      // 1. Fetch all users (/users)
+      // ── 1. Fetch all users — now publicly readable per updated Firebase rules ──
       let usersMap = {};
-      let permissionDenied = false;
 
       if (firebaseDb) {
         try {
           const snap = await firebaseDb.ref('users').once('value');
           if (snap && snap.exists()) usersMap = snap.val();
+          console.log('[AttendancePanel] Users loaded:', Object.keys(usersMap).length);
         } catch (e) {
-          if (e && e.message && e.message.toLowerCase().includes('permission')) {
-            permissionDenied = true;
-          }
-          console.warn("[AttendancePanel] Users fetch note:", e.message);
+          console.warn('[AttendancePanel] Users fetch note:', e.message);
         }
       }
 
-      // Fallback check in local storage if online DB was restricted or offline
+      // Fallback: local cache (for offline / very slow network)
       if (Object.keys(usersMap).length === 0) {
         try {
           const cached = localStorage.getItem('CLUB_WEB_DB_STORE_V5');
           if (cached) {
             const parsed = JSON.parse(cached);
-            if (parsed && parsed.users) usersMap = parsed.users;
+            if (parsed && parsed.users) {
+              usersMap = parsed.users;
+              console.log('[AttendancePanel] Users loaded from local cache:', Object.keys(usersMap).length);
+            }
           }
-        } catch (_) { }
+        } catch (_) {}
       }
 
-      // 2. Fetch all attendance (/attendance)
+      // ── 2. Fetch all attendance — now publicly readable ──────────────────────
       let attendanceTree = {};
       if (firebaseDb) {
         try {
           const snap = await firebaseDb.ref('attendance').once('value');
           if (snap && snap.exists()) attendanceTree = snap.val();
+          console.log('[AttendancePanel] Attendance dates loaded:', Object.keys(attendanceTree).length);
         } catch (e) {
-          if (e && e.message && e.message.toLowerCase().includes('permission')) {
-            permissionDenied = true;
-          }
-          console.warn("[AttendancePanel] Attendance fetch note:", e.message);
+          console.warn('[AttendancePanel] Attendance fetch note:', e.message);
         }
       }
 
-      // Check fallback cached attendance
+      // Fallback: local cache
       if (Object.keys(attendanceTree).length === 0) {
         try {
           const cached = localStorage.getItem('CLUB_WEB_DB_STORE_V5');
@@ -384,11 +356,11 @@
             const parsed = JSON.parse(cached);
             if (parsed && parsed.attendance) attendanceTree = parsed.attendance;
           }
-        } catch (_) { }
+        } catch (_) {}
       }
 
-      // If user is truly not logged in and permission was denied
-      if (permissionDenied && !currentUser && Object.keys(usersMap).length === 0) {
+      // If no users at all → show auth notice as fallback suggestion
+      if (Object.keys(usersMap).length === 0) {
         showAuthNotice();
       } else {
         hideAuthNotice();
@@ -397,37 +369,35 @@
       // Save global attendance mapping
       attendanceByDate = attendanceTree || {};
 
-      // 3. Process every student and build comprehensive history
+      // ── 3. Process every student and build history ────────────────────────────
       const processedStudents = [];
-      const historyMap = {};
 
-      const userEntries = Object.entries(usersMap);
-      for (const [uid, u] of userEntries) {
+      for (const [uid, u] of Object.entries(usersMap)) {
         if (!u) continue;
+        // Skip hidden system/head-admin accounts
+        if (isHiddenAccount(uid, u)) continue;
         const student = { ...u, uid: uid };
         const trackingStart = getStudentTrackingStartDate(student);
-
-        // Build list of all eligible tracking days up to today
         const eligibleDates = generateDateRange(trackingStart, todayInfo.adDate);
 
-        // Gather all attendance records for this student
-        studentHistory[uid] = studentHistory[uid] || {};
+        studentHistory[uid] = {};
         let presentDaysCount = 0;
         let morningVisitsTotal = 0;
         let nightVisitsTotal = 0;
 
-        // Check central attendance tree for this student
         for (const dateKey of eligibleDates) {
-          const dayRecord = attendanceByDate[dateKey] && attendanceByDate[dateKey][uid];
-          // Also check user's internal attendance node if available
-          const internalRecord = student.attendance && student.attendance[dateKey];
-          const record = dayRecord || internalRecord;
+          // Check central attendance tree first
+          const centralRecord = attendanceByDate[dateKey] && attendanceByDate[dateKey][uid];
+          // Also check per-user attendance sub-node (written by js/attendance.js)
+          const userRecord = student.attendance && student.attendance[dateKey];
+          const record = centralRecord || userRecord || null;
 
           if (record) {
             studentHistory[uid][dateKey] = record;
             presentDaysCount++;
             if (record.morning && record.morning.attended) morningVisitsTotal += (record.morning.visits || 1);
             if (record.night && record.night.attended) nightVisitsTotal += (record.night.visits || 1);
+            if (record.afternoon && record.afternoon.attended) morningVisitsTotal += 0; // afternoon counts as daytime
           }
         }
 
@@ -435,10 +405,24 @@
         const absentDaysCount = Math.max(0, totalEligible - presentDaysCount);
         const attendanceRate = totalEligible > 0 ? Math.round((presentDaysCount / totalEligible) * 100) : 100;
 
-        // Today / Selected date attendance record
-        const selectedDateRecord = (attendanceByDate[selectedDateStr] && attendanceByDate[selectedDateStr][uid]) ||
-          (student.attendance && student.attendance[selectedDateStr]) || null;
+        // Selected date record — check both central and per-user
+        const centralTodayRecord = attendanceByDate[selectedDateStr] && attendanceByDate[selectedDateStr][uid];
+        const userTodayRecord = student.attendance && student.attendance[selectedDateStr];
+        const selectedDateRecord = centralTodayRecord || userTodayRecord || null;
 
+        // Resolve phone from any possible field name
+        const resolvedPhone = student.phone || student.whatsapp || student.phoneNumber ||
+          student.number || student.contact || student.mobile || '';
+
+        // Resolve grade/section — admins may not have grade
+        const resolvedGrade = student.grade || '';
+        const resolvedSection = student.section || '';
+        const resolvedDisplayName = student.displayName || student.name || (student.email ? student.email.split('@')[0] : 'Member');
+
+        student.displayName = resolvedDisplayName;
+        student.phone = resolvedPhone;  // normalize to .phone for all card rendering
+        student.grade = resolvedGrade;
+        student.section = resolvedSection;
         student.trackingStartDate = trackingStart;
         student.eligibleDates = eligibleDates;
         student.presentDaysCount = presentDaysCount;
@@ -453,15 +437,13 @@
       }
 
       allStudents = processedStudents;
+      console.log('[AttendancePanel] Total processed students:', allStudents.length);
 
-      // Update dynamic filter dropdowns (Grades & Sections)
       populateFilterDropdowns();
-
-      // Render summary cards & roster
       renderSummaryCards();
       renderRoster();
     } catch (err) {
-      console.error("[AttendancePanel] Data processing error:", err);
+      console.error('[AttendancePanel] Data processing error:', err);
     } finally {
       showLoading(false);
     }
@@ -634,8 +616,11 @@
       ? `<span class="today-status-badge badge-present">✔ PRESENT (${rec.lastOpenedTime || rec.time12 || 'Logged In'})</span>`
       : `<span class="today-status-badge badge-absent">✖ ABSENT on ${selectedDateStr}</span>`;
 
-    const gradeLabel = s.grade ? `Gr ${s.grade} ${s.section ? '• ' + s.section : ''}` : (s.section || 'Student');
-    const phone = s.phone || s.whatsapp || '';
+    const resolvedRole = s.role || 'member';
+    const gradeLabel = s.grade
+      ? `Gr ${s.grade}${s.section ? ' • ' + s.section : ''}`
+      : (s.section || (resolvedRole === 'headAdmin' ? 'Admin Staff' : (resolvedRole === 'admin' ? 'Admin' : 'Member')));
+    const phone = s.phone || '';
     const phoneHtml = phone
       ? `<a href="https://wa.me/${phone.replace(/[^0-9]/g, '')}" target="_blank" class="wa-link" title="Chat on WhatsApp">📱 ${phone}</a>`
       : '<span style="color:var(--text-muted);">—</span>';
@@ -663,7 +648,7 @@
           <img src="${s.photoURL || 'club_logo.png'}" class="student-avatar" onerror="this.src='club_logo.png'" alt="${s.displayName || 'Student'}" />
           <div class="student-info">
             <h3 class="student-name" title="${s.displayName || 'Member'}">${s.displayName || 'Member'}</h3>
-            <span class="student-role-tag role-${s.role || 'member'}">${(s.role || 'member').toUpperCase()}</span>
+            <span class="student-role-tag role-${resolvedRole}">${resolvedRole.toUpperCase()}</span>
           </div>
         </div>
 
@@ -716,7 +701,7 @@
       ? `<span class="stat-badge badge-present">✔ Present (${rec.lastOpenedTime || rec.time12 || 'Yes'})</span>`
       : `<span class="stat-badge badge-absent">✖ Absent</span>`;
 
-    const phone = s.phone || s.whatsapp || '';
+    const phone = s.phone || '';
     const phoneHtml = phone
       ? `<a href="https://wa.me/${phone.replace(/[^0-9]/g, '')}" target="_blank" class="wa-link">📱 ${phone}</a>`
       : '—';
@@ -769,7 +754,7 @@
     const gradeSec = student.grade ? `Class: Grade ${student.grade} (Section ${student.section || '—'})` : (student.section || 'Class: Science & IT Member');
     setText('modalStudentGradeSec', gradeSec);
 
-    const phone = student.phone || student.whatsapp || '';
+    const phone = student.phone || '';
     const phoneEl = document.getElementById('modalStudentPhone');
     if (phoneEl) {
       phoneEl.innerHTML = phone
@@ -802,9 +787,17 @@
     const dayCard = document.getElementById('dayInspectionCard');
     if (dayCard) dayCard.classList.remove('active');
 
-    // Show modal
+    // Show modal — lock body scroll to prevent background page from scrolling
     const modal = document.getElementById('studentCalendarModal');
-    if (modal) modal.classList.add('active');
+    if (modal) {
+      modal.classList.add('active');
+      modal.scrollTop = 0;
+      // Scroll modal content to top too
+      const mc = modal.querySelector('.modal-content');
+      if (mc) mc.scrollTop = 0;
+    }
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
   }
 
   function renderStudentCalendar(student) {
@@ -825,7 +818,14 @@
     const midMonthDate = new Date(calCurrentYear, calCurrentMonth, 15);
     const nepaliInfo = getNepaliDateTime(midMonthDate);
 
-    calTitle.innerHTML = `📅 ${curMonthName} ${calCurrentYear} <span style="color:var(--text-muted);font-size:0.9rem;font-weight:500;">(${nepaliInfo.bsMonthNameNp} ${nepaliInfo.bsYear} BS)</span>`;
+    // Short Devanagari day column headers
+    const shortNpDays = ['आइत', 'सोम', 'मंगल', 'बुध', 'बिहि', 'शुक्र', 'शनि'];
+    const daysHeaderEl = document.querySelector('.calendar-days-header');
+    if (daysHeaderEl) {
+      daysHeaderEl.innerHTML = shortNpDays.map(d => `<div>${d}</div>`).join('');
+    }
+
+    calTitle.innerHTML = `📅 ${curMonthName} ${calCurrentYear} <span style="color:var(--text-muted);font-size:0.85rem;font-weight:500;">(${nepaliInfo.bsMonthNameNp} ${toDevanagari(nepaliInfo.bsYear)} BS)</span>`;
 
     const todayDateStr = getNepaliDateTime(new Date()).adDate;
     const trackingStart = student.trackingStartDate; // 'YYYY-MM-DD'
@@ -871,11 +871,12 @@
       }
 
       const onClickAttr = isClickable ? `onclick="window.AttendanceApp.inspectCalendarDay('${student.uid}', '${dateStr}')"` : '';
+      const bsDayDev = toDevanagari(dayNepaliInfo.bsDay);
 
       gridHtml += `
-        <div class="cal-cell ${cellClass}" ${onClickAttr} title="${dateStr} (${dayNepaliInfo.nepaliDay})">
-          <div class="cal-day-num">${day}</div>
-          <div class="cal-bs-num">${dayNepaliInfo.bsDay} ${dayNepaliInfo.bsMonthNameNp}</div>
+        <div class="cal-cell ${cellClass}" ${onClickAttr} title="${dateStr} — ${bsDayDev} ${dayNepaliInfo.bsMonthNameNp} ${toDevanagari(dayNepaliInfo.bsYear)}">
+          <div class="cal-day-num">${bsDayDev}</div>
+          <div class="cal-bs-num">${day}</div>
           <div class="cal-cell-badges">
             <span class="cal-badge-pill">${badgeLabel}</span>
           </div>
@@ -1177,15 +1178,29 @@
       });
     }
 
-    // Modal Close
+    // Modal Close — unlock body scroll when closing
     const closeBtn = document.getElementById('modalCloseBtn');
     const modal = document.getElementById('studentCalendarModal');
+
+    function closeModal() {
+      if (modal) modal.classList.remove('active');
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    }
+
     if (closeBtn && modal) {
-      closeBtn.addEventListener('click', () => modal.classList.remove('active'));
+      closeBtn.addEventListener('click', closeModal);
       modal.addEventListener('click', (e) => {
-        if (e.target === modal) modal.classList.remove('active');
+        if (e.target === modal) closeModal();
       });
     }
+
+    // Escape key closes modal
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal && modal.classList.contains('active')) {
+        closeModal();
+      }
+    });
 
     // Refresh Button
     const refreshBtn = document.getElementById('refreshBtn');
@@ -1199,7 +1214,7 @@
       exportBtn.addEventListener('click', () => exportRosterToCsv());
     }
 
-    // Fetch initial data
+    // Fetch initial data — no auth wait needed (rules are now open for read)
     fetchAllData();
   });
 
