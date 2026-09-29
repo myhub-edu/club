@@ -63,6 +63,18 @@
     "notificationReads": {
       ".read": "auth !== null",
       ".write": "auth !== null"
+    },
+    "attendance": {
+      ".read": "auth !== null",
+      ".write": "auth !== null"
+    },
+    "attendance_bs": {
+      ".read": "auth !== null",
+      ".write": "auth !== null"
+    },
+    "attendance_summary": {
+      ".read": "auth !== null",
+      ".write": "auth !== null"
     }
   }
 }
