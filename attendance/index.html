@@ -9,11 +9,11 @@
     content="Dedicated Student Attendance Review and Intelligence Dashboard according to Nepali Date, Nepal Standard Time, Morning &amp; Night slots." />
   <meta name="robots" content="noindex, nofollow" />
 
-  <!-- Google Fonts: Outfit & Inter -->
+  <!-- Google Fonts: Plus Jakarta Sans (same as main site) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet" />
 
   <!-- Panel Stylesheet (Self-Contained) -->
@@ -94,7 +94,7 @@
     <!-- Loading Spinner Indicator -->
     <div id="loadingSpinner" class="state-box" style="display: none;">
       <div class="spinner"></div>
-      <p style="font-weight: 600; color: var(--accent-cyan);">Fetching latest student attendance roster from Firebase...
+      <p style="font-weight: 600; color: var(--accent-teal);">विद्यार्थीहरूको उपस्थिति Firebase बाट लोड होदै...
       </p>
     </div>
 
@@ -280,7 +280,7 @@
         <div class="modal-stats-bar">
           <div class="m-stat-box">
             <span class="m-label">Lifetime Rate</span>
-            <span class="m-val" id="mStatRate" style="color: var(--accent-cyan);">100%</span>
+            <span class="m-val" id="mStatRate" style="color: var(--accent-teal);">100%</span>
           </div>
           <div class="m-stat-box">
             <span class="m-label">Days Present</span>
@@ -332,15 +332,15 @@
             </div>
           </div>
 
-          <!-- 7-day grid header -->
+          <!-- 7-day grid header (Devanagari short names; JS overwrites on render) -->
           <div class="calendar-days-header">
-            <div>Sun</div>
-            <div>Mon</div>
-            <div>Tue</div>
-            <div>Wed</div>
-            <div>Thu</div>
-            <div>Fri</div>
-            <div>Sat</div>
+            <div>आइत</div>
+            <div>सोम</div>
+            <div>मंगल</div>
+            <div>बुध</div>
+            <div>बिहि</div>
+            <div>शुक्र</div>
+            <div>शनि</div>
           </div>
 
           <!-- Calendar Days Grid -->
