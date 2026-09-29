@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Attendance Intelligence Panel | Science &amp; IT Club</title>
+  <meta name="description"
+    content="Dedicated Student Attendance Review and Intelligence Dashboard according to Nepali Date, Nepal Standard Time, Morning &amp; Night slots." />
+  <meta name="robots" content="noindex, nofollow" />
+
+  <!-- Google Fonts: Outfit & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap"
+    rel="stylesheet" />
+
+  <!-- Panel Stylesheet (Self-Contained) -->
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Firebase Compat CDN (Read-Only) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+</head>
+
+<body>
+  <div class="ambient-glow"></div>
+
+  <div class="panel-container">
+    <!-- Top Header Bar -->
+    <header class="panel-header">
+      <div class="brand-section">
+        <img src="club_logo.png"
+          onerror="if(!this._f){this._f=1;this.src='../assets/logo/club_logo.png';}else{this.style.display='none';}"
+          class="brand-logo" alt="Logo" />
+        <div class="brand-titles">
+          <h1>Student Attendance Panel</h1>
+          <p>Science &amp; IT Club • Nepal Standard Time &amp; Bikram Sambat Engine</p>
+        </div>
+      </div>
+
+      <!-- Live Nepal Time & Nepali Date Banner -->
+      <div class="header-clock-section">
+        <div class="nepal-time-card">
+          <span class="time-flag">🇳🇵</span>
+          <div class="time-texts">
+            <span class="time-clock" id="liveNepalClock">--:--:-- --</span>
+            <span class="nepali-bs-date" id="liveNepaliDate">Loading Nepali date...</span>
+          </div>
+        </div>
+
+        <!-- Date Selector (To review past days) -->
+        <div class="date-picker-wrap">
+          <label for="selectedDateInput">Date:</label>
+          <input type="date" id="selectedDateInput" class="date-input" title="Select date to review" />
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button id="refreshBtn" class="btn btn-secondary btn-sm" title="Refresh data from Firebase">
+          🔄 Refresh
+        </button>
+        <button id="exportCsvBtn" class="btn btn-outline btn-sm" title="Export roster to CSV spreadsheet">
+          📥 Export CSV
+        </button>
+      </div>
+    </header>
+
+    <!-- Auth Notice Banner (Only shown if user has not signed in on the domain) -->
+    <div id="authNoticeBanner"
+      style="display: none; background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.35); border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 1.75rem;">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+        <div style="display:flex;align-items:center;gap:0.85rem;">
+          <span style="font-size:1.8rem;line-height:1;">🔒</span>
+          <div>
+            <h3 style="color:#ffffff;font-size:1.05rem;font-weight:700;margin:0 0 0.2rem;">Authentication Required to
+              Read Roster</h3>
+            <p style="color:var(--text-secondary);font-size:0.84rem;margin:0;">
+              Firebase security rules protect student attendance data. If you are already a member or admin, sign in
+              below or log in via the main website.
+            </p>
+          </div>
+        </div>
+        <div style="display:flex;gap:0.6rem;align-items:center;">
+          <a href="../login.html" class="btn btn-secondary btn-sm" style="text-decoration:none;">Member Login</a>
+          <button onclick="window.AttendanceApp.signInWithGoogle()" class="btn btn-primary btn-sm">Sign In with
+            Google</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading Spinner Indicator -->
+    <div id="loadingSpinner" class="state-box" style="display: none;">
+      <div class="spinner"></div>
+      <p style="font-weight: 600; color: var(--accent-cyan);">Fetching latest student attendance roster from Firebase...
+      </p>
+    </div>
+
+    <!-- Summary KPI Cards -->
+    <section class="stats-grid">
+      <!-- Total Students -->
+      <div class="stat-card">
+        <div class="stat-top">
+          <span class="stat-label">Total Enrolled</span>
+          <span class="stat-icon">👥</span>
+        </div>
+        <div class="stat-value" id="statTotalStudents">0</div>
+        <div class="stat-sub">Registered students in platform</div>
+      </div>
+
+      <!-- Present Today -->
+      <div class="stat-card present-card">
+        <div class="stat-top">
+          <span class="stat-label" style="color: var(--present-green);">Present On Date</span>
+          <span class="stat-icon" style="color: var(--present-green);">✅</span>
+        </div>
+        <div class="stat-value" id="statPresentToday" style="color: var(--present-green);">0</div>
+        <div class="stat-sub" id="subPresentToday">0% attendance rate</div>
+      </div>
+
+      <!-- Absent Today -->
+      <div class="stat-card absent-card">
+        <div class="stat-top">
+          <span class="stat-label" style="color: var(--absent-red);">Absent On Date</span>
+          <span class="stat-icon" style="color: var(--absent-red);">❌</span>
+        </div>
+        <div class="stat-value" id="statAbsentToday" style="color: var(--absent-red);">0</div>
+        <div class="stat-sub" id="subAbsentToday">0% unrecorded</div>
+      </div>
+
+      <!-- Morning Active -->
+      <div class="stat-card morning-card">
+        <div class="stat-top">
+          <span class="stat-label" style="color: var(--morning-amber);">Morning Session</span>
+          <span class="stat-icon">🌅</span>
+        </div>
+        <div class="stat-value" id="statMorningActive" style="color: var(--morning-amber);">0</div>
+        <div class="stat-sub">Visited 04:00 AM – 12:00 PM</div>
+      </div>
+
+      <!-- Night Active -->
+      <div class="stat-card night-card">
+        <div class="stat-top">
+          <span class="stat-label" style="color: var(--night-indigo);">Night Session</span>
+          <span class="stat-icon">🌙</span>
+        </div>
+        <div class="stat-value" id="statNightActive" style="color: var(--night-indigo);">0</div>
+        <div class="stat-sub">Visited 05:00 PM – 04:00 AM</div>
+      </div>
+    </section>
+
+    <!-- Filter & Search Toolbar -->
+    <section class="toolbar-card">
+      <!-- Tabs -->
+      <div class="toolbar-tabs">
+        <button class="tab-btn active" data-tab="all">
+          <span>All Students</span>
+          <span class="tab-count" id="tabCountAll">0</span>
+        </button>
+        <button class="tab-btn" data-tab="present">
+          <span style="color: var(--present-green);">✔ Present Today</span>
+          <span class="tab-count" id="tabCountPresent">0</span>
+        </button>
+        <button class="tab-btn" data-tab="absent">
+          <span style="color: var(--absent-red);">✖ Absent Today</span>
+          <span class="tab-count" id="tabCountAbsent">0</span>
+        </button>
+        <button class="tab-btn" data-tab="morning">
+          <span>🌅 Morning Active</span>
+          <span class="tab-count" id="tabCountMorning">0</span>
+        </button>
+        <button class="tab-btn" data-tab="night">
+          <span>🌙 Night Active</span>
+          <span class="tab-count" id="tabCountNight">0</span>
+        </button>
+      </div>
+
+      <!-- Controls -->
+      <div class="toolbar-controls">
+        <!-- Search Input -->
+        <div class="search-box-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="searchInput" class="search-input"
+            placeholder="Search by name, phone, class, section..." />
+        </div>
+
+        <div class="filter-group">
+          <!-- Class/Grade Filter -->
+          <select id="gradeFilter" class="custom-select" title="Filter by Class/Grade">
+            <option value="">All Classes/Grades</option>
+          </select>
+
+          <!-- Section Filter -->
+          <select id="sectionFilter" class="custom-select" title="Filter by Section">
+            <option value="">All Sections</option>
+          </select>
+
+          <!-- Sort Dropdown -->
+          <select id="sortSelect" class="custom-select" title="Sort Students">
+            <option value="name-asc">Sort: Name (A to Z)</option>
+            <option value="name-desc">Sort: Name (Z to A)</option>
+            <option value="rate-desc">Highest Attendance %</option>
+            <option value="rate-asc">Lowest Attendance %</option>
+            <option value="present-desc">Most Days Present</option>
+          </select>
+
+          <!-- View Toggle -->
+          <div class="view-toggle-btns">
+            <button id="btnGridView" class="view-toggle-btn active" title="Grid View">🔲 Grid</button>
+            <button id="btnTableView" class="view-toggle-btn" title="Table View">📋 Table</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Empty State Message -->
+    <div id="emptyState" class="state-box" style="display: none;">
+      <div style="font-size: 3rem; margin-bottom: 0.5rem;">🔍</div>
+      <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.25rem;">No Students Found</h3>
+      <p style="color: var(--text-secondary);">Try changing your search keyword or switching the filter tab.</p>
+    </div>
+
+    <!-- Student Cards Grid View -->
+    <main id="studentsGrid" class="students-grid"></main>
+
+    <!-- Dense Table View (Hidden by default) -->
+    <div id="tableWrapper" class="table-card" style="display: none;">
+      <div class="table-responsive">
+        <table class="rosterTable roster-table">
+          <thead>
+            <tr>
+              <th>Student Member</th>
+              <th>Class / Sec</th>
+              <th>WhatsApp / Phone</th>
+              <th>Email</th>
+              <th>Status on Date</th>
+              <th>Morning Visit</th>
+              <th>Night Visit</th>
+              <th>Lifetime %</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="rosterTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── STUDENT DETAIL & FULL ATTENDANCE CALENDAR MODAL ── -->
+  <div id="studentCalendarModal" class="modal-overlay">
+    <div class="modal-content">
+      <!-- Modal Header Profile Banner -->
+      <div class="modal-header-banner">
+        <div class="modal-profile-info">
+          <img id="modalStudentAvatar" src="club_logo.png" class="modal-avatar"
+            onerror="if(!this._f){this._f=1;this.src='../assets/logo/club_logo.png';}else{this.onerror=null;}"
+            alt="Student Avatar" />
+          <div>
+            <h2 id="modalStudentName" class="modal-name">Student Full Name</h2>
+            <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; margin-bottom: 0.35rem;">
+              <span id="modalStudentRole" class="student-role-tag role-member">MEMBER</span>
+              <span id="modalStudentGradeSec"
+                style="font-size:0.85rem; color:var(--text-primary); font-weight:600;">Grade 11 • Section A</span>
+            </div>
+            <div id="modalStudentPhone" style="font-size:0.82rem; color:var(--text-secondary); margin-bottom: 0.15rem;">
+              Phone: —</div>
+            <div id="modalStudentEmail" style="font-size:0.82rem; color:var(--text-secondary);">Email: —</div>
+            <div id="modalStudentJoined" style="font-size:0.75rem; color:var(--text-muted); margin-top: 0.35rem;">
+              Joined: —</div>
+          </div>
+        </div>
+        <button id="modalCloseBtn" class="modal-close-btn" title="Close Modal">✕</button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="modal-body">
+        <!-- Lifetime Attendance Metric Summary -->
+        <div class="modal-stats-bar">
+          <div class="m-stat-box">
+            <span class="m-label">Lifetime Rate</span>
+            <span class="m-val" id="mStatRate" style="color: var(--accent-cyan);">100%</span>
+          </div>
+          <div class="m-stat-box">
+            <span class="m-label">Days Present</span>
+            <span class="m-val" id="mStatPresent" style="color: var(--present-green);">0</span>
+          </div>
+          <div class="m-stat-box">
+            <span class="m-label">Days Absent</span>
+            <span class="m-val" id="mStatAbsent" style="color: var(--absent-red);">0</span>
+          </div>
+          <div class="m-stat-box">
+            <span class="m-label">Eligible Tracked</span>
+            <span class="m-val" id="mStatEligible">0</span>
+          </div>
+          <div class="m-stat-box">
+            <span class="m-label">Morning Opens</span>
+            <span class="m-val" id="mStatMorning" style="color: var(--morning-amber);">0</span>
+          </div>
+          <div class="m-stat-box">
+            <span class="m-label">Night Opens</span>
+            <span class="m-val" id="mStatNight" style="color: var(--night-indigo);">0</span>
+          </div>
+        </div>
+
+        <!-- Interactive Month Calendar -->
+        <div class="calendar-section">
+          <div class="calendar-top-bar">
+            <div id="calendarMonthTitle" class="calendar-month-title">
+              September 2026 (असोज २०८३)
+            </div>
+            <div class="calendar-nav-btns">
+              <button class="btn btn-secondary btn-sm" onclick="window.AttendanceApp.prevMonth()">◀ Prev</button>
+              <button class="btn btn-secondary btn-sm" onclick="window.AttendanceApp.nextMonth()">Next ▶</button>
+            </div>
+          </div>
+
+          <!-- Color Legend -->
+          <div class="cal-legend">
+            <div class="legend-item">
+              <span class="legend-dot dot-present"></span>
+              <strong>Green: Present (उपस्थित)</strong>
+            </div>
+            <div class="legend-item">
+              <span class="legend-dot dot-absent"></span>
+              <strong>Red: Absent (अनुपस्थित)</strong>
+            </div>
+            <div class="legend-item">
+              <span class="legend-dot dot-inactive"></span>
+              <span>Gray: Before Registration / Future</span>
+            </div>
+          </div>
+
+          <!-- 7-day grid header -->
+          <div class="calendar-days-header">
+            <div>Sun</div>
+            <div>Mon</div>
+            <div>Tue</div>
+            <div>Wed</div>
+            <div>Thu</div>
+            <div>Fri</div>
+            <div>Sat</div>
+          </div>
+
+          <!-- Calendar Days Grid -->
+          <div id="calendarGrid" class="calendar-grid"></div>
+
+          <!-- Single-Day Inspection Card -->
+          <div id="dayInspectionCard" class="day-inspection-card"></div>
+        </div>
+
+        <!-- Full Attendance Day Logs Table -->
+        <h4 style="font-size:0.95rem; font-weight:700; color:var(--text-primary); margin-bottom:0.75rem;">
+          📜 Chronological Attendance History
+        </h4>
+        <div class="table-card" style="margin-bottom:0;">
+          <div class="table-responsive" style="max-height: 240px; overflow-y: auto;">
+            <table class="roster-table" style="font-size:0.8rem;">
+              <thead>
+                <tr>
+                  <th>Date (AD)</th>
+                  <th>Day</th>
+                  <th>Nepali Date (B.S.)</th>
+                  <th>Status</th>
+                  <th>Visit Time</th>
+                  <th>Morning Session</th>
+                  <th>Night Session</th>
+                </tr>
+              </thead>
+              <tbody id="modalLogsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel Logic -->
+  <script src="app.js"></script>
+</body>
+
+</html>
